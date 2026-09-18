@@ -22,6 +22,9 @@ export const env = createEnv({
 		GITHUB_CLIENT_SECRET: z.string(),
 		// Node environment
 		NODE_ENV: z.enum(["development", "production"]).default("production"),
+		// Captcha config
+		CAPTCHA_SITE_KEY: z.string(),
+		CAPTCHA_SECRET: z.string()
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,
