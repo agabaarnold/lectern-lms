@@ -3,7 +3,7 @@ import { betterAuth } from "better-auth/minimal";
 import { captcha, haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 
-import { env } from "#/env.ts";
+import { env } from "#/env.server.ts";
 
 import { db } from "../db";
 import { schema } from "../db/schema";

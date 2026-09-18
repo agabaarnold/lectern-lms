@@ -1,6 +1,6 @@
 import { createTransport } from "nodemailer";
 
-import { env } from "#/env.ts";
+import { env } from "#/env.server.ts";
 
 const isEmailStub = env.SMTP_HOST === undefined;
 

@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import { env } from "#/env.ts";
+import { env } from "#/env.server.ts";
 
 import { authRelations, mainRelations } from "./relations";
 
