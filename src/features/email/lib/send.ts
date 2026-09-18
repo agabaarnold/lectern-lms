@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { env } from "#/env.ts";
 
-import { transporter } from "./transporter.ts";
+import { isEmailStub, transporter } from "./transporter.ts";
 
 const sendEmailSchema = z.object({
 	to: z.email(),
@@ -28,12 +28,18 @@ const sendEmail = async ({
 		render(react, { plainText: true }),
 	]);
 	const info = await transporter.sendMail({
-		from: env.SMTP_FROM,
+		from: env.SMTP_FROM ?? "noreply@localhost",
 		to: parsed.to,
 		subject: parsed.subject,
 		html,
 		text,
 	});
+
+	if (isEmailStub) {
+		console.info(
+			`[email:dev] to=${parsed.to} subject=${parsed.subject} messageId=${info.messageId}`
+		);
+	}
 
 	return { messageId: info.messageId };
 };
