@@ -53,6 +53,19 @@ export const auth = betterAuth({
 	],
 	rateLimit: {
 		enabled: true,
+		window: 60,
+		max: 60,
+		storage: "database",
+		customRules: {
+			"/sign-in/*": { window: 60, max: 5 },
+			"/sign-up/*": { window: 60, max: 3 },
+			"/forget-password/*": { window: 60, max: 3 },
+			"/request-password-reset": { window: 60, max: 3 },
+			"/send-verification-email": { window: 60, max: 3 },
+			"/verify-email": { window: 60, max: 5 },
+			"/change-password": { window: 60, max: 3 },
+			"/change-email": { window: 60, max: 3 },
+		},
 	},
 	session: {
 		cookieCache: {
