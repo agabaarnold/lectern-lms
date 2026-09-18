@@ -5,11 +5,38 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 
 import { db } from "../db";
 import { schema } from "../db/schema";
+import { ResetPassword } from "../features/email/emails/reset-password.tsx";
+import { VerifyEmail } from "../features/email/emails/verify-email.tsx";
+import { sendEmail } from "../features/email/lib/send.ts";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", usePlural: true, schema }),
 	emailAndPassword: {
 		enabled: true,
+		sendResetPassword: async ({ user, url }) => {
+			await sendEmail({
+				to: user.email,
+				subject: "Reset your password",
+				react: ResetPassword({
+					resetUrl: url,
+					name: user.name ?? undefined,
+				}),
+			});
+		},
+	},
+	emailVerification: {
+		sendOnSignUp: true,
+		autoSignInAfterVerification: true,
+		sendVerificationEmail: async ({ user, url }) => {
+			await sendEmail({
+				to: user.email,
+				subject: "Verify your email address",
+				react: VerifyEmail({
+					verificationUrl: url,
+					name: user.name ?? undefined,
+				}),
+			});
+		},
 	},
 	plugins: [
 		haveIBeenPwned(),
