@@ -4,7 +4,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getUserSession } from "#/features/auth/functions/index.ts";
 
 export const Route = createFileRoute("/_auth")({
-	component: RouteComponent,
+	component: AuthLayout,
 	beforeLoad: async () => {
 		const { session } = await getUserSession();
 		if (session) {
@@ -13,6 +13,6 @@ export const Route = createFileRoute("/_auth")({
 	},
 });
 
-function RouteComponent() {
+function AuthLayout() {
 	return <Outlet />;
 }
