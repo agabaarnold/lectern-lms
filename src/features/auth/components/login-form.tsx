@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 
 import { GithubIcon } from "#/components/icons/github-icon.tsx";
 import { GoogleIcon } from "#/components/icons/google-icon.tsx";
-import { useCaptcha, Captcha } from "#/components/shared/captcha.tsx";
+import { Captcha } from "#/components/shared/captcha.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -21,6 +21,7 @@ import {
 	FieldSeparator,
 } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form/use-form.ts";
+import { useCaptcha } from "#/hooks/use-captcha.ts";
 import { authClient } from "#/lib/auth-client.ts";
 
 import { loginSchema } from "../schema";
