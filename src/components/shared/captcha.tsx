@@ -1,7 +1,7 @@
 import { HCaptcha } from "@hcaptcha/react-hcaptcha";
 import { useCallback } from "react";
 
-import { env } from "#/env.ts";
+import { clientEnv } from "#/env.client.ts";
 
 interface CaptchaProps {
 	/** Called when the captcha is verified successfully */
@@ -47,7 +47,7 @@ export const Captcha = ({
 	return (
 		<div data-testid="captcha">
 			<HCaptcha
-				sitekey={env.CAPTCHA_SITE_KEY}
+				sitekey={clientEnv.VITE_CAPTCHA_SITE_KEY}
 				onVerify={handleVerify}
 				onExpire={handleExpire}
 				onError={handleError}
