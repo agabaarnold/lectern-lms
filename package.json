@@ -58,7 +58,7 @@
 	"devDependencies": {
 		"@react-email/ui": "^6.9.5",
 		"@rolldown/plugin-babel": "^0.2.3",
-		"@shadcn/lint": "^0.1.0",
+		"@shadcn/lint": "^0.1.1",
 		"@tanstack/devtools-vite": "latest",
 		"@tanstack/router-cli": "^1.132.0",
 		"@types/node": "^26.6.1",
