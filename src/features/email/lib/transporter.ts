@@ -16,7 +16,7 @@ const transporter = env.SMTP_HOST
 				pass: env.SMTP_PASS,
 			},
 		})
-		// oxlint-disable-next-line sonarjs/no-clear-text-protocols -- false positive on jsonTransport stub name; no network involved.
-		: createTransport({ jsonTransport: true });
+	: // oxlint-disable-next-line sonarjs/no-clear-text-protocols -- false positive on jsonTransport stub name; no network involved.
+		createTransport({ jsonTransport: true });
 
 export { isEmailStub, transporter };
