@@ -30,27 +30,33 @@ const ToggleGroup = ({
 	VariantProps<typeof toggleVariants> & {
 		spacing?: number;
 		orientation?: "horizontal" | "vertical";
-	}) => (
-	<ToggleGroupPrimitive
-		data-slot="toggle-group"
-		data-variant={variant}
-		data-size={size}
-		data-spacing={spacing}
-		data-orientation={orientation}
-		style={{ "--gap": spacing } as React.CSSProperties}
-		className={cn(
-			"group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-lg data-vertical:flex-col data-vertical:items-stretch data-[size=sm]:rounded-[min(var(--radius-md),10px)]",
-			className
-		)}
-		{...props}
-	>
-		<ToggleGroupContext.Provider
-			value={{ variant, size, spacing, orientation }}
+	}) => {
+	const value = React.useMemo(
+		() => ({ variant, size, spacing, orientation }),
+		[variant, size, spacing, orientation]
+	);
+
+	return (
+		<ToggleGroupPrimitive
+			data-slot="toggle-group"
+			data-variant={variant}
+			data-size={size}
+			data-spacing={spacing}
+			data-orientation={orientation}
+			// SAFETY: `--gap` is a valid CSS custom property for Tailwind spacing; React.CSSProperties lacks an index signature for custom properties.
+			style={{ "--gap": spacing } as React.CSSProperties}
+			className={cn(
+				"group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-lg data-vertical:flex-col data-vertical:items-stretch data-[size=sm]:rounded-[min(var(--radius-md),10px)]",
+				className
+			)}
+			{...props}
 		>
-			{children}
-		</ToggleGroupContext.Provider>
-	</ToggleGroupPrimitive>
-);
+			<ToggleGroupContext.Provider value={value}>
+				{children}
+			</ToggleGroupContext.Provider>
+		</ToggleGroupPrimitive>
+	);
+};
 
 const ToggleGroupItem = ({
 	className,
