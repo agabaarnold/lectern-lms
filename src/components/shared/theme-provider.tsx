@@ -26,7 +26,7 @@ const readStoredTheme = (storageKey: string, defaultTheme: Theme): Theme => {
 	} catch {
 		return defaultTheme;
 	}
-	
+
 	return defaultTheme;
 };
 
