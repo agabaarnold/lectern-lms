@@ -1,6 +1,9 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+// Server-only environment. NEVER import this file in client components —
+// use "#/env.client.ts" instead. Importing this file client-side would bundle
+// secrets and throw on access (see @t3-oss/env-core onInvalidAccess).
 export const env = createEnv({
 	server: {
 		DATABASE_URL: z.url(),
@@ -22,10 +25,10 @@ export const env = createEnv({
 		GITHUB_CLIENT_SECRET: z.string(),
 		// Node environment
 		NODE_ENV: z.enum(["development", "production"]).default("production"),
-		// Captcha config
-		CAPTCHA_SITE_KEY: z.string(),
+		// Captcha secret (never exposed to the client)
 		CAPTCHA_SECRET: z.string(),
+		CAPTCHA_SITE_KEY: z.string(),
 	},
-	runtimeEnv: process.env,
+	runtimeEnv: { ...process.env, ...import.meta.env },
 	emptyStringAsUndefined: true,
 });
