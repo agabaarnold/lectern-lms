@@ -16,7 +16,8 @@
 		"db:pull": "drizzle-kit pull",
 		"db:studio": "drizzle-kit studio",
 		"check": "ultracite check",
-		"fix": "ultracite fix"
+		"fix": "ultracite fix",
+		"email:dev": "email dev --dir src/features/email/emails --port 3001"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.8.0",
@@ -55,6 +56,7 @@
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
+		"@react-email/ui": "^6.9.5",
 		"@rolldown/plugin-babel": "^0.2.3",
 		"@shadcn/lint": "^0.1.0",
 		"@tanstack/devtools-vite": "latest",
