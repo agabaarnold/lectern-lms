@@ -1,10 +1,17 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { neon } from "@neondatabase/serverless";
+import { createServerOnlyFn } from "@tanstack/react-start";
+import { drizzle } from "drizzle-orm/neon-http";
 
 import { env } from "#/env.ts";
 
-import { mainRelations } from "./relations";
+import { authRelations, mainRelations } from "./relations";
 
-const pool = new Pool({ connectionString: env.DATABASE_URL });
+export const db = createServerOnlyFn(() => {
+	const dbUrl = env.DATABASE_URL;
+	const sql = neon(dbUrl);
 
-export const db = drizzle({ client: pool, relations: { ...mainRelations } });
+	return drizzle({
+		client: sql,
+		relations: { ...mainRelations, ...authRelations },
+	});
+});
