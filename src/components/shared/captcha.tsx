@@ -1,7 +1,7 @@
 import { HCaptcha } from "@hcaptcha/react-hcaptcha";
 import { useCallback } from "react";
 
-import { clientEnv } from "#/env.client.ts";
+import { clientEnv } from "#/client-env.ts";
 
 interface CaptchaProps {
 	/** Called when the captcha is verified successfully */
