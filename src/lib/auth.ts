@@ -1,7 +1,9 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth/minimal";
-import { haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
+import { captcha, haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
+
+import { env } from "#/env.ts";
 
 import { db } from "../db";
 import { schema } from "../db/schema";
@@ -40,10 +42,18 @@ export const auth = betterAuth({
 		},
 	},
 	plugins: [
+		captcha({
+			provider: "hcaptcha",
+			secretKey: env.CAPTCHA_SECRET,
+			siteKey: env.CAPTCHA_SITE_KEY,
+		}),
 		haveIBeenPwned(),
 		lastLoginMethod({ storeInDatabase: true }),
 		tanstackStartCookies(),
 	],
+	rateLimit: {
+		enabled: true,
+	},
 	session: {
 		cookieCache: {
 			enabled: true,
