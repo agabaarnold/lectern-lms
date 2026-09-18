@@ -44,6 +44,12 @@ export const auth = betterAuth({
 		lastLoginMethod({ storeInDatabase: true }),
 		tanstackStartCookies(),
 	],
+	session: {
+		cookieCache: {
+			enabled: true,
+			maxAge: 5 * 60,
+		},
+	},
 });
 
 export type User = typeof auth.$Infer.Session.user;
