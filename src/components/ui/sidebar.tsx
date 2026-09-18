@@ -70,18 +70,20 @@ const SidebarProvider = ({
 
 	// This is the internal state of the sidebar.
 	// We use openProp and setOpenProp for control from outside the component.
-	const [_open, _setOpen] = React.useState(defaultOpen);
-	const open = openProp ?? _open;
+	const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+	const open = openProp ?? uncontrolledOpen;
 	const setOpen = React.useCallback(
 		(value: boolean | ((value: boolean) => boolean)) => {
+			// oxlint-disable-next-line anti-slop/no-runtime-typeof -- upstream controlled-state setter pattern; supports value or updater function.
 			const openState = typeof value === "function" ? value(open) : value;
 			if (setOpenProp) {
 				setOpenProp(openState);
 			} else {
-				_setOpen(openState);
+				setUncontrolledOpen(openState);
 			}
 
 			// This sets the cookie to keep the sidebar state.
+			// oxlint-disable-next-line unicorn/no-document-cookie -- upstream persistence uses sync document.cookie; Cookie Store API is async and changes behavior.
 			document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
 		},
 		[setOpenProp, open]
@@ -90,7 +92,9 @@ const SidebarProvider = ({
 	// Helper to toggle the sidebar.
 	const toggleSidebar = React.useCallback(
 		() =>
-			isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open),
+			isMobile
+				? setOpenMobile((previous) => !previous)
+				: setOpen((previous) => !previous),
 		[isMobile, setOpen, setOpenMobile]
 	);
 
@@ -132,6 +136,7 @@ const SidebarProvider = ({
 			<div
 				data-slot="sidebar-wrapper"
 				style={
+					// SAFETY: `--sidebar-width` custom properties are valid React inline styles but missing from CSSProperties type.
 					{
 						"--sidebar-width": SIDEBAR_WIDTH,
 						"--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
@@ -190,6 +195,7 @@ const Sidebar = ({
 					data-mobile="true"
 					className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
 					style={
+						// SAFETY: `--sidebar-width` custom property is valid React inline style but missing from CSSProperties type.
 						{
 							"--sidebar-width": SIDEBAR_WIDTH_MOBILE,
 						} as React.CSSProperties
@@ -291,7 +297,7 @@ const SidebarRail = ({
 			aria-label="Toggle Sidebar"
 			tabIndex={-1}
 			onClick={toggleSidebar}
-			title="Toggle Sidebar"
+			type="button"
 			className={cn(
 				"hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:inset-s-1/2 after:w-0.5 sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
 				"in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
@@ -528,11 +534,9 @@ const SidebarMenuButton = ({
 		return comp;
 	}
 
-	if (typeof tooltip === "string") {
-		tooltip = {
-			children: tooltip,
-		};
-	}
+	const tooltipContent =
+		// oxlint-disable-next-line anti-slop/no-runtime-typeof -- tooltip prop normalization; string shorthand expands to TooltipContent props at render boundary.
+		typeof tooltip === "string" ? { children: tooltip } : tooltip;
 
 	return (
 		<Tooltip>
@@ -541,7 +545,7 @@ const SidebarMenuButton = ({
 				side="right"
 				align="center"
 				hidden={state !== "collapsed" || isMobile}
-				{...tooltip}
+				{...tooltipContent}
 			/>
 		</Tooltip>
 	);
@@ -599,7 +603,9 @@ const SidebarMenuSkeleton = ({
 	showIcon?: boolean;
 }) => {
 	// Random width between 50 to 90%.
+	// oxlint-disable-next-line react/hook-use-state -- static skeleton width never updates; setter unused by design.
 	const [width] = React.useState(
+		// oxlint-disable-next-line sonarjs/pseudo-random -- non-sensitive skeleton shimmer placeholder width, not crypto.
 		() => `${Math.floor(Math.random() * 40) + 50}%`
 	);
 
@@ -620,6 +626,7 @@ const SidebarMenuSkeleton = ({
 				className="h-4 max-w-(--skeleton-width) flex-1"
 				data-sidebar="menu-skeleton-text"
 				style={
+					// SAFETY: `--skeleton-width` custom property is valid React inline style but missing from CSSProperties type.
 					{
 						"--skeleton-width": width,
 					} as React.CSSProperties
