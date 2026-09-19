@@ -14,9 +14,9 @@ import {
 import { Link } from "@tanstack/react-router";
 import React from "react";
 
-import { NavMain } from "#/components/nav-main.tsx";
-import { NavSecondary } from "#/components/nav-secondary.tsx";
-import { NavUser } from "#/components/nav-user.tsx";
+import { NavMain } from "#/components/sidebar/nav-main.tsx";
+import { NavSecondary } from "#/components/sidebar/nav-secondary.tsx";
+import { NavUser } from "#/components/sidebar/nav-user.tsx";
 import {
 	Sidebar,
 	SidebarContent,
@@ -27,7 +27,7 @@ import {
 	SidebarMenuItem,
 } from "#/components/ui/sidebar.tsx";
 
-import { Image } from "./shared/image";
+import { Image } from "../shared/image";
 
 const data = {
 	navMain: [
