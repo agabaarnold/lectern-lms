@@ -13,6 +13,7 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as AppAdminRouteRouteImport } from './routes/_app/admin/route'
 import { Route as AppEmailVerifiedRouteImport } from './routes/_app/email-verified'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -21,6 +22,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
@@ -38,6 +40,11 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppAdminRouteRoute = AppAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppEmailVerifiedRoute = AppEmailVerifiedRouteImport.update({
   id: '/email-verified',
@@ -70,19 +77,25 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => AppRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAdminRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAdminCoursesIndexRoute = AppAdminCoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/admin': typeof AppAdminRouteRouteWithChildren
   '/email-verified': typeof AppEmailVerifiedRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -90,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/admin/courses/': typeof AppAdminCoursesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
@@ -101,6 +115,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AppAdminIndexRoute
+  '/admin/courses': typeof AppAdminCoursesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +123,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
+  '/_app/admin': typeof AppAdminRouteRouteWithChildren
   '/_app/email-verified': typeof AppEmailVerifiedRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -116,12 +132,14 @@ export interface FileRoutesById {
   '/_public/': typeof PublicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/verify-email'
+    | '/admin'
     | '/email-verified'
     | '/forgot-password'
     | '/login'
@@ -129,6 +147,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/auth/$'
     | '/admin/'
+    | '/admin/courses/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,12 +159,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/auth/$'
     | '/admin'
+    | '/admin/courses'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/_public'
     | '/verify-email'
+    | '/_app/admin'
     | '/_app/email-verified'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -154,6 +175,7 @@ export interface FileRouteTypes {
     | '/_public/'
     | '/api/auth/$'
     | '/_app/admin/'
+    | '/_app/admin/courses/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -193,6 +215,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_app/email-verified': {
       id: '/_app/email-verified'
@@ -238,10 +267,10 @@ declare module '@tanstack/react-router' {
     }
     '/_app/admin/': {
       id: '/_app/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AppAdminIndexRouteImport
-      parentRoute: typeof AppRouteRoute
+      parentRoute: typeof AppAdminRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -250,17 +279,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/admin/courses/': {
+      id: '/_app/admin/courses/'
+      path: '/courses'
+      fullPath: '/admin/courses/'
+      preLoaderRoute: typeof AppAdminCoursesIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
   }
 }
 
-interface AppRouteRouteChildren {
-  AppEmailVerifiedRoute: typeof AppEmailVerifiedRoute
+interface AppAdminRouteRouteChildren {
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminCoursesIndexRoute: typeof AppAdminCoursesIndexRoute
+}
+
+const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
+  AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminCoursesIndexRoute: AppAdminCoursesIndexRoute,
+}
+
+const AppAdminRouteRouteWithChildren = AppAdminRouteRoute._addFileChildren(
+  AppAdminRouteRouteChildren,
+)
+
+interface AppRouteRouteChildren {
+  AppAdminRouteRoute: typeof AppAdminRouteRouteWithChildren
+  AppEmailVerifiedRoute: typeof AppEmailVerifiedRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAdminRouteRoute: AppAdminRouteRouteWithChildren,
   AppEmailVerifiedRoute: AppEmailVerifiedRoute,
-  AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
