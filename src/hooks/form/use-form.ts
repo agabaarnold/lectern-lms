@@ -2,6 +2,7 @@ import { createFormHook } from "@tanstack/react-form-start";
 
 import FormCheckbox from "#/components/form/form-checkbox.tsx";
 import FormInput from "#/components/form/form-input.tsx";
+import FormNumber from "#/components/form/form-number.tsx";
 import FormPassword from "#/components/form/form-password.tsx";
 import FormSelect from "#/components/form/form-select.tsx";
 import FormTextarea from "#/components/form/form-textarea.tsx";
@@ -13,6 +14,7 @@ export const { useAppForm } = createFormHook({
 	fieldComponents: {
 		FormInput,
 		FormCheckbox,
+		FormNumber,
 		FormPassword,
 		FormSelect,
 		FormTextarea,
