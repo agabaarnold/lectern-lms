@@ -93,7 +93,7 @@ export const UserDropdown = ({ user }: UserDropdownProps) => {
 
 						<DropdownMenuItem
 							render={
-								<Link to="/admin/dashboard">
+								<Link to="/admin">
 									<IconLayoutDashboard />
 									<span>Dashboard</span>
 								</Link>
