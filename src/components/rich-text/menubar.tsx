@@ -26,6 +26,8 @@ interface MenubarProps {
 }
 
 export const Menubar = ({ editor }: MenubarProps) => {
+	const activeToggleClassName = "bg-muted text-muted-foreground";
+
 	if (!editor) {
 		return null;
 	}
@@ -38,9 +40,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 					<TooltipTrigger
 						render={
 							<Toggle
-								className={cn(
-									editor.isActive("bold") && "bg-muted text-muted-foreground"
-								)}
+								className={cn(editor.isActive("bold") && activeToggleClassName)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleBold().run()
 								}
@@ -60,7 +60,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 						render={
 							<Toggle
 								className={cn(
-									editor.isActive("italic") && "bg-muted text-muted-foreground"
+									editor.isActive("italic") && activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleItalic().run()
@@ -81,7 +81,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 						render={
 							<Toggle
 								className={cn(
-									editor.isActive("strike") && "bg-muted text-muted-foreground"
+									editor.isActive("strike") && activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleStrike().run()
@@ -103,7 +103,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive("heading", { level: 1 }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -125,7 +125,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive("heading", { level: 2 }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleHeading({ level: 2 }).run()
@@ -147,7 +147,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive("heading", { level: 3 }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleHeading({ level: 3 }).run()
@@ -168,8 +168,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 						render={
 							<Toggle
 								className={cn(
-									editor.isActive("bulletList") &&
-										"bg-muted text-muted-foreground"
+									editor.isActive("bulletList") && activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleBulletList().run()
@@ -190,13 +189,12 @@ export const Menubar = ({ editor }: MenubarProps) => {
 						render={
 							<Toggle
 								className={cn(
-									editor.isActive("orderedList") &&
-										"bg-muted text-muted-foreground"
+									editor.isActive("orderedList") && activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().toggleOrderedList().run()
 								}
-								pressed={editor.isActive({ textAlign: "left" })}
+								pressed={editor.isActive("orderedList")}
 								size="sm"
 							>
 								<IconListNumbers />
@@ -217,7 +215,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive({ textAlign: "left" }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().setTextAlign("left").run()
@@ -239,7 +237,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive({ textAlign: "center" }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().setTextAlign("center").run()
@@ -261,7 +259,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 							<Toggle
 								className={cn(
 									editor.isActive({ textAlign: "right" }) &&
-										"bg-muted text-muted-foreground"
+										activeToggleClassName
 								)}
 								onPressedChange={() =>
 									editor.chain().focus().setTextAlign("right").run()
