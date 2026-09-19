@@ -83,7 +83,7 @@ export const Captcha = ({
 	return (
 		<div
 			className={cn(
-				"flex min-h-[78px] w-full items-center justify-center",
+				"flex min-h-19.5 w-full items-center justify-center",
 				className
 			)}
 			data-testid="captcha"
