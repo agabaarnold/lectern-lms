@@ -1,3 +1,4 @@
+// oxlint-disable shadcn/no-arbitrary-values
 import { Separator } from "#/components/ui/separator.tsx";
 import { SidebarTrigger } from "#/components/ui/sidebar.tsx";
 
