@@ -3,6 +3,19 @@ import { z } from "zod";
 export const courseLevels = ["Beginner", "Intermediate", "Advanced"] as const;
 export const courseStatus = ["Draft", "Published", "Archived"] as const;
 
+export const CourseCategories = [
+	"Development",
+	"Business",
+	"Finance",
+	"IT & Software",
+	"Office Productivity",
+	"Personal Development",
+	"Design",
+	"Health & Fitness",
+	"Music",
+	"Teaching & Academics",
+] as const;
+
 const minLengthError = (field: string, length: number) =>
 	`${field} must be at least ${length} characters long`;
 
@@ -19,7 +32,7 @@ export const courseSchema = z.object({
 		.min(1, { error: "Duration must be at least 1 hour" })
 		.max(500, { error: "Duration must be at most 500 hours" }),
 	level: z.enum(courseLevels),
-	category: z.string(),
+	category: z.enum(CourseCategories, { error: "Category is required" }),
 	smallDescription: z
 		.string()
 		.min(3, { error: minLengthError("Small description", 3) })
