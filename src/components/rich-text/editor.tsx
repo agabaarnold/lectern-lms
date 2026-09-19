@@ -1,10 +1,39 @@
+import type { FieldApi } from "@tanstack/react-form-start";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import { Menubar } from "./menubar";
 
-export const RichTextEditor = () => {
+interface RichTextEditorProps {
+	field: FieldApi<
+		any,
+		string,
+		string,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any
+	>;
+}
+
+export const RichTextEditor = ({ field }: RichTextEditorProps) => {
 	const editor = useEditor({
 		extensions: [
 			StarterKit,
@@ -17,6 +46,10 @@ export const RichTextEditor = () => {
 			},
 		},
 		immediatelyRender: false,
+		onUpdate: ({ editor: newEditor }) => {
+			const data = newEditor.getJSON();
+			field.handleChange(JSON.stringify(data));
+		},
 	});
 
 	return (
