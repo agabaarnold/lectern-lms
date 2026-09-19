@@ -1,4 +1,4 @@
-// oxlint-disable react/function-component-definition func-style
+// oxlint-disable react/function-component-definition func-style anti-slop/require-safety-comment-for-type-assertion
 import { createFileRoute } from "@tanstack/react-router";
 
 import data from "#/app/dashboard/data.json";
