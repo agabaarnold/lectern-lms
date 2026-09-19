@@ -44,7 +44,7 @@ export const UserDropdown = ({ user }: UserDropdownProps) => {
 				}
 			/>
 
-			<DropdownMenuContent align="end">
+			<DropdownMenuContent className="min-w-48" align="end">
 				<DropdownMenuGroup>
 					<DropdownMenuLabel className="flex min-w-0 flex-col">
 						<span className="text-foreground truncate text-sm font-medium">
