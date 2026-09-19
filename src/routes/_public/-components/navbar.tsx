@@ -16,7 +16,7 @@ interface NavItems {
 const navItems: NavItems[] = [
 	{ name: "Home", href: "/" },
 	{ name: "Course", href: "/courses" },
-	{ name: "Dashboard", href: "/dashboard" },
+	{ name: "Dashboard", href: "/admin/dashboard" },
 ];
 
 export const Navbar = () => {
