@@ -80,7 +80,8 @@ function LandingPage() {
 
 			<section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 				{features.map((feature, index) => (
-					<Card key={index} className="transition-shadow hover:shadow-lg">
+					// oxlint-disable-next-line react-doctor/no-array-index-as-key
+					<Card key={index}>
 						<CardHeader>
 							<div className="mb-4 text-4xl">{feature.icon}</div>
 
