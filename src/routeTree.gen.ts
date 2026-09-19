@@ -13,13 +13,13 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppEmailVerifiedRouteImport } from './routes/_app/email-verified'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -38,11 +38,6 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppEmailVerifiedRoute = AppEmailVerifiedRouteImport.update({
   id: '/email-verified',
@@ -74,6 +69,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -83,24 +83,24 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/dashboard': typeof AppDashboardRoute
   '/email-verified': typeof AppEmailVerifiedRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/dashboard': typeof AppDashboardRoute
   '/email-verified': typeof AppEmailVerifiedRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin': typeof AppAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,7 +108,6 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
-  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/email-verified': typeof AppEmailVerifiedRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -116,37 +115,37 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_public/': typeof PublicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_app/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/verify-email'
-    | '/dashboard'
     | '/email-verified'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
     | '/api/auth/$'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/verify-email'
-    | '/dashboard'
     | '/email-verified'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
     | '/api/auth/$'
+    | '/admin'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/_public'
     | '/verify-email'
-    | '/_app/dashboard'
     | '/_app/email-verified'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -154,6 +153,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_public/'
     | '/api/auth/$'
+    | '/_app/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -193,13 +193,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRouteRoute
     }
     '/_app/email-verified': {
       id: '/_app/email-verified'
@@ -243,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_app/admin/': {
+      id: '/_app/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AppAdminIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -254,13 +254,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteRouteChildren {
-  AppDashboardRoute: typeof AppDashboardRoute
   AppEmailVerifiedRoute: typeof AppEmailVerifiedRoute
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppDashboardRoute: AppDashboardRoute,
   AppEmailVerifiedRoute: AppEmailVerifiedRoute,
+  AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
