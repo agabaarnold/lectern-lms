@@ -44,10 +44,10 @@ const features: Feature[] = [
 ];
 
 export const Route = createFileRoute("/_public/")({
-	component: RouteComponent,
+	component: LandingPage,
 });
 
-function RouteComponent() {
+function LandingPage() {
 	return (
 		<>
 			<section className="relative py-20">
