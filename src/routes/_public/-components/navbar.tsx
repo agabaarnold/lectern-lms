@@ -26,7 +26,11 @@ export const Navbar = () => {
 		<header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 border-b backdrop-blur">
 			<div className="container mx-auto flex min-h-16 items-center px-4 md:px-6 lg:px-8">
 				<Link className="mr-4 flex items-center space-x-2" to="/">
-					<Image src="./logo-white.png" alt="Logo" className="size-9" />
+					<Image
+						src="./logo.png"
+						alt="Logo"
+						className="size-9 rounded-xs dark:bg-white"
+					/>
 					<span>Lectern</span>
 				</Link>
 
