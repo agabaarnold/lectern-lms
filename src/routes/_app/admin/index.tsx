@@ -9,9 +9,11 @@ import { SectionCards } from "#/components/section-cards.tsx";
 import { SiteHeader } from "#/components/site-header.tsx";
 import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar.tsx";
 
-export const Route = createFileRoute("/_app/admin/dashboard")({ component: Home });
+export const Route = createFileRoute("/_app/admin/")({
+	component: AdminDashboard,
+});
 
-function Home() {
+function AdminDashboard() {
 	return (
 		<SidebarProvider
 			style={
