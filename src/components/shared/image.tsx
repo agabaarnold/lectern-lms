@@ -24,15 +24,11 @@ export type ImageProps = Omit<
 
 	/**
 	 * Intrinsic image width.
-	 *
-	 * Required unless `fill` is true.
 	 */
 	width?: number;
 
 	/**
 	 * Intrinsic image height.
-	 *
-	 * Required unless `fill` is true.
 	 */
 	height?: number;
 
@@ -143,16 +139,6 @@ const validateImageProps = ({
 	ImageProps,
 	"fill" | "width" | "height" | "placeholder" | "blurDataURL"
 >) => {
-	if (
-		!fill &&
-		(width === undefined || height === undefined) &&
-		import.meta.env.DEV
-	) {
-		throw new Error(
-			"Image: `width` and `height` are required unless `fill` is true."
-		);
-	}
-
 	if (
 		fill &&
 		import.meta.env.DEV &&
