@@ -124,6 +124,10 @@ function CreateCoursePage() {
 								)}
 							</form.AppField>
 
+							<form.AppField name="description">
+								{(field) => <field.FormEditor label="Description" />}
+							</form.AppField>
+
 							<form.AppField name="fileKey">
 								{(field) => (
 									<field.FormInput
