@@ -2,11 +2,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import data from "#/app/dashboard/data.json";
-import { AppSidebar } from "#/components/app-sidebar.tsx";
-import { ChartAreaInteractive } from "#/components/chart-area-interactive.tsx";
-import { DataTable } from "#/components/data-table.tsx";
-import { SectionCards } from "#/components/section-cards.tsx";
-import { SiteHeader } from "#/components/site-header.tsx";
+import { AppSidebar } from "#/components/sidebar/app-sidebar.tsx";
+import { ChartAreaInteractive } from "#/components/sidebar/chart-area-interactive.tsx";
+import { DataTable } from "#/components/sidebar/data-table.tsx";
+import { SectionCards } from "#/components/sidebar/section-cards.tsx";
+import { SiteHeader } from "#/components/sidebar/site-header.tsx";
 import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar.tsx";
 
 export const Route = createFileRoute("/_app/admin/")({
