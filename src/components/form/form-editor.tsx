@@ -1,7 +1,7 @@
 import { useFieldContext } from "#/hooks/form/use-form-context.ts";
 
 import { RichTextEditor } from "../rich-text/editor";
-import { Field, FieldLabel } from "../ui/field";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 
 interface FormEditorProps {
 	label: string;
@@ -9,12 +9,15 @@ interface FormEditorProps {
 
 const FormEditor = ({ label }: FormEditorProps) => {
 	const field = useFieldContext<string>();
+	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
 	return (
-		<Field>
-			<FieldLabel>{label}</FieldLabel>
+		<Field data-invalid={isInvalid}>
+			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 
 			<RichTextEditor field={field} />
+
+			{isInvalid && <FieldError errors={field.state.meta.errors} />}
 		</Field>
 	);
 };
