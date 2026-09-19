@@ -10,9 +10,10 @@ interface FormInputProps {
 		React.ComponentProps<"input">["type"],
 		"password" | "checkbox" | "number"
 	>;
+	className?: React.ComponentProps<"input">["className"];
 }
 
-const FormInput = ({ label, placeholder, type }: FormInputProps) => {
+const FormInput = ({ label, placeholder, type, className }: FormInputProps) => {
 	const field = useFieldContext<string>();
 	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -22,6 +23,7 @@ const FormInput = ({ label, placeholder, type }: FormInputProps) => {
 
 			<Input
 				aria-invalid={isInvalid}
+				className={className}
 				id={field.name}
 				name={field.name}
 				onBlur={(e) => {
