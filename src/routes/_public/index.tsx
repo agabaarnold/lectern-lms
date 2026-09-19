@@ -78,7 +78,7 @@ function LandingPage() {
 				</div>
 			</section>
 
-			<section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+			<section className="mb-32 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 				{features.map((feature, index) => (
 					// oxlint-disable-next-line react-doctor/no-array-index-as-key
 					<Card key={index}>
