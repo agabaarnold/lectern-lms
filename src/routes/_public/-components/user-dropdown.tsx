@@ -4,8 +4,7 @@ import {
 	IconLayoutDashboard,
 	IconLogout,
 } from "@tabler/icons-react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { toast } from "react-hot-toast";
+import { Link } from "@tanstack/react-router";
 
 import {
 	Avatar,
@@ -22,7 +21,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
-import { authClient } from "#/lib/auth-client.ts";
+import { useSignout } from "#/hooks/use-signout.ts";
 import type { User } from "#/lib/auth.ts";
 
 interface UserDropdownProps {
@@ -30,21 +29,7 @@ interface UserDropdownProps {
 }
 
 export const UserDropdown = ({ user }: UserDropdownProps) => {
-	const navigate = useNavigate();
-
-	const handleSignout = async () => {
-		await authClient.signOut({
-			fetchOptions: {
-				onSuccess: () => {
-					navigate({ to: "." });
-					toast.success("Logged out successfully");
-				},
-				onError: ({ error }) => {
-					toast.error(error.message ?? "Failed to log you out");
-				},
-			},
-		});
-	};
+	const { handleSignout } = useSignout();
 
 	return (
 		<DropdownMenu>
