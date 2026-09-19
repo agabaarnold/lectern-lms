@@ -1,5 +1,4 @@
 import {
-	IconDashboard,
 	IconListDetails,
 	IconChartBar,
 	IconFolder,
@@ -10,6 +9,7 @@ import {
 	IconSettings,
 	IconHelp,
 	IconSearch,
+    IconLayoutDashboard,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import React from "react";
@@ -34,7 +34,7 @@ const data = {
 		{
 			title: "Dashboard",
 			url: "/admin",
-			icon: <IconDashboard />,
+			icon: <IconLayoutDashboard />,
 		},
 		{
 			title: "Courses",
