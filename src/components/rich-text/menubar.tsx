@@ -31,7 +31,7 @@ export const Menubar = ({ editor }: MenubarProps) => {
 	}
 
 	return (
-		<div className="border-input bg-card flex flex-wrap items-center gap-1 rounded-t-lg border p-2">
+		<div className="border-input bg-card flex flex-wrap items-center gap-1 rounded-t-lg border border-x-0 border-t-0 p-2">
 			{/* Icons with tooltip */}
 			<div className="flex flex-wrap gap-1">
 				<Tooltip>
