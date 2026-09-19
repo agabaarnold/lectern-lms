@@ -9,7 +9,7 @@ import {
 	IconSettings,
 	IconHelp,
 	IconSearch,
-    IconLayoutDashboard,
+	IconLayoutDashboard,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import React from "react";
