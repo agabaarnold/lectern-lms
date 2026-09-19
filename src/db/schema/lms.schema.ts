@@ -9,9 +9,17 @@ import {
 
 import { users } from "./auth.schema";
 
-export const courseLevelEnum = pgEnum("course_level", ["Beginner", "Intermediate", "Advanced"]);
+export const courseLevelEnum = pgEnum("course_level", [
+	"Beginner",
+	"Intermediate",
+	"Advanced",
+]);
 
-export const courseStatusEnum = pgEnum("course_status", ["Draft", "Published", "Archived"]);
+export const courseStatusEnum = pgEnum("course_status", [
+	"Draft",
+	"Published",
+	"Archived",
+]);
 
 export const courses = pgTable("courses", {
 	id: uuid("id").primaryKey().defaultRandom(),
