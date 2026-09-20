@@ -42,7 +42,9 @@ const defaultValues: CourseInput = {
 function CreateCoursePage() {
 	const form = useAppForm({
 		defaultValues,
-		onSubmit: async ({ value }) => {},
+		onSubmit: async ({ value }) => {
+			// To be completed
+		},
 		validationLogic: revalidateLogic({
 			mode: "submit",
 			modeAfterSubmission: "blur",
