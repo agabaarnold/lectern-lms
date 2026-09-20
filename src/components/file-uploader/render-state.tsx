@@ -3,35 +3,41 @@ import { cn } from "cn";
 
 import { Image } from "../shared/image";
 import { Button } from "../ui/button";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../ui/empty";
 import { Spinner } from "../ui/spinner";
 
-// TODO: Use the Empty ui component if applicable
 export const RenderEmptyState = ({
 	isDragActive,
 }: {
 	isDragActive: boolean;
 }) => (
-	<div className="text-center">
-		<div className="bg-muted mx-auto mb-4 flex size-12 items-center justify-center rounded-full">
-			<IconCloudUpload
-				className={cn(
-					"text-muted-foreground size-6",
-					isDragActive && "text-primary"
-				)}
-			/>
-		</div>
+	<Empty>
+		<EmptyHeader>
+			<EmptyMedia variant="icon">
+				<IconCloudUpload className={cn(isDragActive && "text-primary")} />
+			</EmptyMedia>
 
-		<p className="text-foreground text-base font-semibold">
-			Drop your files here or{" "}
-			<span className="text-primary cursor-pointer font-bold">
-				click to upload
-			</span>
-		</p>
+			<EmptyTitle>
+				Drop your files here or{" "}
+				<span className="text-primary cursor-pointer font-bold">
+					click to upload
+				</span>
+			</EmptyTitle>
 
-		<Button className="mt-4" type="button">
-			Select a file
-		</Button>
-	</div>
+			<EmptyDescription>Images up to 5MB</EmptyDescription>
+		</EmptyHeader>
+
+		<EmptyContent>
+			<Button type="button">Select a file</Button>
+		</EmptyContent>
+	</Empty>
 );
 
 export const RenderErrorState = () => (
@@ -43,7 +49,9 @@ export const RenderErrorState = () => (
 		<p className="text-base font-semibold">Upload failed</p>
 		<p className="text-muted-foreground mt-1 text-xs">Something went wrong</p>
 
-		<Button className="mt-4">Retry selecting a file</Button>
+		<Button className="mt-4" type="button">
+			Retry selecting a file
+		</Button>
 	</div>
 );
 
@@ -67,8 +75,12 @@ export const RenderUploadedState = ({
 		<Button
 			className={cn("absolute top-4 right-4")}
 			disabled={isDeleting}
-			onClick={handleRemoveFile}
+			onClick={(e) => {
+				e.stopPropagation();
+				handleRemoveFile();
+			}}
 			size="icon"
+			type="button"
 			variant="destructive"
 		>
 			{isDeleting ? (
