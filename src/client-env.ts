@@ -7,6 +7,7 @@ export const clientEnv = createEnv({
 	clientPrefix: "VITE_",
 	client: {
 		VITE_CAPTCHA_SITE_KEY: z.string(),
+		VITE_S3_BUCKET_NAME_IMAGES: z.string(),
 	},
 	runtimeEnv: { ...import.meta.env },
 	emptyStringAsUndefined: true,
