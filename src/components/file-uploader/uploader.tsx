@@ -178,6 +178,7 @@ export const Uploader = () => {
 		multiple: false,
 		maxSize: 5 * 1024 * 1024,
 		onDropRejected: rejectedFiles,
+		disabled: fileState.uploading || !!fileState.objectUrl,
 	});
 
 	const handleRemoveFile = async () => {
