@@ -28,6 +28,12 @@ export const env = createEnv({
 		// Captcha secret (never exposed to the client)
 		CAPTCHA_SECRET: z.string(),
 		CAPTCHA_SITE_KEY: z.string(),
+		// Tigris S3 config
+		AWS_ACCESS_KEY_ID: z.string(),
+		AWS_SECRET_ACCESS_KEY: z.string(),
+		AWS_ENDPOINT_URL_S3: z.url(),
+		AWS_ENDPOINT_URL_IAM: z.url(),
+		AWS_REGION: z.string(),
 	},
 	runtimeEnv: { ...process.env, ...import.meta.env },
 	emptyStringAsUndefined: true,
