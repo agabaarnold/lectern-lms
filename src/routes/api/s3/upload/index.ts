@@ -34,6 +34,7 @@ export const Route = createFileRoute("/api/s3/upload/")({
 						);
 					}
 
+					// oxlint-disable-next-line no-unused-vars: Will be implemented later sonarjs/no-unused-vars sonarjs/no-dead-store
 					const { fileName, contentType, size, isImage } = valid.data;
 
 					const uniqueKey = `${uuidV4()}-${fileName}`;
