@@ -43,3 +43,5 @@ export const courseSchema = z.object({
 	status: z.enum(courseStatus),
 });
 export type CourseInput = z.input<typeof courseSchema>;
+
+export const dbErrorSchema = z.object({ code: z.string() });
