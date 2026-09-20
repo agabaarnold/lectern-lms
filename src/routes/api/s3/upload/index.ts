@@ -1,4 +1,4 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createFileRoute } from "@tanstack/react-router";
 import { v4 as uuidV4 } from "uuid";
@@ -57,6 +57,36 @@ export const Route = createFileRoute("/api/s3/upload/")({
 					return Response.json(
 						{ error: "Failed to generate presigned URL" },
 						{ status: 500 }
+					);
+				}
+			},
+			DELETE: async ({ request }) => {
+				try {
+					const body = await request.json();
+
+					const { key } = body;
+					if (!key) {
+						return Response.json(
+							{ error: "Missing or invalid object key" },
+							{ status: 400 }
+						);
+					}
+
+					const command = new DeleteObjectCommand({
+						Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
+						Key: key,
+					});
+
+					await S3.send(command);
+
+					return Response.json(
+						{ message: "File deleted successfully" },
+						{ status: 200 }
+					);
+				} catch {
+					return Response.json(
+						{ error: "Missing or invalid object key" },
+						{ status: 50 }
 					);
 				}
 			},
