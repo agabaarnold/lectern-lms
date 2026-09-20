@@ -69,7 +69,7 @@ export const RenderUploadingState = ({
 	progress,
 	file,
 }: {
-	progres: number;
+	progress: number;
 	file: File;
 }) => (
 	<div className="flex flex-col items-center justify-center text-center">
