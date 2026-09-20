@@ -1,6 +1,6 @@
 // oxlint-disable shadcn/no-restyle
 import { cn } from "cn";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import type { FileRejection } from "react-dropzone";
 import { toast } from "react-hot-toast";
@@ -136,24 +136,40 @@ export const Uploader = () => {
 		}
 	};
 
-	const onDrop = useCallback((acceptedFiles: File[]) => {
-		if (acceptedFiles.length > 0) {
-			const file = acceptedFiles[0];
+	const onDrop = useCallback(
+		(acceptedFiles: File[]) => {
+			if (acceptedFiles.length > 0) {
+				const file = acceptedFiles[0];
 
-			setFileState({
-				file,
-				uploading: false,
-				progress: 0,
-				objectUrl: URL.createObjectURL(file),
-				error: false,
-				id: uuidv4(),
-				isDelecting: false,
-				fileType: "image",
-			});
+				if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
+					URL.revokeObjectURL(fileState.objectUrl);
+				}
 
-			uploadFile(file);
-		}
-	}, []);
+				setFileState({
+					file,
+					uploading: false,
+					progress: 0,
+					objectUrl: URL.createObjectURL(file),
+					error: false,
+					id: uuidv4(),
+					isDelecting: false,
+					fileType: "image",
+				});
+
+				uploadFile(file);
+			}
+		},
+		[fileState.objectUrl]
+	);
+
+	useEffect(
+		() => () => {
+			if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
+				URL.revokeObjectURL(fileState.objectUrl);
+			}
+		},
+		[fileState.objectUrl]
+	);
 
 	const { getInputProps, getRootProps, isDragActive } = useDropzone({
 		onDrop,
