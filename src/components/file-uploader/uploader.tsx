@@ -109,15 +109,15 @@ export const Uploader = () => {
 					} else {
 						reject(new Error("Upload failed..."));
 					}
-
-					xhr.onerror = () => {
-						reject(new Error("Upload failed"));
-					};
-
-					xhr.open("PUT", presignedUrl);
-					xhr.setRequestHeader("Content-Type", file.type);
-					xhr.send(file);
 				};
+
+				xhr.onerror = () => {
+					reject(new Error("Upload failed"));
+				};
+
+				xhr.open("PUT", presignedUrl);
+				xhr.setRequestHeader("Content-Type", file.type);
+				xhr.send(file);
 			});
 		} catch {
 			toast.error("Something went wrong");
