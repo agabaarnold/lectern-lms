@@ -1,4 +1,3 @@
-import { file } from "better-auth";
 // oxlint-disable shadcn/no-restyle
 import { cn } from "cn";
 import { useCallback, useState } from "react";
