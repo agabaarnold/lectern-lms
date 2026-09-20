@@ -130,10 +130,8 @@ function CreateCoursePage() {
 
 							<form.AppField name="fileKey">
 								{(field) => (
-									<field.FormInput
+									<field.FormFileUploader
 										label="Thumbnail image"
-										placeholder="Thumbnail url"
-										type="text"
 									/>
 								)}
 							</form.AppField>
