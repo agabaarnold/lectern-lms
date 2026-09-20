@@ -62,6 +62,16 @@ export const auth = betterAuth({
 			updateUserInfoOnLink: true,
 		},
 	},
+	user: {
+		additionalFields: {
+			role: {
+				type: "string",
+				required: false,
+				defaultValue: "user",
+				input: false,
+			},
+		},
+	},
 	plugins: [
 		captcha({
 			provider: "hcaptcha",
