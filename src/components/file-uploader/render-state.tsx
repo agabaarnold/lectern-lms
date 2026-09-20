@@ -1,6 +1,7 @@
-import { IconCloudUpload, IconPhoto } from "@tabler/icons-react";
+import { IconCloudUpload, IconPhoto, IconX } from "@tabler/icons-react";
 import { cn } from "cn";
 
+import { Image } from "../shared/image";
 import { Button } from "../ui/button";
 
 // TODO: Use the Empty ui component if applicable
@@ -40,7 +41,42 @@ export const RenderErrorState = () => (
 
 		<p className="text-base font-semibold">Upload failed</p>
 		<p className="text-muted-foreground mt-1 text-xs">Something went wrong</p>
-        
+
 		<Button className="mt-4">Retry selecting a file</Button>
+	</div>
+);
+
+export const RenderUploadedState = ({ previewUrl }: { previewUrl: string }) => (
+	<div>
+		<Image
+			className="object-contain p-2"
+			src={previewUrl}
+			alt="Uploaded file"
+			fill
+		/>
+
+		<Button
+			className={cn("absolute top-4 right-4")}
+			size="icon"
+			variant="destructive"
+		>
+			<IconX className="size-4" />
+		</Button>
+	</div>
+);
+
+export const RenderUploadingState = ({
+	progress,
+	file,
+}: {
+	progres: number;
+	file: File;
+}) => (
+	<div className="flex flex-col items-center justify-center text-center">
+		<p>{progress}</p>
+		<p className="text-foreground mt-2 text-sm font-medium">Uploading...</p>
+		<p className="text-muted-foreground mt-1 max-w-xs truncate text-xs">
+			{file.name}
+		</p>
 	</div>
 );
