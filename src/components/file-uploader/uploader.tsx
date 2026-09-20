@@ -1,3 +1,4 @@
+import { file } from "better-auth";
 // oxlint-disable shadcn/no-restyle
 import { cn } from "cn";
 import { useCallback, useState } from "react";
@@ -8,7 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
-import { RenderEmptyState, RenderErrorState } from "./render-state";
+import {
+	RenderEmptyState,
+	RenderErrorState,
+	RenderUploadedState,
+	RenderUploadingState,
+} from "./render-state";
 
 interface UploaderState {
 	id: string | null;
@@ -160,8 +166,13 @@ export const Uploader = () => {
 	});
 
 	const renderContent = () => {
-		if (fileState.uploading) {
-			return <h1>Uploading...</h1>;
+		if (fileState.uploading && fileState.file) {
+			return (
+				<RenderUploadingState
+					file={fileState.file}
+					progres={fileState.progress}
+				/>
+			);
 		}
 
 		if (fileState.error) {
@@ -169,7 +180,7 @@ export const Uploader = () => {
 		}
 
 		if (fileState.objectUrl) {
-			return <h1>Uploaded file</h1>;
+			return <RenderUploadedState previewUrl={fileState.objectUrl} />;
 		}
 
 		return <RenderEmptyState isDragActive={isDragActive} />;
