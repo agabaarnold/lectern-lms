@@ -9,11 +9,7 @@ interface FormTextareaProps {
 	className?: React.ComponentProps<"textarea">["className"];
 }
 
-const FormTextarea = ({
-	label,
-	placeholder,
-	className,
-}: FormTextareaProps) => {
+const FormTextarea = ({ label, placeholder, className }: FormTextareaProps) => {
 	const field = useFieldContext<string>();
 	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
