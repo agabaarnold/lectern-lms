@@ -169,7 +169,7 @@ export const Uploader = () => {
 			return (
 				<RenderUploadingState
 					file={fileState.file}
-					progres={fileState.progress}
+					progress={fileState.progress}
 				/>
 			);
 		}
