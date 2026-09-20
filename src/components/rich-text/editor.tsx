@@ -66,6 +66,10 @@ export const RichTextEditor = ({ field }: RichTextEditorProps) => {
 			return;
 		}
 
+		if (fieldValue === "" && editor.isEmpty) {
+			return;
+		}
+
 		if (fieldValue !== JSON.stringify(editor.getJSON())) {
 			editor.commands.setContent(parseStoredContent(fieldValue));
 		}
