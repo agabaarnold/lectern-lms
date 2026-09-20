@@ -172,7 +172,7 @@ export const Uploader = () => {
 			return <h1>Uploaded file</h1>;
 		}
 
-		<RenderEmptyState isDragActive={isDragActive} />;
+		return <RenderEmptyState isDragActive={isDragActive} />;
 	};
 
 	return (
