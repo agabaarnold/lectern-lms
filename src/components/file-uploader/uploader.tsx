@@ -180,6 +180,59 @@ export const Uploader = () => {
 		onDropRejected: rejectedFiles,
 	});
 
+	const handleRemoveFile = async () => {
+		if (fileState.isDelecting || !fileState.objectUrl) {
+			return;
+		}
+
+		try {
+			setFileState((prev) => ({ ...prev, isDelecting: true }));
+
+			const response = await fetch("/api/s3/upload", {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ key: fileState.key }),
+			});
+
+			if (!response.ok) {
+				toast.error("Failed to remove file from storage");
+
+				setFileState((prev) => ({
+					...prev,
+					isDelecting: false,
+					error: true,
+				}));
+
+				return;
+			}
+
+			if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
+				URL.revokeObjectURL(fileState.objectUrl);
+			}
+
+			setFileState(() => ({
+				file: null,
+				uploading: false,
+				progress: 0,
+				// oxlint-disable-next-line sonarjs/no-undefined-assignment
+				objectUrl: undefined,
+				error: false,
+				fileType: "image",
+				isDelecting: false,
+				id: null,
+			}));
+
+			toast.success("File removed successfully");
+		} catch {
+			toast.error("Error removing file. Please try again.");
+			setFileState((prev) => ({
+				...prev,
+				isDeleting: false,
+				error: true,
+			}));
+		}
+	};
+
 	const renderContent = () => {
 		if (fileState.uploading && fileState.file) {
 			return (
@@ -195,7 +248,13 @@ export const Uploader = () => {
 		}
 
 		if (fileState.objectUrl) {
-			return <RenderUploadedState previewUrl={fileState.objectUrl} />;
+			return (
+				<RenderUploadedState
+					previewUrl={fileState.objectUrl}
+					handleRemoveFile={handleRemoveFile}
+					isDeleting={fileState.isDelecting}
+				/>
+			);
 		}
 
 		return <RenderEmptyState isDragActive={isDragActive} />;
