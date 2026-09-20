@@ -139,6 +139,7 @@ export const Uploader = () => {
 	const onDrop = useCallback(
 		(acceptedFiles: File[]) => {
 			if (acceptedFiles.length > 0) {
+				// oxlint-disable-next-line prefer-destructuring
 				const file = acceptedFiles[0];
 
 				if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
