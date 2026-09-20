@@ -3,6 +3,7 @@ import { cn } from "cn";
 
 import { Image } from "../shared/image";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 
 // TODO: Use the Empty ui component if applicable
 export const RenderEmptyState = ({
@@ -46,7 +47,15 @@ export const RenderErrorState = () => (
 	</div>
 );
 
-export const RenderUploadedState = ({ previewUrl }: { previewUrl: string }) => (
+export const RenderUploadedState = ({
+	previewUrl,
+	isDeleting,
+	handleRemoveFile,
+}: {
+	previewUrl: string;
+	isDeleting: boolean;
+	handleRemoveFile: () => void;
+}) => (
 	<div>
 		<Image
 			className="object-contain p-2"
@@ -57,10 +66,16 @@ export const RenderUploadedState = ({ previewUrl }: { previewUrl: string }) => (
 
 		<Button
 			className={cn("absolute top-4 right-4")}
+			disabled={isDeleting}
+			onClick={handleRemoveFile}
 			size="icon"
 			variant="destructive"
 		>
-			<IconX className="size-4" />
+			{isDeleting ? (
+				<Spinner className="size-4" />
+			) : (
+				<IconX className="size-4" />
+			)}
 		</Button>
 	</div>
 );
