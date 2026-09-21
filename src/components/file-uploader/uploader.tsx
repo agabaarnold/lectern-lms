@@ -6,6 +6,8 @@ import type { FileRejection } from "react-dropzone";
 import { toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
+import { urlConstruct } from "#/lib/url-construct.ts";
+
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import {
@@ -50,9 +52,12 @@ const rejectedFiles = (fileRejection: FileRejection[]) => {
 interface UploaderProps {
 	onValueChange: (key: string) => void;
 	onBlur?: () => void;
+	value?: string;
 }
 
-export const Uploader = ({ onValueChange, onBlur }: UploaderProps) => {
+export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
+	const fileUrl = urlConstruct(value || "");
+
 	const [fileState, setFileState] = useState<UploaderState>({
 		error: false,
 		file: null,
@@ -61,6 +66,8 @@ export const Uploader = ({ onValueChange, onBlur }: UploaderProps) => {
 		progress: 0,
 		isDeleting: false,
 		fileType: "image",
+		key: value,
+		objectUrl: fileUrl,
 	});
 
 	const uploadFile = useCallback(
