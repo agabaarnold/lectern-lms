@@ -5,7 +5,7 @@ import {
 	users,
 	verifications,
 } from "./auth.schema";
-import { courses } from "./lms.schema";
+import { chapters, courses, lessons } from "./lms.schema";
 
 export const schema = {
 	users,
@@ -14,4 +14,6 @@ export const schema = {
 	verifications,
 	rateLimits,
 	courses,
+	chapters,
+	lessons,
 } as const;
