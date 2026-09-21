@@ -25,6 +25,8 @@ import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
+import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
+import { Route as AppAdminCoursesCourseIdEditRouteImport } from './routes/_app/admin/courses/$courseId/edit'
 import { Route as AppAdminCoursesCreateIndexRouteImport } from './routes/_app/admin/courses/create/index'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -104,6 +106,18 @@ const ApiS3UploadIndexRoute = ApiS3UploadIndexRouteImport.update({
   path: '/api/s3/upload/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAdminCoursesCourseIdIndexRoute =
+  AppAdminCoursesCourseIdIndexRouteImport.update({
+    id: '/courses/$courseId/',
+    path: '/courses/$courseId/',
+    getParentRoute: () => AppAdminRouteRoute,
+  } as any)
+const AppAdminCoursesCourseIdEditRoute =
+  AppAdminCoursesCourseIdEditRouteImport.update({
+    id: '/courses/$courseId/edit',
+    path: '/courses/$courseId/edit',
+    getParentRoute: () => AppAdminRouteRoute,
+  } as any)
 const AppAdminCoursesCreateIndexRoute =
   AppAdminCoursesCreateIndexRouteImport.update({
     id: '/courses/create/',
@@ -125,6 +139,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AppAdminIndexRoute
   '/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
+  '/admin/courses/$courseId/edit': typeof AppAdminCoursesCourseIdEditRoute
+  '/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
   '/admin/courses/create/': typeof AppAdminCoursesCreateIndexRoute
 }
 export interface FileRoutesByTo {
@@ -140,6 +156,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminIndexRoute
   '/admin/courses': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload': typeof ApiS3UploadIndexRoute
+  '/admin/courses/$courseId/edit': typeof AppAdminCoursesCourseIdEditRoute
+  '/admin/courses/$courseId': typeof AppAdminCoursesCourseIdIndexRoute
   '/admin/courses/create': typeof AppAdminCoursesCreateIndexRoute
 }
 export interface FileRoutesById {
@@ -160,6 +178,8 @@ export interface FileRoutesById {
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
+  '/_app/admin/courses/$courseId/edit': typeof AppAdminCoursesCourseIdEditRoute
+  '/_app/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
   '/_app/admin/courses/create/': typeof AppAdminCoursesCreateIndexRoute
 }
 export interface FileRouteTypes {
@@ -178,6 +198,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/courses/'
     | '/api/s3/upload/'
+    | '/admin/courses/$courseId/edit'
+    | '/admin/courses/$courseId/'
     | '/admin/courses/create/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -193,6 +215,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/courses'
     | '/api/s3/upload'
+    | '/admin/courses/$courseId/edit'
+    | '/admin/courses/$courseId'
     | '/admin/courses/create'
   id:
     | '__root__'
@@ -212,6 +236,8 @@ export interface FileRouteTypes {
     | '/_app/admin/'
     | '/_app/admin/courses/'
     | '/api/s3/upload/'
+    | '/_app/admin/courses/$courseId/edit'
+    | '/_app/admin/courses/$courseId/'
     | '/_app/admin/courses/create/'
   fileRoutesById: FileRoutesById
 }
@@ -339,6 +365,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiS3UploadIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/admin/courses/$courseId/': {
+      id: '/_app/admin/courses/$courseId/'
+      path: '/courses/$courseId'
+      fullPath: '/admin/courses/$courseId/'
+      preLoaderRoute: typeof AppAdminCoursesCourseIdIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
+    '/_app/admin/courses/$courseId/edit': {
+      id: '/_app/admin/courses/$courseId/edit'
+      path: '/courses/$courseId/edit'
+      fullPath: '/admin/courses/$courseId/edit'
+      preLoaderRoute: typeof AppAdminCoursesCourseIdEditRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
     '/_app/admin/courses/create/': {
       id: '/_app/admin/courses/create/'
       path: '/courses/create'
@@ -352,12 +392,16 @@ declare module '@tanstack/react-router' {
 interface AppAdminRouteRouteChildren {
   AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppAdminCoursesIndexRoute: typeof AppAdminCoursesIndexRoute
+  AppAdminCoursesCourseIdEditRoute: typeof AppAdminCoursesCourseIdEditRoute
+  AppAdminCoursesCourseIdIndexRoute: typeof AppAdminCoursesCourseIdIndexRoute
   AppAdminCoursesCreateIndexRoute: typeof AppAdminCoursesCreateIndexRoute
 }
 
 const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
   AppAdminIndexRoute: AppAdminIndexRoute,
   AppAdminCoursesIndexRoute: AppAdminCoursesIndexRoute,
+  AppAdminCoursesCourseIdEditRoute: AppAdminCoursesCourseIdEditRoute,
+  AppAdminCoursesCourseIdIndexRoute: AppAdminCoursesCourseIdIndexRoute,
   AppAdminCoursesCreateIndexRoute: AppAdminCoursesCreateIndexRoute,
 }
 
