@@ -1,11 +1,17 @@
 // oxlint-disable react/function-component-definition func-style anti-slop/require-safety-comment-for-type-assertion
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { AppSidebar } from "#/components/sidebar/app-sidebar.tsx";
 import { SiteHeader } from "#/components/sidebar/site-header.tsx";
 import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar.tsx";
 
 export const Route = createFileRoute("/_app/admin")({
+	beforeLoad: ({ context }) => {
+		const { user } = context;
+		if (user.role !== "admin") {
+			throw redirect({ to: "/not-admin", replace: true });
+		}
+	},
 	component: AdminLayout,
 });
 
