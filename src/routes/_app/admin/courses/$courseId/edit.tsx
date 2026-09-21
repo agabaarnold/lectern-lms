@@ -16,6 +16,7 @@ import {
 } from "#/components/ui/tabs.tsx";
 import { getCourse } from "#/features/courses/functions/index.ts";
 import { EditCourseForm } from "./-components/edit-course-form";
+import { CourseStructure } from "./-components/course-structure";
 
 export const Route = createFileRoute("/_app/admin/courses/$courseId/edit")({
 	component: EditCoursePage,
@@ -49,6 +50,21 @@ function EditCoursePage() {
 
 						<CardContent>
 							<EditCourseForm course={course} />
+						</CardContent>
+					</Card>
+				</TabsContent>
+
+				<TabsContent value="course-structure">
+					<Card>
+						<CardHeader>
+							<CardTitle>Course Structure</CardTitle>
+							<CardDescription>
+								Here you can update your course structure
+							</CardDescription>
+						</CardHeader>
+
+						<CardContent>
+							<CourseStructure />
 						</CardContent>
 					</Card>
 				</TabsContent>
