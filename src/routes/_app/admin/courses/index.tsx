@@ -3,12 +3,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 // oxlint-disable func-style
 // oxlint-disable react/function-component-definition
 import { buttonVariants } from "#/components/ui/button.tsx";
+import { getCourses } from "#/features/courses/functions/index.ts";
+
+import { AdminCourseCard } from "./-components/admin-course-card";
 
 export const Route = createFileRoute("/_app/admin/courses/")({
+	loader: () => getCourses(),
 	component: CoursesPage,
 });
 
 function CoursesPage() {
+	const courses = Route.useLoaderData();
+
 	return (
 		<>
 			<div className="flex items-center justify-between">
@@ -19,8 +25,10 @@ function CoursesPage() {
 				</Link>
 			</div>
 
-			<div>
-				<h1>Here you will see all the courses</h1>
+			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+				{courses.map((course) => (
+					<AdminCourseCard course={course} key={course.id} />
+				))}
 			</div>
 		</>
 	);
