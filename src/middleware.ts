@@ -1,3 +1,4 @@
+import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
@@ -8,7 +9,7 @@ export const authMiddleware = createMiddleware().server(async ({ next }) => {
 	const session = await auth.api.getSession({ headers });
 
 	if (!session) {
-		throw new Error("Unauthorized");
+		throw redirect({ to: "/login" });
 	}
 
 	return next({ context: { user: session.user } });
@@ -18,7 +19,7 @@ export const adminMiddleware = createMiddleware()
 	.middleware([authMiddleware])
 	.server(({ next, context }) => {
 		if (context.user.role !== "admin") {
-			throw new Error("Forbidden");
+			throw redirect({ to: "/not-admin" });
 		}
 
 		return next();
