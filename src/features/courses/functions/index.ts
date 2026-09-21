@@ -52,7 +52,7 @@ export const getCourse = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const courseId = data.id;
 
-		const course = await db.query.courses.findMany({ where: { id: courseId } });
+		const course = await db.query.courses.findFirst({ where: { id: courseId } });
 
 		return course;
 	});
