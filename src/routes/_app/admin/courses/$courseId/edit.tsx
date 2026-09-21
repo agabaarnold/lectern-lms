@@ -15,8 +15,9 @@ import {
 	TabsTrigger,
 } from "#/components/ui/tabs.tsx";
 import { getCourse } from "#/features/courses/functions/index.ts";
-import { EditCourseForm } from "./-components/edit-course-form";
+
 import { CourseStructure } from "./-components/course-structure";
+import { EditCourseForm } from "./-components/edit-course-form";
 
 export const Route = createFileRoute("/_app/admin/courses/$courseId/edit")({
 	component: EditCoursePage,
@@ -64,7 +65,7 @@ function EditCoursePage() {
 						</CardHeader>
 
 						<CardContent>
-							<CourseStructure />
+							<CourseStructure course={course} />
 						</CardContent>
 					</Card>
 				</TabsContent>
