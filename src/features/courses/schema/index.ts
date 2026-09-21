@@ -39,7 +39,12 @@ export const courseSchema = z.object({
 		.max(200, {
 			error: "Small description must be at most 200 characters long",
 		}),
-	slug: z.string().min(3, { error: minLengthError("Slug", 3) }),
+	slug: z
+		.string()
+		.min(3, { error: minLengthError("Slug", 3) })
+		.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u, {
+			error: "Slug must contain only lowercase letters, numbers, and hyphens",
+		}),
 	status: z.enum(courseStatus),
 });
 export type CourseInput = z.input<typeof courseSchema>;
