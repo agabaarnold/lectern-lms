@@ -63,7 +63,6 @@ export type GetCoursesQuery = z.input<typeof getCoursesQuerySchema>;
 
 export const updateCourseSchema = courseSchema
 	.partial()
-	.extend({ id: z.uuid() })
 	.refine((value) => Object.keys(value).length > 1, {
 		error: "Provide at least one field to update",
 	});
