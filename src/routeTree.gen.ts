@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as NotAdminRouteImport } from './routes/not-admin'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AppAdminRouteRouteImport } from './routes/_app/admin/route'
 import { Route as AppEmailVerifiedRouteImport } from './routes/_app/email-verified'
@@ -36,6 +37,11 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotAdminRoute = NotAdminRouteImport.update({
+  id: '/not-admin',
+  path: '/not-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
@@ -107,6 +113,7 @@ const AppAdminCoursesCreateIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
+  '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin': typeof AppAdminRouteRouteWithChildren
   '/email-verified': typeof AppEmailVerifiedRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
+  '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/email-verified': typeof AppEmailVerifiedRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/admin': typeof AppAdminRouteRouteWithChildren
   '/_app/email-verified': typeof AppEmailVerifiedRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/not-admin'
     | '/verify-email'
     | '/admin'
     | '/email-verified'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/not-admin'
     | '/verify-email'
     | '/email-verified'
     | '/forgot-password'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/_public'
+    | '/not-admin'
     | '/verify-email'
     | '/_app/admin'
     | '/_app/email-verified'
@@ -207,6 +219,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  NotAdminRoute: typeof NotAdminRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiS3UploadIndexRoute: typeof ApiS3UploadIndexRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/not-admin': {
+      id: '/not-admin'
+      path: '/not-admin'
+      fullPath: '/not-admin'
+      preLoaderRoute: typeof NotAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify-email': {
@@ -393,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  NotAdminRoute: NotAdminRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiS3UploadIndexRoute: ApiS3UploadIndexRoute,
