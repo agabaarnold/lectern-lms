@@ -1,58 +1,158 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseStatus } from "@tanstack/react-start/server";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
-import { courseIdSchema, courseSchema, dbErrorSchema } from "../schema";
+import {
+	courseIdSchema,
+	courseSchema,
+	getCoursesQuerySchema,
+	updateCourseSchema,
+} from "../schema";
+
+const SLUG_CONFLICT_MESSAGE = "A course with this slug already exists";
+
+const uniqueViolationSchema = z.object({ code: z.literal("23505") });
+
+const normalizeSlug = (slug: string) => slug.trim().toLowerCase();
+
+type CourseRow = typeof courses.$inferSelect;
 
 export const createCourse = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(courseSchema)
 	.handler(async ({ context, data }) => {
-		const userId = context.user.id;
+		let inserted: CourseRow[];
 
 		try {
-			const [course] = await db
+			inserted = await db
 				.insert(courses)
-				.values({ ...data, userId })
+				.values({
+					...data,
+					slug: normalizeSlug(data.slug),
+					userId: context.user.id,
+				})
 				.returning();
-
-			if (!course) {
-				throw new Error("Failed to create course");
-			}
-
-			return course;
 		} catch (error) {
-			const parsedError = dbErrorSchema.safeParse(error);
+			const cause = error instanceof Error ? error.cause : undefined;
+			const isConflict =
+				uniqueViolationSchema.safeParse(error).success ||
+				uniqueViolationSchema.safeParse(cause).success;
 
-			if (parsedError.success && parsedError.data.code === "23505") {
-				throw new Error("A course with this slug already exists", {
-					cause: error,
-				});
+			if (isConflict) {
+				setResponseStatus(409);
+				throw new Error(SLUG_CONFLICT_MESSAGE, { cause: error });
 			}
 
 			throw new Error("Failed to create course", { cause: error });
 		}
+
+		const [course] = inserted;
+
+		if (!course) {
+			throw new Error("Failed to create course");
+		}
+
+		return course;
 	});
 
 export const getCourses = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
-	.handler(async () => {
-		const data = await db.query.courses.findMany({
+	.validator(getCoursesQuerySchema.optional())
+	.handler(async ({ data }) => {
+		const { limit, offset, status } = getCoursesQuerySchema.parse(data ?? {});
+
+		const courseList = await db.query.courses.findMany({
+			where: status === undefined ? undefined : { status },
 			orderBy: { createdAt: "desc" },
+			limit,
+			offset,
 		});
 
-		return data;
+		return courseList;
 	});
 
 export const getCourse = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
 	.validator(courseIdSchema)
 	.handler(async ({ data }) => {
-		const courseId = data.id;
+		const course = await db.query.courses.findFirst({
+			where: { id: data.id },
+		});
 
-		const course = await db.query.courses.findFirst({ where: { id: courseId } });
+		if (!course) {
+			throw notFound();
+		}
+
+		return course;
+	});
+
+export const updateCourse = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(updateCourseSchema)
+	.handler(async ({ data }) => {
+		const { id, ...patch } = data;
+
+		if (patch.slug !== undefined) {
+			patch.slug = normalizeSlug(patch.slug);
+		}
+
+		let updated: CourseRow[];
+
+		try {
+			updated = await db
+				.update(courses)
+				.set(patch)
+				.where(eq(courses.id, id))
+				.returning();
+		} catch (error) {
+			const cause = error instanceof Error ? error.cause : undefined;
+			const isConflict =
+				uniqueViolationSchema.safeParse(error).success ||
+				uniqueViolationSchema.safeParse(cause).success;
+
+			if (isConflict) {
+				setResponseStatus(409);
+				throw new Error(SLUG_CONFLICT_MESSAGE, { cause: error });
+			}
+
+			throw new Error("Failed to update course", { cause: error });
+		}
+
+		const [course] = updated;
+
+		if (!course) {
+			throw notFound();
+		}
+
+		return course;
+	});
+
+export const deleteCourse = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(courseIdSchema)
+	.handler(async ({ data }) => {
+		let deleted: CourseRow[];
+
+		try {
+			deleted = await db
+				.delete(courses)
+				.where(eq(courses.id, data.id))
+				.returning();
+		} catch (error) {
+			throw new Error("Failed to delete course", { cause: error });
+		}
+
+		const [course] = deleted;
+
+		if (!course) {
+			throw notFound();
+		}
 
 		return course;
 	});
