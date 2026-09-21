@@ -22,5 +22,5 @@ export const adminMiddleware = createMiddleware()
 			throw redirect({ to: "/not-admin" });
 		}
 
-		return next();
+		return next({ context: { user: context.user } });
 	});
