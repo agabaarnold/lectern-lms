@@ -1,4 +1,3 @@
-import { defineRelationsPart } from "drizzle-orm";
 import {
 	pgTable,
 	text,
@@ -15,12 +14,15 @@ export const users = pgTable("users", {
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	image: text("image"),
-	role: text("role").notNull().default("user"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
+	role: text("role"),
+	banned: boolean("banned").default(false),
+	banReason: text("ban_reason"),
+	banExpires: timestamp("ban_expires"),
 	lastLoginMethod: text("last_login_method"),
 });
 
@@ -39,6 +41,7 @@ export const sessions = pgTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade" }),
+		impersonatedBy: text("impersonated_by"),
 	},
 	(table) => [index("sessions_userId_idx").on(table.userId)]
 );
