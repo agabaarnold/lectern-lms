@@ -1,7 +1,7 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq } from "drizzle-orm";
+import { EmptyFilter, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "#/db/index.ts";
@@ -68,7 +68,7 @@ export const getCourses = createServerFn({ method: "GET" })
 		const { limit, offset, status } = getCoursesQuerySchema.parse(data ?? {});
 
 		const courseList = await db.query.courses.findMany({
-			where: status === undefined ? undefined : { status },
+			where: status === undefined ? EmptyFilter : { status },
 			orderBy: { createdAt: "desc" },
 			limit,
 			offset,
