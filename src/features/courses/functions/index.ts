@@ -83,6 +83,23 @@ export const getCourse = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const course = await db.query.courses.findFirst({
 			where: { id: data.id },
+			with: {
+				chapters: {
+					columns: { id: true, title: true, position: true },
+					with: {
+						lessons: {
+							columns: {
+								id: true,
+								title: true,
+								description: true,
+								thumbnailKey: true,
+								position: true,
+								videoKey: true,
+							},
+						},
+					},
+				},
+			},
 		});
 
 		if (!course) {
