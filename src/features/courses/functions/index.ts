@@ -4,7 +4,7 @@ import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
-import { courseSchema, dbErrorSchema } from "../schema";
+import { courseIdSchema, courseSchema, dbErrorSchema } from "../schema";
 
 export const createCourse = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
@@ -34,4 +34,25 @@ export const createCourse = createServerFn({ method: "POST" })
 
 			throw new Error("Failed to create course", { cause: error });
 		}
+	});
+
+export const getCourses = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		const data = await db.query.courses.findMany({
+			orderBy: { createdAt: "desc" },
+		});
+
+		return data;
+	});
+
+export const getCourse = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.validator(courseIdSchema)
+	.handler(async ({ data }) => {
+		const courseId = data.id;
+
+		const course = await db.query.courses.findMany({ where: { id: courseId } });
+
+		return course;
 	});
