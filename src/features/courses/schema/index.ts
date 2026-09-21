@@ -49,4 +49,22 @@ export const courseSchema = z.object({
 });
 export type CourseInput = z.input<typeof courseSchema>;
 
-export const dbErrorSchema = z.object({ code: z.string() });
+export const courseIdSchema = z.object({
+	id: z.uuid(),
+});
+export type CourseId = z.input<typeof courseIdSchema>;
+
+export const getCoursesQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(100).default(50),
+	offset: z.coerce.number().int().min(0).default(0),
+	status: z.enum(courseStatus).optional(),
+});
+export type GetCoursesQuery = z.input<typeof getCoursesQuerySchema>;
+
+export const updateCourseSchema = courseSchema
+	.partial()
+	.extend({ id: z.uuid() })
+	.refine((value) => Object.keys(value).length > 1, {
+		error: "Provide at least one field to update",
+	});
+export type UpdateCourseInput = z.input<typeof updateCourseSchema>;
