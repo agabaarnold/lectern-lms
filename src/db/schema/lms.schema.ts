@@ -67,6 +67,7 @@ export const lessons = pgTable("lessons", {
 	description: text("description"),
 	thumbnailKey: text("thumbnail_key"),
 	videoKey: text("video_key"),
+	position: integer("position").notNull(),
 	chapterId: uuid("chapter_id")
 		.notNull()
 		.references(() => chapters.id, { onDelete: "cascade" }),
