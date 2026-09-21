@@ -1,7 +1,8 @@
 // oxlint-disable react/function-component-definition func-style
 import { IconArrowLeft, IconSparkle } from "@tabler/icons-react";
 import { revalidateLogic } from "@tanstack/react-form-start";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "react-hot-toast";
 import slugify from "slugify";
 
 import { Button, buttonVariants } from "#/components/ui/button.tsx";
@@ -13,6 +14,7 @@ import {
 	CardTitle,
 } from "#/components/ui/card.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
+import { createCourse } from "#/features/courses/functions/index.ts";
 import {
 	CourseCategories,
 	courseLevels,
@@ -21,6 +23,7 @@ import {
 } from "#/features/courses/schema/index.ts";
 import type { CourseInput } from "#/features/courses/schema/index.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
+import { tryCatch } from "#/lib/try-catch.ts";
 
 export const Route = createFileRoute("/_app/admin/courses/create/")({
 	component: CreateCoursePage,
@@ -40,10 +43,24 @@ const defaultValues: CourseInput = {
 };
 
 function CreateCoursePage() {
+	const navigate = useNavigate();
+
 	const form = useAppForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
-			// To be completed
+			const { error } = await tryCatch(
+				createCourse({ data: { ...value } })
+			);
+
+			if (error) {
+				return toast.error(
+					error.message ?? "An unexpected error occurred. Please try again"
+				);
+			}
+
+			toast.success("Course created successfully");
+			form.reset();
+			navigate({ to: "/admin/courses" });
 		},
 		validationLogic: revalidateLogic({
 			mode: "submit",
