@@ -18,6 +18,7 @@ const FormFileUploader = ({ label }: FormFileUploaderProps) => {
 			<Uploader
 				onBlur={() => field.handleBlur()}
 				onValueChange={(key) => field.handleChange(key)}
+				value={field.state.value}
 			/>
 
 			{isInvalid && <FieldError errors={field.state.meta.errors} />}
