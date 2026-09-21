@@ -24,6 +24,29 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.users.id,
 			optional: false,
 		}),
+		chapters: r.many.chapters({
+			from: r.courses.id,
+			to: r.chapters.courseId,
+		}),
+	},
+
+	chapters: {
+		course: r.one.courses({
+			from: r.chapters.courseId,
+			to: r.courses.id,
+			optional: false,
+		}),
+		lessons: r.many.lessons({
+			from: r.chapters.id,
+			to: r.lessons.chapterId,
+		}),
+	},
+
+	lessons: {
+		chapter: r.one.chapters({
+			from: r.lessons.chapterId,
+			to: r.chapters.id,
+		}),
 	},
 
 	sessions: {
