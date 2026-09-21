@@ -48,9 +48,7 @@ function CreateCoursePage() {
 	const form = useAppForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
-			const { error } = await tryCatch(
-				createCourse({ data: { ...value } })
-			);
+			const { error } = await tryCatch(createCourse({ data: value }));
 
 			if (error) {
 				return toast.error(
@@ -59,7 +57,6 @@ function CreateCoursePage() {
 			}
 
 			toast.success("Course created successfully");
-			form.reset();
 			navigate({ to: "/admin/courses" });
 		},
 		validationLogic: revalidateLogic({
@@ -79,7 +76,7 @@ function CreateCoursePage() {
 					<IconArrowLeft />
 				</Link>
 
-				<h1 className="text-2xl font-bold">Create Courses</h1>
+				<h1 className="text-2xl font-bold">Create Course</h1>
 			</div>
 
 			<Card>
@@ -123,7 +120,11 @@ function CreateCoursePage() {
 									className="w-fit"
 									onClick={() => {
 										const titleValue = form.getFieldValue("title");
-										const slug = slugify(titleValue);
+										const slug = slugify(titleValue, {
+											lower: true,
+											strict: true,
+											trim: true,
+										});
 
 										form.setFieldValue("slug", slug, { dontValidate: false });
 									}}
