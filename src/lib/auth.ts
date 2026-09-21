@@ -1,7 +1,11 @@
-import "@tanstack/react-start/server-only";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth/minimal";
-import { captcha, haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
+import {
+	admin,
+	captcha,
+	haveIBeenPwned,
+	lastLoginMethod,
+} from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 
 import { env } from "#/env.server.ts";
@@ -62,17 +66,8 @@ export const auth = betterAuth({
 			updateUserInfoOnLink: true,
 		},
 	},
-	user: {
-		additionalFields: {
-			role: {
-				type: "string",
-				required: false,
-				defaultValue: "user",
-				input: false,
-			},
-		},
-	},
 	plugins: [
+		admin(),
 		captcha({
 			provider: "hcaptcha",
 			secretKey: env.CAPTCHA_SECRET,
