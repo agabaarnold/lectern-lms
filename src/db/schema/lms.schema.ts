@@ -44,3 +44,37 @@ export const courses = pgTable("courses", {
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 });
+
+export const chapters = pgTable("chapters", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	title: text("title").notNull(),
+	position: integer("position").notNull(),
+	courseId: uuid("course_id")
+		.notNull()
+		.references(() => courses.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.notNull(),
+});
+
+export const lessons = pgTable("lessons", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	title: text("title").notNull(),
+	description: text("description"),
+	thumbnailKey: text("thumbnail_key"),
+	videoKey: text("video_key"),
+	chapterId: uuid("chapter_id")
+		.notNull()
+		.references(() => chapters.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.notNull(),
+});
