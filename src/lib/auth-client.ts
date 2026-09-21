@@ -1,4 +1,5 @@
 import {
+	adminClient,
 	inferAdditionalFields,
 	lastLoginMethodClient,
 } from "better-auth/client/plugins";
@@ -8,7 +9,11 @@ import { toast } from "react-hot-toast";
 import type { auth } from "./auth";
 
 export const authClient = createAuthClient({
-	plugins: [lastLoginMethodClient(), inferAdditionalFields<typeof auth>()],
+	plugins: [
+		adminClient(),
+		lastLoginMethodClient(),
+		inferAdditionalFields<typeof auth>(),
+	],
 	fetchOptions: {
 		// oxlint-disable-next-line require-await
 		onError: async (context) => {
