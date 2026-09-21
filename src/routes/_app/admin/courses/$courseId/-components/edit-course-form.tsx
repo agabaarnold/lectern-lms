@@ -51,7 +51,7 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 				);
 			}
 
-			toast.success("Course created successfully");
+			toast.success("Course updated successfully");
 			navigate({ to: "/admin/courses" });
 		},
 		validationLogic: revalidateLogic({
@@ -93,7 +93,7 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 					<Button
 						className="w-fit"
 						onClick={() => {
-							const titleValue = form.getFieldValue("title");
+							const titleValue = form.getFieldValue("title") ?? "";
 							const slug = slugify(titleValue, {
 								lower: true,
 								strict: true,
