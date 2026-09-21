@@ -26,7 +26,8 @@ interface EditCourseFormProps {
 export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 	const navigate = useNavigate();
 
-	const defaultValues = {
+	const defaultValues: UpdateCourseInput = {
+		id: course.id,
 		title: course.title,
 		description: course.description,
 		fileKey: course.fileKey,
@@ -42,9 +43,7 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 	const form = useAppForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
-			const { error } = await tryCatch(
-				updateCourse({ data: { id: course.id, ...value } })
-			);
+			const { error } = await tryCatch(updateCourse({ data: { ...value } }));
 
 			if (error) {
 				return toast.error(
