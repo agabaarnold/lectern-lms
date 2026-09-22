@@ -201,6 +201,8 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 				})
 			);
 
+			const previousItems = [...items];
+
 			setItems(updatedChaptersForState);
 			return;
 		}
