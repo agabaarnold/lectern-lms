@@ -194,9 +194,7 @@ export const reorderLessons = createServerFn({ method: "POST" })
 			columns: { id: true },
 			where: { chapterId },
 		});
-		const existingIds = new Set(
-			existingLessons.map((lesson) => lesson.id)
-		);
+		const existingIds = new Set(existingLessons.map((lesson) => lesson.id));
 		const allBelongToChapter = lessonArray.every((lesson) =>
 			existingIds.has(lesson.id)
 		);
@@ -214,10 +212,7 @@ export const reorderLessons = createServerFn({ method: "POST" })
 						.update(lessons)
 						.set({ position: lesson.position })
 						.where(
-							and(
-								eq(lessons.id, lesson.id),
-								eq(lessons.chapterId, chapterId)
-							)
+							and(eq(lessons.id, lesson.id), eq(lessons.chapterId, chapterId))
 						)
 				)
 			);
