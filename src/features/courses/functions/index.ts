@@ -5,13 +5,14 @@ import { and, EmptyFilter, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "#/db/index.ts";
-import { courses, lessons } from "#/db/schema/lms.schema.ts";
+import { chapters, courses, lessons } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
 import {
 	courseIdSchema,
 	courseSchema,
 	getCoursesQuerySchema,
+	reorderChaptersSchema,
 	reorderLessonSchema,
 	updateCourseSchema,
 } from "../schema";
@@ -87,6 +88,7 @@ export const getCourse = createServerFn({ method: "GET" })
 			with: {
 				chapters: {
 					columns: { id: true, title: true, position: true },
+					orderBy: { position: "asc" },
 					with: {
 						lessons: {
 							columns: {
@@ -97,6 +99,7 @@ export const getCourse = createServerFn({ method: "GET" })
 								position: true,
 								videoKey: true,
 							},
+							orderBy: { position: "asc" },
 						},
 					},
 				},
@@ -221,4 +224,57 @@ export const reorderLessons = createServerFn({ method: "POST" })
 		}
 
 		return { updated: lessonArray.length };
+	});
+
+export const reorderChapters = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(reorderChaptersSchema)
+	.handler(async ({ data }) => {
+		const { chaptersArray, courseId } = data;
+
+		const course = await db.query.courses.findFirst({
+			columns: { id: true },
+			where: { id: courseId },
+		});
+
+		if (!course) {
+			throw notFound();
+		}
+
+		const existingChapters = await db.query.chapters.findMany({
+			columns: { id: true },
+			where: { courseId },
+		});
+		const existingIds = new Set(
+			existingChapters.map((chapter) => chapter.id)
+		);
+		const allBelongToCourse = chaptersArray.every((chapter) =>
+			existingIds.has(chapter.id)
+		);
+
+		if (!allBelongToCourse) {
+			throw new Error("One or more chapters do not belong to this course");
+		}
+
+		try {
+			// neon-http has no interactive transactions, so issue the
+			// scoped updates as a batch instead of db.transaction().
+			await Promise.all(
+				chaptersArray.map((chapter) =>
+					db
+						.update(chapters)
+						.set({ position: chapter.position })
+						.where(
+							and(
+								eq(chapters.id, chapter.id),
+								eq(chapters.courseId, courseId)
+							)
+						)
+				)
+			);
+		} catch (error) {
+			throw new Error("Failed to reorder chapters", { cause: error });
+		}
+
+		return { updated: chaptersArray.length };
 	});
