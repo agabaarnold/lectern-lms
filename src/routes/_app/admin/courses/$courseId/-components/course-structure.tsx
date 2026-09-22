@@ -127,39 +127,35 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 
 		setItems(newItems);
 
-		if (course.id) {
-			const lessonsToUpdate = updatedLessonForState.map((lesson) => ({
-				id: lesson.id,
-				position: lesson.order,
-			}));
+		const lessonsToUpdate = updatedLessonForState.map((lesson) => ({
+			id: lesson.id,
+			position: lesson.order,
+		}));
 
-			const reorderLessonsPromise = () =>
-				reorderLessons({
-					data: {
-						chapterId,
-						lessonArray: lessonsToUpdate,
-						courseId: course.id,
-					},
-				});
-
-			toast.promise(reorderLessonsPromise, {
-				loading: "Reordering lessons...",
-				success: (result) => {
-					if (result.updated) {
-						return "Lessons reordered successfully";
-					}
-					throw new Error("Failed to reorder lessons");
-				},
-				error: () => {
-					setItems(previousItems);
-					return "Failed to reorder lessons";
+		const reorderLessonsPromise = () =>
+			reorderLessons({
+				data: {
+					chapterId,
+					lessonArray: lessonsToUpdate,
+					courseId: course.id,
 				},
 			});
 
-			await router.invalidate();
-		}
+		toast.promise(reorderLessonsPromise, {
+			loading: "Reordering lessons...",
+			success: (result) => {
+				if (result.updated) {
+					return "Lessons reordered successfully";
+				}
+				throw new Error("Failed to reorder lessons");
+			},
+			error: () => {
+				setItems(previousItems);
+				return "Failed to reorder lessons";
+			},
+		});
 
-		return;
+		await router.invalidate();
 	};
 
 	const handleDragEnd = (event: DragEndEvent) => {
