@@ -1,4 +1,4 @@
-// oxlint-disable shadcn/no-restyle anti-slop/require-safety-comment-for-type-assertion
+// oxlint-disable shadcn/no-restyle
 import {
 	DndContext,
 	KeyboardSensor,
@@ -7,9 +7,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import type { DragEndEvent } from "@dnd-kit/core";
 import {
-	arrayMove,
 	SortableContext,
 	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
@@ -21,9 +19,8 @@ import {
 	IconGripVertical,
 	IconTrash,
 } from "@tabler/icons-react";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -38,16 +35,17 @@ import {
 	CollapsibleTrigger,
 } from "#/components/ui/collapsible.tsx";
 import type { getCourse } from "#/features/courses/functions/index.ts";
-import { reorderLessons } from "#/features/courses/functions/index.ts";
 
 import { SortableItem } from "./sortable-item";
+import type { CourseStructureItem } from "./use-course-reorder";
+import { useCourseReorder } from "./use-course-reorder";
 
 interface CourseStructureProps {
 	course: Awaited<ReturnType<typeof getCourse>>;
 }
 
 export const CourseStructure = ({ course }: CourseStructureProps) => {
-	const initialItems =
+	const initialItems: CourseStructureItem[] =
 		course.chapters.map((chapter) => ({
 			id: chapter.id,
 			title: chapter.title,
@@ -62,7 +60,7 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 		})) || [];
 
 	const [items, setItems] = useState(initialItems);
-	const router = useRouter();
+	const { handleDragEnd } = useCourseReorder(items, setItems, course.id);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -70,147 +68,6 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 			coordinateGetter: sortableKeyboardCoordinates,
 		})
 	);
-
-	const handleLessonDrop = async (
-		active: DragEndEvent["active"],
-		over: NonNullable<DragEndEvent["over"]>
-	) => {
-		const chapterId = active.data.current?.chapterId as string | undefined;
-		const overChapterId = over.data.current?.chapterId as string | undefined;
-
-		if (!chapterId || chapterId !== overChapterId) {
-			toast.error(
-				"Lesson move between different chapters or invalid chapterId is not allowed."
-			);
-			return;
-		}
-
-		const chapterIndex = items.findIndex((chapter) => chapter.id === chapterId);
-
-		if (chapterIndex === -1) {
-			toast.error("Could not find chapter for lesson");
-			return;
-		}
-
-		const chapterToUpdate = items[chapterIndex];
-
-		const oldLessonIndex = chapterToUpdate.lessons.findIndex(
-			(lesson) => lesson.id === active.id
-		);
-		const newLessonIndex = chapterToUpdate.lessons.findIndex(
-			(lesson) => lesson.id === over.id
-		);
-
-		if (oldLessonIndex === -1 || newLessonIndex === -1) {
-			toast.error("Could not find lesson for reordering");
-			return;
-		}
-
-		const reorderedLessons = arrayMove(
-			chapterToUpdate.lessons,
-			oldLessonIndex,
-			newLessonIndex
-		);
-
-		const updatedLessonForState = reorderedLessons.map((lesson, index) => ({
-			...lesson,
-			order: index + 1,
-		}));
-
-		const newItems = [...items];
-		newItems[chapterIndex] = {
-			...chapterToUpdate,
-			lessons: updatedLessonForState,
-		};
-
-		const previousItems = [...items];
-
-		setItems(newItems);
-
-		const lessonsToUpdate = updatedLessonForState.map((lesson) => ({
-			id: lesson.id,
-			position: lesson.order,
-		}));
-
-		const reorderLessonsPromise = () =>
-			reorderLessons({
-				data: {
-					chapterId,
-					lessonArray: lessonsToUpdate,
-					courseId: course.id,
-				},
-			});
-
-		toast.promise(reorderLessonsPromise, {
-			loading: "Reordering lessons...",
-			success: (result) => {
-				if (result.updated) {
-					return "Lessons reordered successfully";
-				}
-				throw new Error("Failed to reorder lessons");
-			},
-			error: () => {
-				setItems(previousItems);
-				return "Failed to reorder lessons";
-			},
-		});
-
-		await router.invalidate();
-	};
-
-	const handleDragEnd = (event: DragEndEvent) => {
-		const { active, over } = event;
-
-		if (!over || active.id === over.id) {
-			return;
-		}
-
-		const activeId = active.id;
-		const overId = over.id;
-		const activeType = active.data.current?.type as "chapter" | "lesson";
-		const overType = over.data.current?.type as "chapter" | "lesson";
-
-		if (activeType === "chapter") {
-			let targetChapterId = null;
-
-			if (overType === "chapter") {
-				targetChapterId = overId;
-			} else if (overType === "lesson") {
-				targetChapterId = over.data.current?.chapterId ?? null;
-			}
-
-			if (!targetChapterId) {
-				toast.error("Could not determine the chapter for reordering.");
-				return;
-			}
-
-			const oldIndex = items.findIndex((item) => item.id === activeId);
-			const newIndex = items.findIndex((item) => item.id === targetChapterId);
-
-			if (oldIndex === -1 || newIndex === -1) {
-				toast.error("Could not find chapter old/new index for reordering.");
-				return;
-			}
-
-			const reorderedLocalChapters = arrayMove(items, oldIndex, newIndex);
-
-			const updatedChaptersForState = reorderedLocalChapters.map(
-				(chapter, index) => ({
-					...chapter,
-					order: index + 1,
-				})
-			);
-
-			const previousItems = [...items];
-
-			setItems(updatedChaptersForState);
-			return;
-		}
-
-		if (activeType === "lesson" && overType === "lesson") {
-			void handleLessonDrop(active, over);
-		}
-	};
 
 	const toggleChapter = (chapterId: string) => {
 		setItems(
