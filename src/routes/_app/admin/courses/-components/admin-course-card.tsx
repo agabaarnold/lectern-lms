@@ -16,7 +16,6 @@ import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
