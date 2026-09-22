@@ -73,7 +73,17 @@ export const reorderLessonSchema = z.object({
 	chapterId: z.uuid(),
 	courseId: z.uuid(),
 	lessonArray: z
-		.array(z.object({ id: z.uuid(), position: z.number().int().min(0) }))
+		// Min can't be 0 since we reorder everything to begin indexing from 1
+		.array(z.object({ id: z.uuid(), position: z.number().int().min(1) }))
 		.min(1, { error: "Provide at least one lesson to reorder" }),
 });
 export type ReorderLessonInput = z.input<typeof reorderLessonSchema>;
+
+export const reorderChaptersSchema = z.object({
+	courseId: z.uuid(),
+	chaptersArray: z
+		// Min can't be 0 since we reorder everything to begin indexing from 1
+		.array(z.object({ id: z.uuid(), position: z.number().int().min(1) }))
+		.min(1, { error: "Provide at least one chapter to reorder" }),
+});
+export type ReorderChaptersInput = z.input<typeof reorderChaptersSchema>;
