@@ -1,8 +1,8 @@
-// oxlint-disable anti-slop/require-safety-comment-for-type-assertion
-import type { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/react";
+import { isSortable } from "@dnd-kit/react/sortable";
 import { useRouter } from "@tanstack/react-router";
 import type { Dispatch, SetStateAction } from "react";
+import { useRef } from "react";
 import { toast } from "react-hot-toast";
 
 import {
@@ -31,21 +31,13 @@ export const useCourseReorder = (
 	courseId: string
 ) => {
 	const router = useRouter();
+	const snapshot = useRef(items);
 
-	const handleLessonDrop = async (
-		active: DragEndEvent["active"],
-		over: NonNullable<DragEndEvent["over"]>
+	const persistLessonOrder = async (
+		chapterId: string,
+		initialIndex: number,
+		index: number
 	) => {
-		const chapterId = active.data.current?.chapterId as string | undefined;
-		const overChapterId = over.data.current?.chapterId as string | undefined;
-
-		if (!chapterId || chapterId !== overChapterId) {
-			toast.error(
-				"Lesson move between different chapters or invalid chapterId is not allowed."
-			);
-			return;
-		}
-
 		const chapterIndex = items.findIndex((chapter) => chapter.id === chapterId);
 
 		if (chapterIndex === -1) {
@@ -54,28 +46,13 @@ export const useCourseReorder = (
 		}
 
 		const chapterToUpdate = items[chapterIndex];
+		const reorderedLessons = [...chapterToUpdate.lessons];
+		const [movedLesson] = reorderedLessons.splice(initialIndex, 1);
+		reorderedLessons.splice(index, 0, movedLesson);
 
-		const oldLessonIndex = chapterToUpdate.lessons.findIndex(
-			(lesson) => lesson.id === active.id
-		);
-		const newLessonIndex = chapterToUpdate.lessons.findIndex(
-			(lesson) => lesson.id === over.id
-		);
-
-		if (oldLessonIndex === -1 || newLessonIndex === -1) {
-			toast.error("Could not find lesson for reordering");
-			return;
-		}
-
-		const reorderedLessons = arrayMove(
-			chapterToUpdate.lessons,
-			oldLessonIndex,
-			newLessonIndex
-		);
-
-		const updatedLessonForState = reorderedLessons.map((lesson, index) => ({
+		const updatedLessonForState = reorderedLessons.map((lesson, position) => ({
 			...lesson,
-			order: index + 1,
+			order: position + 1,
 		}));
 
 		const newItems = [...items];
@@ -117,39 +94,15 @@ export const useCourseReorder = (
 		await router.invalidate();
 	};
 
-	const handleChapterDrop = async (
-		active: DragEndEvent["active"],
-		over: NonNullable<DragEndEvent["over"]>
-	) => {
-		const overType = over.data.current?.type as "chapter" | "lesson";
+	const persistChapterOrder = async (initialIndex: number, index: number) => {
+		const reorderedChapters = [...items];
+		const [movedChapter] = reorderedChapters.splice(initialIndex, 1);
+		reorderedChapters.splice(index, 0, movedChapter);
 
-		let targetChapterId = null;
-
-		if (overType === "chapter") {
-			targetChapterId = over.id;
-		} else if (overType === "lesson") {
-			targetChapterId = over.data.current?.chapterId ?? null;
-		}
-
-		if (!targetChapterId) {
-			toast.error("Could not determine the chapter for reordering.");
-			return;
-		}
-
-		const oldIndex = items.findIndex((item) => item.id === active.id);
-		const newIndex = items.findIndex((item) => item.id === targetChapterId);
-
-		if (oldIndex === -1 || newIndex === -1) {
-			toast.error("Could not find chapter old/new index for reordering.");
-			return;
-		}
-
-		const reorderedLocalChapters = arrayMove(items, oldIndex, newIndex);
-
-		const updatedChaptersForState = reorderedLocalChapters.map(
-			(chapter, index) => ({
+		const updatedChaptersForState = reorderedChapters.map(
+			(chapter, position) => ({
 				...chapter,
-				order: index + 1,
+				order: position + 1,
 			})
 		);
 
@@ -182,25 +135,59 @@ export const useCourseReorder = (
 		await router.invalidate();
 	};
 
+	const handleDragStart = (_event: DragStartEvent) => {
+		snapshot.current = items;
+	};
+
 	const handleDragEnd = (event: DragEndEvent) => {
-		const { active, over } = event;
-
-		if (!over || active.id === over.id) {
+		if (event.canceled) {
+			setItems(snapshot.current);
 			return;
 		}
 
-		const activeType = active.data.current?.type as "chapter" | "lesson";
-		const overType = over.data.current?.type as "chapter" | "lesson";
+		const { source } = event.operation;
 
-		if (activeType === "chapter") {
-			void handleChapterDrop(active, over);
+		if (!isSortable(source)) {
 			return;
 		}
 
-		if (activeType === "lesson" && overType === "lesson") {
-			void handleLessonDrop(active, over);
+		if (source.type === "chapter") {
+			if (source.initialIndex === source.index) {
+				return;
+			}
+
+			void persistChapterOrder(source.initialIndex, source.index);
+			return;
+		}
+
+		if (source.type === "lesson") {
+			const { group, initialGroup } = source;
+
+			if (group === undefined || initialGroup === undefined) {
+				return;
+			}
+
+			const targetChapter = items.find((chapter) => chapter.id === group);
+
+			if (!targetChapter || initialGroup !== group) {
+				toast.error(
+					"Lesson move between different chapters or invalid chapterId is not allowed."
+				);
+				setItems(snapshot.current);
+				return;
+			}
+
+			if (source.initialIndex === source.index) {
+				return;
+			}
+
+			void persistLessonOrder(
+				targetChapter.id,
+				source.initialIndex,
+				source.index
+			);
 		}
 	};
 
-	return { handleDragEnd };
+	return { handleDragEnd, handleDragStart };
 };

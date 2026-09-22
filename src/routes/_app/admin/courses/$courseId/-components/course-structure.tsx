@@ -1,17 +1,6 @@
-// oxlint-disable shadcn/no-restyle
-import {
-	DndContext,
-	KeyboardSensor,
-	PointerSensor,
-	rectIntersection,
-	useSensor,
-	useSensors,
-} from "@dnd-kit/core";
-import {
-	SortableContext,
-	sortableKeyboardCoordinates,
-	verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+// oxlint-disable shadcn/no-restyle react/set-state-in-effect
+import { DragDropProvider } from "@dnd-kit/react";
+import type { UseSortableInput } from "@dnd-kit/react/sortable";
 import {
 	IconChevronDown,
 	IconChevronRight,
@@ -44,6 +33,16 @@ interface CourseStructureProps {
 	course: Awaited<ReturnType<typeof getCourse>>;
 }
 
+type LessonAcceptPredicate = Extract<
+	UseSortableInput["accept"],
+	(source: never) => boolean
+>;
+
+const acceptLessonFromChapter =
+	(chapterId: string): LessonAcceptPredicate =>
+	(source) =>
+		source.type === "lesson" && "group" in source && source.group === chapterId;
+
 export const CourseStructure = ({ course }: CourseStructureProps) => {
 	const initialItems: CourseStructureItem[] =
 		course.chapters.map((chapter) => ({
@@ -60,7 +59,7 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 		})) || [];
 
 	const [items, setItems] = useState(initialItems);
-	
+
 	// Keep state in sync
 	useEffect(() => {
 		setItems((prevItems) => {
@@ -82,13 +81,10 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 		});
 	}, [course]);
 
-		const { handleDragEnd } = useCourseReorder(items, setItems, course.id);
-
-	const sensors = useSensors(
-		useSensor(PointerSensor),
-		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates,
-		})
+	const { handleDragEnd, handleDragStart } = useCourseReorder(
+		items,
+		setItems,
+		course.id
 	);
 
 	const toggleChapter = (chapterId: string) => {
@@ -102,131 +98,125 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 	};
 
 	return (
-		<DndContext
-			collisionDetection={rectIntersection}
-			onDragEnd={handleDragEnd}
-			sensors={sensors}
-		>
+		<DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
 			<Card>
 				<CardHeader className="border-border flex flex-row items-center justify-between border-b">
 					<CardTitle>Chapters</CardTitle>
 				</CardHeader>
 
 				<CardContent className="space-y-8">
-					<SortableContext items={items} strategy={verticalListSortingStrategy}>
-						{items.map((item) => (
-							<SortableItem
-								data={{ type: "chapter" }}
-								id={item.id}
-								key={item.id}
-							>
-								{(listeners) => (
-									<Card>
-										<Collapsible
-											open={item.isOpen}
-											onOpenChange={() => toggleChapter(item.id)}
-										>
-											<div className="border-border flex items-center justify-between border-b p-3">
-												<div className="flex items-center gap-2">
-													<Button
-														className="flex items-center"
-														size="icon"
-														type="button"
-														variant="ghost"
-														{...listeners}
-													>
-														<IconGripVertical className="size-4" />
-													</Button>
-
-													<CollapsibleTrigger
-														render={
-															<Button
-																className="flex items-center"
-																size="icon"
-																type="button"
-																variant="ghost"
-															>
-																{item.isOpen ? (
-																	<IconChevronDown className="size-4" />
-																) : (
-																	<IconChevronRight className="size-4" />
-																)}
-															</Button>
-														}
-													/>
-
-													<p className="hover:text-primary cursor-pointer">
-														{item.title}
-													</p>
-												</div>
-
-												<Button size="icon" type="button" variant="outline">
-													<IconTrash className="size-4" />
+					{items.map((item, chapterIndex) => (
+						<SortableItem
+							accept="chapter"
+							id={item.id}
+							index={chapterIndex}
+							key={item.id}
+							type="chapter"
+						>
+							{(handleRef) => (
+								<Card>
+									<Collapsible
+										open={item.isOpen}
+										onOpenChange={() => toggleChapter(item.id)}
+									>
+										<div className="border-border flex items-center justify-between border-b p-3">
+											<div className="flex items-center gap-2">
+												<Button
+													className="flex items-center"
+													ref={handleRef}
+													size="icon"
+													type="button"
+													variant="ghost"
+												>
+													<IconGripVertical className="size-4" />
 												</Button>
+
+												<CollapsibleTrigger
+													render={
+														<Button
+															className="flex items-center"
+															size="icon"
+															type="button"
+															variant="ghost"
+														>
+															{item.isOpen ? (
+																<IconChevronDown className="size-4" />
+															) : (
+																<IconChevronRight className="size-4" />
+															)}
+														</Button>
+													}
+												/>
+
+												<p className="hover:text-primary cursor-pointer">
+													{item.title}
+												</p>
 											</div>
 
-											<CollapsibleContent>
-												<div className="p-1">
-													<SortableContext
-														items={item.lessons.map((lesson) => lesson.id)}
-														strategy={verticalListSortingStrategy}
+											<Button size="icon" type="button" variant="outline">
+												<IconTrash className="size-4" />
+											</Button>
+										</div>
+
+										<CollapsibleContent>
+											<div className="p-1">
+												{item.lessons.map((lesson, lessonIndex) => (
+													<SortableItem
+														accept={acceptLessonFromChapter(item.id)}
+														group={item.id}
+														id={lesson.id}
+														index={lessonIndex}
+														key={lesson.id}
+														type="lesson"
 													>
-														{item.lessons.map((lesson) => (
-															<SortableItem
-																key={lesson.id}
-																id={lesson.id}
-																data={{ type: "lesson", chapterId: item.id }}
-															>
-																{(lessonListeners) => (
-																	<div className="hover:bg-accent flex items-center justify-between rounded-sm p-2">
-																		<div className="flex items-center gap-2">
-																			<Button
-																				size="icon"
-																				type="button"
-																				variant="ghost"
-																				{...lessonListeners}
-																			>
-																				<IconGripVertical className="size-4" />
-																			</Button>
+														{(lessonHandleRef) => (
+															<div className="hover:bg-accent flex items-center justify-between rounded-sm p-2">
+																<div className="flex items-center gap-2">
+																	<Button
+																		ref={lessonHandleRef}
+																		size="icon"
+																		type="button"
+																		variant="ghost"
+																	>
+																		<IconGripVertical className="size-4" />
+																	</Button>
 
-																			<IconFileText className="size-4" />
+																	<IconFileText className="size-4" />
 
-																			<Link
-																				to="/admin/courses/$courseId/$categoryId/$lessonId"
-																				params={{
-																					courseId: course.id,
-																					categoryId: item.id,
-																					lessonId: lesson.id,
-																				}}
-																			>
-																				{lesson.title}
-																			</Link>
-																		</div>
+																	<Link
+																		to="/admin/courses/$courseId/$categoryId/$lessonId"
+																		params={{
+																			courseId: course.id,
+																			categoryId: item.id,
+																			lessonId: lesson.id,
+																		}}
+																	>
+																		{lesson.title}
+																	</Link>
+																</div>
 
-																		<Button size="icon" variant="outline">
-																			<IconTrash className="size-4" />
-																		</Button>
-																	</div>
-																)}
-															</SortableItem>
-														))}
-													</SortableContext>
+																<Button size="icon" variant="outline">
+																	<IconTrash className="size-4" />
+																</Button>
+															</div>
+														)}
+													</SortableItem>
+												))}
 
-													<div className="p-2">
-														<Button className="w-full" variant="outline">
-															Create New Lesson
-														</Button>
-													</div>
+												<div className="p-2">
+													<Button className="w-full" variant="outline">
+														Create New Lesson
+													</Button>
 												</div>
-											</CollapsibleContent>
-										</Collapsible>
-									</Card>
-								)}
-							</SortableItem>
-						))}
-					</SortableContext>
+											</div>
+										</CollapsibleContent>
+									</Collapsible>
+								</Card>
+							)}
+						</SortableItem>
+					))}
 				</CardContent>
 			</Card>
-		</DndContext>
+		</DragDropProvider>
 	);
 };
