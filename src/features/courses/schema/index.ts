@@ -68,3 +68,14 @@ export const updateCourseSchema = courseSchema
 		error: "Provide at least one field to update",
 	});
 export type UpdateCourseInput = z.input<typeof updateCourseSchema>;
+
+export const reorderLessonSchema = z.object({
+	chapterId: z.uuid(),
+	courseId: z.uuid(),
+	lessonArray: z
+		.array(
+			z.object({ id: z.uuid(), position: z.number().int().min(0) })
+		)
+		.min(1, { error: "Provide at least one lesson to reorder" }),
+});
+export type ReorderLessonInput = z.input<typeof reorderLessonSchema>;
