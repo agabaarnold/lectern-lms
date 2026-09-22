@@ -20,7 +20,7 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -60,7 +60,29 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 		})) || [];
 
 	const [items, setItems] = useState(initialItems);
-	const { handleDragEnd } = useCourseReorder(items, setItems, course.id);
+	
+	// Keep state in sync
+	useEffect(() => {
+		setItems((prevItems) => {
+			const updatedItems =
+				course.chapters.map((chapter) => ({
+					id: chapter.id,
+					title: chapter.title,
+					order: chapter.position,
+					isOpen:
+						prevItems.find((item) => item.id === chapter.id)?.isOpen ?? true,
+					lessons: chapter.lessons.map((lesson) => ({
+						id: lesson.id,
+						title: lesson.title,
+						order: lesson.position,
+					})),
+				})) || [];
+
+			return updatedItems;
+		});
+	}, [course]);
+
+		const { handleDragEnd } = useCourseReorder(items, setItems, course.id);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
