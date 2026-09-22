@@ -1,17 +1,18 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { EmptyFilter, eq } from "drizzle-orm";
+import { and, EmptyFilter, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "#/db/index.ts";
-import { courses } from "#/db/schema/lms.schema.ts";
+import { courses, lessons } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
 import {
 	courseIdSchema,
 	courseSchema,
 	getCoursesQuerySchema,
+	reorderLessonSchema,
 	updateCourseSchema,
 } from "../schema";
 
@@ -172,4 +173,57 @@ export const deleteCourse = createServerFn({ method: "POST" })
 		}
 
 		return course;
+	});
+
+export const reorderLessons = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(reorderLessonSchema)
+	.handler(async ({ data }) => {
+		const { chapterId, courseId, lessonArray } = data;
+
+		const chapter = await db.query.chapters.findFirst({
+			columns: { courseId: true, id: true },
+			where: { id: chapterId },
+		});
+
+		if (!chapter || chapter.courseId !== courseId) {
+			throw notFound();
+		}
+
+		const existingLessons = await db.query.lessons.findMany({
+			columns: { id: true },
+			where: { chapterId },
+		});
+		const existingIds = new Set(
+			existingLessons.map((lesson) => lesson.id)
+		);
+		const allBelongToChapter = lessonArray.every((lesson) =>
+			existingIds.has(lesson.id)
+		);
+
+		if (!allBelongToChapter) {
+			throw new Error("One or more lessons do not belong to this chapter");
+		}
+
+		try {
+			// neon-http has no interactive transactions, so issue the
+			// scoped updates as a batch instead of db.transaction().
+			await Promise.all(
+				lessonArray.map((lesson) =>
+					db
+						.update(lessons)
+						.set({ position: lesson.position })
+						.where(
+							and(
+								eq(lessons.id, lesson.id),
+								eq(lessons.chapterId, chapterId)
+							)
+						)
+				)
+			);
+		} catch (error) {
+			throw new Error("Failed to reorder lessons", { cause: error });
+		}
+
+		return { updated: lessonArray.length };
 	});
