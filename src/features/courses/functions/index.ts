@@ -245,9 +245,7 @@ export const reorderChapters = createServerFn({ method: "POST" })
 			columns: { id: true },
 			where: { courseId },
 		});
-		const existingIds = new Set(
-			existingChapters.map((chapter) => chapter.id)
-		);
+		const existingIds = new Set(existingChapters.map((chapter) => chapter.id));
 		const allBelongToCourse = chaptersArray.every((chapter) =>
 			existingIds.has(chapter.id)
 		);
@@ -265,10 +263,7 @@ export const reorderChapters = createServerFn({ method: "POST" })
 						.update(chapters)
 						.set({ position: chapter.position })
 						.where(
-							and(
-								eq(chapters.id, chapter.id),
-								eq(chapters.courseId, courseId)
-							)
+							and(eq(chapters.id, chapter.id), eq(chapters.courseId, courseId))
 						)
 				)
 			);
