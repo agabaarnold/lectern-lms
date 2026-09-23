@@ -28,6 +28,7 @@ import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/ind
 import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
 import { Route as AppAdminCoursesCreateIndexRouteImport } from './routes/_app/admin/courses/create/index'
 import { Route as AppAdminCoursesCourseIdEditIndexRouteImport } from './routes/_app/admin/courses/$courseId/edit/index'
+import { Route as AppAdminCoursesCourseIdChapterIdLessonIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/$chapterId/$lessonId/index'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
@@ -124,6 +125,12 @@ const AppAdminCoursesCourseIdEditIndexRoute =
     path: '/courses/$courseId/edit/',
     getParentRoute: () => AppAdminRouteRoute,
   } as any)
+const AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute =
+  AppAdminCoursesCourseIdChapterIdLessonIdIndexRouteImport.update({
+    id: '/courses/$courseId/$chapterId/$lessonId/',
+    path: '/courses/$courseId/$chapterId/$lessonId/',
+    getParentRoute: () => AppAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
   '/admin/courses/create/': typeof AppAdminCoursesCreateIndexRoute
   '/admin/courses/$courseId/edit/': typeof AppAdminCoursesCourseIdEditIndexRoute
+  '/admin/courses/$courseId/$chapterId/$lessonId/': typeof AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
@@ -159,6 +167,7 @@ export interface FileRoutesByTo {
   '/admin/courses/$courseId': typeof AppAdminCoursesCourseIdIndexRoute
   '/admin/courses/create': typeof AppAdminCoursesCreateIndexRoute
   '/admin/courses/$courseId/edit': typeof AppAdminCoursesCourseIdEditIndexRoute
+  '/admin/courses/$courseId/$chapterId/$lessonId': typeof AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -181,6 +190,7 @@ export interface FileRoutesById {
   '/_app/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
   '/_app/admin/courses/create/': typeof AppAdminCoursesCreateIndexRoute
   '/_app/admin/courses/$courseId/edit/': typeof AppAdminCoursesCourseIdEditIndexRoute
+  '/_app/admin/courses/$courseId/$chapterId/$lessonId/': typeof AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/admin/courses/$courseId/'
     | '/admin/courses/create/'
     | '/admin/courses/$courseId/edit/'
+    | '/admin/courses/$courseId/$chapterId/$lessonId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/admin/courses/$courseId'
     | '/admin/courses/create'
     | '/admin/courses/$courseId/edit'
+    | '/admin/courses/$courseId/$chapterId/$lessonId'
   id:
     | '__root__'
     | '/_app'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/_app/admin/courses/$courseId/'
     | '/_app/admin/courses/create/'
     | '/_app/admin/courses/$courseId/edit/'
+    | '/_app/admin/courses/$courseId/$chapterId/$lessonId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -386,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminCoursesCourseIdEditIndexRouteImport
       parentRoute: typeof AppAdminRouteRoute
     }
+    '/_app/admin/courses/$courseId/$chapterId/$lessonId/': {
+      id: '/_app/admin/courses/$courseId/$chapterId/$lessonId/'
+      path: '/courses/$courseId/$chapterId/$lessonId'
+      fullPath: '/admin/courses/$courseId/$chapterId/$lessonId/'
+      preLoaderRoute: typeof AppAdminCoursesCourseIdChapterIdLessonIdIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
   }
 }
 
@@ -395,6 +415,7 @@ interface AppAdminRouteRouteChildren {
   AppAdminCoursesCourseIdIndexRoute: typeof AppAdminCoursesCourseIdIndexRoute
   AppAdminCoursesCreateIndexRoute: typeof AppAdminCoursesCreateIndexRoute
   AppAdminCoursesCourseIdEditIndexRoute: typeof AppAdminCoursesCourseIdEditIndexRoute
+  AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute: typeof AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute
 }
 
 const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
@@ -403,6 +424,8 @@ const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
   AppAdminCoursesCourseIdIndexRoute: AppAdminCoursesCourseIdIndexRoute,
   AppAdminCoursesCreateIndexRoute: AppAdminCoursesCreateIndexRoute,
   AppAdminCoursesCourseIdEditIndexRoute: AppAdminCoursesCourseIdEditIndexRoute,
+  AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute:
+    AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute,
 }
 
 const AppAdminRouteRouteWithChildren = AppAdminRouteRoute._addFileChildren(
