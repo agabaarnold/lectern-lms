@@ -70,3 +70,10 @@ export const updateCourseSchema = courseSchema
 		error: "Provide at least one field to update",
 	});
 export type UpdateCourseInput = z.input<typeof updateCourseSchema>;
+
+export const getIndividualCourseSchema = z.object({
+	slug: z.string({ error: "Slug is required" }),
+});
+export type GetIndividualCourseInput = z.input<
+	typeof getIndividualCourseSchema
+>;
