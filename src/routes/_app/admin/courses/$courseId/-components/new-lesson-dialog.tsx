@@ -62,7 +62,7 @@ export const NewLessonDialog = ({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogTrigger
 				render={
-					<Button size="sm" variant="outline">
+					<Button className="w-full" variant="outline">
 						<IconPlus className="size-4" /> New Lesson
 					</Button>
 				}
