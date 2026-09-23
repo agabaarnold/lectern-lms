@@ -27,7 +27,7 @@ import {
 	SidebarMenuItem,
 } from "#/components/ui/sidebar.tsx";
 
-import { Image } from "../shared/image";
+import { Logo } from "../shared/logo";
 
 const data = {
 	navMain: [
@@ -136,11 +136,7 @@ export const AppSidebar = ({
 						className="data-[slot=sidebar-menu-button]:p-1.5!"
 						render={
 							<Link to="/">
-								<Image
-									src="/logo.png"
-									alt="Logo"
-									className="size-5 rounded-xs dark:bg-white"
-								/>
+								<Logo className="size-5" />
 								<span className="text-base font-semibold">Lectern</span>
 							</Link>
 						}
