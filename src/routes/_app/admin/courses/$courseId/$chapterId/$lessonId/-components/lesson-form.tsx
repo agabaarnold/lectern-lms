@@ -67,7 +67,7 @@ export const LessonForm = ({
 		<div>
 			<Link
 				className={buttonVariants({ variant: "outline", className: "mb-6" })}
-				to="/admin/courses/$courseId"
+				to="/admin/courses/$courseId/edit"
 				params={{ courseId }}
 			>
 				<IconArrowLeft className="size-4" />
