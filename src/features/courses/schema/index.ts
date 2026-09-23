@@ -114,3 +114,10 @@ export const lessonSchema = z.object({
 	videoKey: z.string().optional(),
 });
 export type LessonInput = z.input<typeof lessonSchema>;
+
+export const deleteLessonSchema = z.object({
+	courseId: z.uuid({ error: courseIdError }),
+	chapterId: z.uuid({ error: chapterIdError }),
+	lessonId: z.uuid({ error: "Invalid lesson id" }),
+});
+export type DeleteLessonInput = z.input<typeof deleteLessonSchema>;
