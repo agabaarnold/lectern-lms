@@ -15,6 +15,7 @@ import {
 	deleteChapterSchema,
 	deleteLessonSchema,
 	getCoursesQuerySchema,
+	lessonIdSchema,
 	lessonSchema,
 	reorderChaptersSchema,
 	reorderLessonSchema,
@@ -118,6 +119,31 @@ export const getCourse = createServerFn({ method: "GET" })
 		}
 
 		return course;
+	});
+
+export const getLesson = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.validator(lessonIdSchema)
+	.handler(async ({ data }) => {
+		const lesson = await db.query.lessons.findFirst({
+			where: { id: data.id },
+			with: {
+				chapter: {
+					columns: { courseId: true, id: true, title: true },
+					with: {
+						course: {
+							columns: { id: true, title: true },
+						},
+					},
+				},
+			},
+		});
+
+		if (!lesson) {
+			throw notFound();
+		}
+
+		return lesson;
 	});
 
 export const updateCourse = createServerFn({ method: "POST" })
