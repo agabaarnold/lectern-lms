@@ -121,3 +121,9 @@ export const deleteLessonSchema = z.object({
 	lessonId: z.uuid({ error: "Invalid lesson id" }),
 });
 export type DeleteLessonInput = z.input<typeof deleteLessonSchema>;
+
+export const deleteChapterSchema = z.object({
+	courseId: z.uuid({ error: courseIdError }),
+	chapterId: z.uuid({ error: chapterIdError }),
+});
+export type DeleteChapterInput = z.input<typeof deleteChapterSchema>;
