@@ -69,7 +69,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				<ThemeProvider>
 					<TooltipProvider>{children}</TooltipProvider>
-					<Toaster position="bottom-right" />
+					<Toaster
+						position="bottom-right"
+						toastOptions={{
+							style: {
+								background: "var(--popover)",
+								color: "var(--popover-foreground)",
+								border: "1px solid var(--border)",
+								borderRadius: "var(--radius)",
+							},
+							success: {
+								iconTheme: {
+									primary: "var(--primary)",
+									secondary: "var(--primary-foreground)",
+								},
+							},
+							error: {
+								iconTheme: {
+									primary: "var(--destructive)",
+									secondary: "var(--destructive-foreground)",
+								},
+							},
+						}}
+					/>
 				</ThemeProvider>
 
 				<TanStackDevtools
