@@ -12,6 +12,7 @@ import {
 	chapterSchema,
 	courseIdSchema,
 	courseSchema,
+	deleteChapterSchema,
 	deleteLessonSchema,
 	getCoursesQuerySchema,
 	lessonSchema,
@@ -419,4 +420,61 @@ export const deleteLesson = createServerFn({ method: "POST" })
 		}
 
 		return { deleted: data.lessonId };
+	});
+
+export const deleteChapter = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(deleteChapterSchema)
+	.handler(async ({ data }) => {
+		const courseWithChapters = await db.query.courses.findFirst({
+			where: { id: data.courseId },
+			with: { chapters: { orderBy: { position: "desc" } } },
+		});
+		if (!courseWithChapters) {
+			throw notFound();
+		}
+
+		const { chapters: allChapters } = courseWithChapters;
+
+		const chapterToDelete = allChapters.find(
+			(chapter) => chapter.id === data.chapterId
+		);
+		if (!chapterToDelete) {
+			throw notFound();
+		}
+
+		try {
+			const remainingChapters = allChapters.filter(
+				(chapter) => chapter.id !== data.chapterId
+			);
+
+			const renumber = remainingChapters.map((chapter, index) =>
+				db
+					.update(chapters)
+					.set({
+						position: index + 1,
+					})
+					.where(eq(chapters.id, chapter.id))
+			);
+
+			// neon-http has no interactive transactions, so issue the
+			// scoped delete and renumbering as a batch instead of
+			// db.transaction(). Lessons belonging to the deleted chapter
+			// are removed by the foreign key cascade.
+			await Promise.all([
+				...renumber,
+				db
+					.delete(chapters)
+					.where(
+						and(
+							eq(chapters.id, data.chapterId),
+							eq(chapters.courseId, data.courseId)
+						)
+					),
+			]);
+		} catch (error) {
+			throw new Error("Failed to delete chapter", { cause: error });
+		}
+
+		return { deleted: data.chapterId };
 	});
