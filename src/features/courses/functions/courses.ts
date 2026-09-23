@@ -12,6 +12,7 @@ import {
 	courseIdSchema,
 	courseSchema,
 	getCoursesQuerySchema,
+	getIndividualCourseSchema,
 	updateCourseSchema,
 } from "../schema/courses";
 import { COURSE_NOT_FOUND_MESSAGE } from "./shared";
@@ -179,6 +180,7 @@ export const deleteCourse = createServerFn({ method: "POST" })
 		return course;
 	});
 
+// Not protected for pulic course route
 export const getAllCourses = createServerFn({ method: "GET" }).handler(
 	async () => {
 		const data = await db.query.courses.findMany({
@@ -197,6 +199,43 @@ export const getAllCourses = createServerFn({ method: "GET" }).handler(
 			orderBy: { createdAt: "desc" },
 		});
 
-		return data
+		return data;
 	}
 );
+
+export const getIndividualCourse = createServerFn({ method: "GET" })
+	.validator(getIndividualCourseSchema)
+	.handler(async ({ data }) => {
+		const course = await db.query.courses.findFirst({
+			where: { slug: data.slug },
+			columns: {
+				title: true,
+				price: true,
+				smallDescription: true,
+				slug: true,
+				fileKey: true,
+				id: true,
+				level: true,
+				duration: true,
+				category: true,
+			},
+			with: {
+				chapters: {
+					columns: { id: true, title: true },
+					orderBy: { position: "asc" },
+					with: {
+						lessons: {
+							columns: { id: true, title: true },
+							orderBy: { position: "asc" },
+						},
+					},
+				},
+			},
+		});
+
+		if(!course) {
+			throw notFound()
+		}
+
+		return course;
+	});
