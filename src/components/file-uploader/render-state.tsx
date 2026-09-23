@@ -66,7 +66,7 @@ export const RenderUploadedState = ({
 	handleRemoveFile: () => void;
 	fileType: "image" | "video";
 }) => (
-	<div>
+	<div className="group relative flex h-full w-full items-center justify-center">
 		{fileType === "image" ? (
 			<Image
 				className="object-contain p-2"
