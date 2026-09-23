@@ -85,11 +85,11 @@ export const LessonForm = ({
 							</form.AppField>
 
 							<form.AppField name="thumbnailKey">
-								{(field) => <field.FormFileUploader label="Thumbnail image" />}
+								{(field) => <field.FormFileUploader label="Thumbnail image" fileType="image" />}
 							</form.AppField>
 
 							<form.AppField name="videoKey">
-								{(field) => <field.FormFileUploader label="Video file" />}
+								{(field) => <field.FormFileUploader label="Video file" fileType="video" />}
 							</form.AppField>
 
 							<form.AppForm>
