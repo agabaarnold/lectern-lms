@@ -25,6 +25,7 @@ import {
 } from "#/components/ui/collapsible.tsx";
 import type { getCourse } from "#/features/courses/functions/index.ts";
 
+import { NewChapterDialog } from "./new-chapter-dialog";
 import { SortableItem } from "./sortable-item";
 import type { CourseStructureItem } from "./use-course-reorder";
 import { useCourseReorder } from "./use-course-reorder";
@@ -102,6 +103,8 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 			<Card>
 				<CardHeader className="border-border flex flex-row items-center justify-between border-b">
 					<CardTitle>Chapters</CardTitle>
+
+					<NewChapterDialog courseId={course.id} />
 				</CardHeader>
 
 				<CardContent className="space-y-8">
