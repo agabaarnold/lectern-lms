@@ -4,6 +4,7 @@ import { Await, createFileRoute } from "@tanstack/react-router";
 import { getAllCourses } from "#/features/courses/functions/courses.ts";
 
 import { PublicCourseCard } from "../-components/public-course-card";
+import { PublicCoursesLoadingGrid } from "../-components/public-courses-loading-grid";
 
 export const Route = createFileRoute("/_public/courses/")({
 	loader: () => ({ courses: getAllCourses() }),
@@ -26,7 +27,7 @@ function CoursesPage() {
 				</p>
 			</div>
 
-			<Await promise={courses}>
+			<Await fallback={<PublicCoursesLoadingGrid />} promise={courses}>
 				{(resolvedCourses) => (
 					<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{resolvedCourses.map((course) => (
