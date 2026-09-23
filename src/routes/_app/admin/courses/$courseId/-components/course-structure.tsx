@@ -27,6 +27,7 @@ import type { getCourse } from "#/features/courses/functions/index.ts";
 
 import { NewChapterDialog } from "../edit/-components/new-chapter-dialog";
 import { NewLessonDialog } from "../edit/-components/new-lesson-dialog";
+import { DeleteLesson } from "./delete-lesson";
 import { SortableItem } from "./sortable-item";
 import type { CourseStructureItem } from "./use-course-reorder";
 import { useCourseReorder } from "./use-course-reorder";
@@ -199,9 +200,11 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 																	</Link>
 																</div>
 
-																<Button size="icon" variant="outline">
-																	<IconTrash className="size-4" />
-																</Button>
+																<DeleteLesson
+																	chapterId={item.id}
+																	courseId={course.id}
+																	lessonId={lesson.id}
+																/>
 															</div>
 														)}
 													</SortableItem>
