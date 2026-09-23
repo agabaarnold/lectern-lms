@@ -286,6 +286,7 @@ export const Uploader = ({
 					previewUrl={fileState.objectUrl}
 					handleRemoveFile={handleRemoveFile}
 					isDeleting={fileState.isDeleting}
+					fileType={fileState.fileType}
 				/>
 			);
 		}
