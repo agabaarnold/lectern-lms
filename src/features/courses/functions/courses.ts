@@ -178,3 +178,25 @@ export const deleteCourse = createServerFn({ method: "POST" })
 
 		return course;
 	});
+
+export const getAllCoureses = createServerFn({ method: "GET" }).handler(
+	async () => {
+		const data = await db.query.courses.findMany({
+			where: { status: "Published" },
+			columns: {
+				title: true,
+				price: true,
+				smallDescription: true,
+				slug: true,
+				fileKey: true,
+				id: true,
+				level: true,
+				duration: true,
+				category: true,
+			},
+			orderBy: { createdAt: "desc" },
+		});
+
+		return { courses: data };
+	}
+);
