@@ -1,6 +1,7 @@
 import { IconArrowLeft } from "@tabler/icons-react";
 import { revalidateLogic } from "@tanstack/react-form-start";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
+import { toast } from "react-hot-toast";
 
 import { buttonVariants } from "#/components/ui/button.tsx";
 import {
@@ -12,8 +13,11 @@ import {
 } from "#/components/ui/card.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
 import type { getLesson } from "#/features/courses/functions/lessons.ts";
-import type { LessonInput } from "#/features/courses/schema/lessons.ts";
+import { updateLesson } from "#/features/courses/functions/lessons.ts";
+import { updateLessonSchema } from "#/features/courses/schema/lessons.ts";
+import type { UpdateLessonInput } from "#/features/courses/schema/lessons.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
+import { tryCatch } from "#/lib/try-catch.ts";
 
 interface LessonFormProps {
 	lesson: Awaited<ReturnType<typeof getLesson>>;
@@ -26,7 +30,10 @@ export const LessonForm = ({
 	courseId,
 	lesson,
 }: LessonFormProps) => {
-	const defaultValues: LessonInput = {
+	const router = useRouter();
+
+	const defaultValues: UpdateLessonInput = {
+		id: lesson.id,
 		name: lesson.title,
 		chapterId,
 		courseId,
@@ -37,10 +44,22 @@ export const LessonForm = ({
 
 	const form = useAppForm({
 		defaultValues,
+		onSubmit: async ({ value }) => {
+			const { error } = await tryCatch(updateLesson({ data: value }));
+
+			if (error) {
+				toast.error(error.message ?? "Failed to update lesson");
+				return;
+			}
+
+			toast.success("Lesson updated successfully");
+			await router.invalidate();
+		},
 		validationLogic: revalidateLogic({
 			mode: "submit",
 			modeAfterSubmission: "blur",
 		}),
+		validators: { onSubmit: updateLessonSchema },
 	});
 
 	return (
@@ -81,15 +100,22 @@ export const LessonForm = ({
 							</form.AppField>
 
 							<form.AppField name="description">
-								{(field) => <field.FormEditor label="Desscription" />}
+								{(field) => <field.FormEditor label="Description" />}
 							</form.AppField>
 
 							<form.AppField name="thumbnailKey">
-								{(field) => <field.FormFileUploader label="Thumbnail image" fileType="image" />}
+								{(field) => (
+									<field.FormFileUploader
+										label="Thumbnail image"
+										fileType="image"
+									/>
+								)}
 							</form.AppField>
 
 							<form.AppField name="videoKey">
-								{(field) => <field.FormFileUploader label="Video file" fileType="video" />}
+								{(field) => (
+									<field.FormFileUploader label="Video file" fileType="video" />
+								)}
 							</form.AppField>
 
 							<form.AppForm>

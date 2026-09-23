@@ -12,6 +12,7 @@ import {
 	lessonIdSchema,
 	lessonSchema,
 	reorderLessonSchema,
+	updateLessonSchema,
 } from "../schema/lessons";
 import {
 	CHAPTER_NOT_FOUND_MESSAGE,
@@ -200,4 +201,62 @@ export const deleteLesson = createServerFn({ method: "POST" })
 		}
 
 		return { deleted: data.lessonId };
+	});
+
+export const updateLesson = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(updateLessonSchema)
+	.handler(async ({ data }) => {
+		const { id, courseId, chapterId, name, ...rest } = data;
+
+		const lesson = await db.query.lessons.findFirst({
+			where: { id },
+			with: {
+				chapter: {
+					columns: { courseId: true, id: true },
+				},
+			},
+		});
+
+		if (!lesson || !lesson.chapter) {
+			setResponseStatus(404);
+			throw new Error(LESSON_NOT_FOUND_MESSAGE);
+		}
+
+		const { chapter } = lesson;
+
+		if (
+			(chapterId !== undefined && chapter.id !== chapterId) ||
+			(courseId !== undefined && chapter.courseId !== courseId)
+		) {
+			setResponseStatus(404);
+			throw new Error(CHAPTER_NOT_FOUND_MESSAGE);
+		}
+
+		const patch = name === undefined ? { ...rest } : { ...rest, title: name };
+
+		if (Object.keys(patch).length === 0) {
+			throw new Error("Provide at least one field to update");
+		}
+
+		let updated: (typeof lessons.$inferSelect)[];
+
+		try {
+			updated = await db
+				.update(lessons)
+				.set(patch)
+				.where(eq(lessons.id, id))
+				.returning();
+		} catch (error) {
+			throw new Error("Failed to update lesson", { cause: error });
+		}
+
+		const [updatedLesson] = updated;
+
+		if (!updatedLesson) {
+			setResponseStatus(404);
+			throw new Error(LESSON_NOT_FOUND_MESSAGE);
+		}
+
+		return updatedLesson;
 	});

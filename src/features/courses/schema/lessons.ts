@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { chapterIdError, courseIdError } from "./shared";
+import { chapterIdError, courseIdError, lessonIdError } from "./shared";
 
 export const lessonIdSchema = z.object({
-	id: z.uuid({ error: "Invalid lesson id" }),
+	id: z.uuid({ error: lessonIdError }),
 });
 export type LessonId = z.input<typeof lessonIdSchema>;
 
@@ -20,6 +20,14 @@ export const lessonSchema = z.object({
 });
 export type LessonInput = z.input<typeof lessonSchema>;
 
+export const updateLessonSchema = lessonSchema
+	.partial()
+	.extend({ id: z.uuid({ error: lessonIdError }) })
+	.refine((value) => Object.keys(value).length > 1, {
+		error: "Provide at least one field to update",
+	});
+export type UpdateLessonInput = z.input<typeof updateLessonSchema>;
+
 export const reorderLessonSchema = z.object({
 	chapterId: z.uuid({ error: chapterIdError }),
 	courseId: z.uuid({ error: courseIdError }),
@@ -33,6 +41,6 @@ export type ReorderLessonInput = z.input<typeof reorderLessonSchema>;
 export const deleteLessonSchema = z.object({
 	courseId: z.uuid({ error: courseIdError }),
 	chapterId: z.uuid({ error: chapterIdError }),
-	lessonId: z.uuid({ error: "Invalid lesson id" }),
+	lessonId: z.uuid({ error: lessonIdError }),
 });
 export type DeleteLessonInput = z.input<typeof deleteLessonSchema>;
