@@ -72,7 +72,7 @@ export const DeleteLesson = ({
 
 				<AlertDialogFooter>
 					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={handleSubmit}>
+					<AlertDialogAction disabled={isPending} onClick={handleSubmit}>
 						{isPending ? (
 							<>
 								<Spinner /> Deleting...
