@@ -19,6 +19,8 @@ export const CourseCategories = [
 const minLengthError = (field: string, length: number) =>
 	`${field} must be at least ${length} characters long`;
 
+const courseIdError = "Invalid courseId";
+
 export const courseSchema = z.object({
 	title: z
 		.string()
@@ -50,7 +52,7 @@ export const courseSchema = z.object({
 export type CourseInput = z.input<typeof courseSchema>;
 
 export const courseIdSchema = z.object({
-	id: z.uuid(),
+	id: z.uuid({ error: courseIdError }),
 });
 export type CourseId = z.input<typeof courseIdSchema>;
 
@@ -63,7 +65,7 @@ export type GetCoursesQuery = z.input<typeof getCoursesQuerySchema>;
 
 export const updateCourseSchema = courseSchema
 	.partial()
-	.extend({ id: z.uuid() })
+	.extend({ id: z.uuid({ error: courseIdError }) })
 	.refine((value) => Object.keys(value).length > 1, {
 		error: "Provide at least one field to update",
 	});
@@ -71,7 +73,7 @@ export type UpdateCourseInput = z.input<typeof updateCourseSchema>;
 
 export const reorderLessonSchema = z.object({
 	chapterId: z.uuid(),
-	courseId: z.uuid(),
+	courseId: z.uuid({ error: courseIdError }),
 	lessonArray: z
 		// Min can't be 0 since we reorder everything to begin indexing from 1
 		.array(z.object({ id: z.uuid(), position: z.number().int().min(1) }))
@@ -80,10 +82,16 @@ export const reorderLessonSchema = z.object({
 export type ReorderLessonInput = z.input<typeof reorderLessonSchema>;
 
 export const reorderChaptersSchema = z.object({
-	courseId: z.uuid(),
+	courseId: z.uuid({ error: courseIdError }),
 	chaptersArray: z
 		// Min can't be 0 since we reorder everything to begin indexing from 1
 		.array(z.object({ id: z.uuid(), position: z.number().int().min(1) }))
 		.min(1, { error: "Provide at least one chapter to reorder" }),
 });
 export type ReorderChaptersInput = z.input<typeof reorderChaptersSchema>;
+
+export const chapterSchema = z.object({
+	name: z.string().min(3, "Name must be at least 3 chapters long"),
+	courseId: z.uuid({ error: courseIdError }),
+});
+export type ChapterInput = z.input<typeof chapterSchema>;
