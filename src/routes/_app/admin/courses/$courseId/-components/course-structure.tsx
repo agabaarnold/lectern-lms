@@ -31,6 +31,7 @@ import { DeleteLesson } from "./delete-lesson";
 import { SortableItem } from "./sortable-item";
 import type { CourseStructureItem } from "./use-course-reorder";
 import { useCourseReorder } from "./use-course-reorder";
+import { DeleteChapter } from "./delete-chapter";
 
 interface CourseStructureProps {
 	course: Awaited<ReturnType<typeof getCourse>>;
@@ -159,7 +160,7 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 											</div>
 
 											<Button size="icon" type="button" variant="outline">
-												<IconTrash className="size-4" />
+												<DeleteChapter chapterId={item.id} courseId={course.id}/>
 											</Button>
 										</div>
 
