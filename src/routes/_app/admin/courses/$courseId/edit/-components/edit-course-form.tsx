@@ -123,7 +123,9 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 				</form.AppField>
 
 				<form.AppField name="fileKey">
-					{(field) => <field.FormFileUploader label="Thumbnail image" />}
+					{(field) => (
+						<field.FormFileUploader fileType="image" label="Thumbnail image" />
+					)}
 				</form.AppField>
 
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
