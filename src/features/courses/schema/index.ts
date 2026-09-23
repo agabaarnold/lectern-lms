@@ -57,6 +57,11 @@ export const courseIdSchema = z.object({
 });
 export type CourseId = z.input<typeof courseIdSchema>;
 
+export const lessonIdSchema = z.object({
+	id: z.uuid({ error: "Invalid lesson id" }),
+});
+export type LessonId = z.input<typeof lessonIdSchema>;
+
 export const getCoursesQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).default(50),
 	offset: z.coerce.number().int().min(0).default(0),
