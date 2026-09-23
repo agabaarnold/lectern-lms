@@ -54,6 +54,7 @@ export const LessonForm = ({
 
 			toast.success("Lesson updated successfully");
 			await router.invalidate();
+			router.navigate({ to: "/admin/courses/$courseId", params: { courseId } });
 		},
 		validationLogic: revalidateLogic({
 			mode: "submit",
