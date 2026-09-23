@@ -69,7 +69,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				<ThemeProvider>
 					<TooltipProvider>{children}</TooltipProvider>
-					<Toaster />
+					<Toaster position="bottom-right" />
 				</ThemeProvider>
 
 				<TanStackDevtools
