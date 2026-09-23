@@ -22,6 +22,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
+import { Route as PublicCoursesIndexRouteImport } from './routes/_public/courses/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
@@ -93,6 +94,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRouteRoute,
 } as any)
+const PublicCoursesIndexRoute = PublicCoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AppAdminIndexRoute
+  '/courses/': typeof PublicCoursesIndexRoute
   '/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AppAdminIndexRoute
+  '/courses': typeof PublicCoursesIndexRoute
   '/admin/courses': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId': typeof AppAdminCoursesCourseIdIndexRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/_public/': typeof PublicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/admin/': typeof AppAdminIndexRoute
+  '/_public/courses/': typeof PublicCoursesIndexRoute
   '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/_app/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/auth/$'
     | '/admin/'
+    | '/courses/'
     | '/admin/courses/'
     | '/api/s3/upload/'
     | '/admin/courses/$courseId/'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/auth/$'
     | '/admin'
+    | '/courses'
     | '/admin/courses'
     | '/api/s3/upload'
     | '/admin/courses/$courseId'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_public/'
     | '/api/auth/$'
     | '/_app/admin/'
+    | '/_public/courses/'
     | '/_app/admin/courses/'
     | '/api/s3/upload/'
     | '/_app/admin/courses/$courseId/'
@@ -369,6 +381,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRouteRoute
+    }
+    '/_public/courses/': {
+      id: '/_public/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof PublicCoursesIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -489,10 +508,12 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
+  PublicCoursesIndexRoute: typeof PublicCoursesIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
+  PublicCoursesIndexRoute: PublicCoursesIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
