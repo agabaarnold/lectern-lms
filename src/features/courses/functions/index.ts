@@ -9,6 +9,7 @@ import { chapters, courses, lessons } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
 import {
+	chapterSchema,
 	courseIdSchema,
 	courseSchema,
 	getCoursesQuerySchema,
@@ -272,4 +273,43 @@ export const reorderChapters = createServerFn({ method: "POST" })
 		}
 
 		return { updated: chaptersArray.length };
+	});
+
+export const createChapter = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(chapterSchema)
+	.handler(async ({ data }) => {
+		const course = await db.query.courses.findFirst({
+			where: { id: data.courseId },
+		});
+		if (!course) {
+			throw notFound();
+		}
+
+		try {
+			// neon-http has no interactive transactions, so run the
+			// max-position lookup and the insert as sequential queries.
+			const maxPos = await db.query.chapters.findFirst({
+				where: { courseId: data.courseId },
+				columns: { position: true },
+				orderBy: { position: "desc" },
+			});
+
+			const [chapter] = await db
+				.insert(chapters)
+				.values({
+					title: data.name,
+					courseId: data.courseId,
+					position: (maxPos?.position ?? 0) + 1,
+				})
+				.returning();
+
+			if (!chapter) {
+				throw new Error("Failed to create chapter");
+			}
+
+			return { chapter };
+		} catch (error) {
+			throw new Error("Failed to create chapter", { cause: error });
+		}
 	});
