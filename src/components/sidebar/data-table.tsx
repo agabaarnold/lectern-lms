@@ -1,21 +1,7 @@
-import {
-	closestCenter,
-	DndContext,
-	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensor,
-	useSensors,
-} from "@dnd-kit/core";
-import type { DragEndEvent, UniqueIdentifier } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-	arrayMove,
-	SortableContext,
-	useSortable,
-	verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { RestrictToVerticalAxis } from "@dnd-kit/abstract/modifiers";
+import { DragDropProvider } from "@dnd-kit/react";
+import type { DragEndEvent } from "@dnd-kit/react";
+import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import {
 	IconGripVertical,
 	IconCircleCheckFilled,
@@ -137,15 +123,16 @@ export const schema = z.object({
 	reviewer: z.string(),
 });
 
+const RowHandleRefContext = React.createContext<
+	((element: Element | null) => void) | null
+>(null);
+
 // Create a separate component for the drag handle
-function DragHandle({ id }: { id: number }) {
-	const { attributes, listeners } = useSortable({
-		id,
-	});
+function DragHandle() {
+	const handleRef = React.useContext(RowHandleRefContext);
 	return (
 		<Button
-			{...attributes}
-			{...listeners}
+			ref={handleRef ?? undefined}
 			variant="ghost"
 			size="icon"
 			className="text-muted-foreground size-7 hover:bg-transparent"
@@ -159,7 +146,7 @@ const columns = columnHelper.columns([
 	columnHelper.display({
 		id: "drag",
 		header: () => null,
-		cell: ({ row }) => <DragHandle id={row.original.id} />,
+		cell: () => <DragHandle />,
 	}),
 	columnHelper.display({
 		id: "select",
@@ -329,31 +316,67 @@ const columns = columnHelper.columns([
 		),
 	}),
 ]);
+type TableRowItem = z.infer<typeof schema>;
+
+const moveRowToIndex = (
+	data: TableRowItem[],
+	visibleIds: number[],
+	movedId: number | string,
+	initialIndex: number,
+	index: number
+): TableRowItem[] => {
+	const moved = data.find((item) => item.id === movedId);
+
+	if (!moved) {
+		return data;
+	}
+
+	const remaining = data.filter((item) => item.id !== movedId);
+	const referenceId = visibleIds[index];
+	const referenceIndex =
+		referenceId === undefined
+			? -1
+			: remaining.findIndex((item) => item.id === referenceId);
+
+	let insertAt: number;
+
+	if (index > initialIndex) {
+		insertAt = referenceIndex === -1 ? remaining.length : referenceIndex + 1;
+	} else {
+		insertAt = referenceIndex === -1 ? 0 : referenceIndex;
+	}
+
+	const next = [...remaining];
+	next.splice(insertAt, 0, moved);
+	return next;
+};
+
 function DraggableRow({
 	row,
+	index,
 }: {
 	row: Row<typeof features, z.infer<typeof schema>>;
+	index: number;
 }) {
-	const { transform, transition, setNodeRef, isDragging } = useSortable({
+	const { ref, handleRef, isDragging } = useSortable({
 		id: row.original.id,
+		index,
 	});
 	return (
-		<TableRow
-			data-state={row.getIsSelected() && "selected"}
-			data-dragging={isDragging}
-			ref={setNodeRef}
-			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-			style={{
-				transform: CSS.Transform.toString(transform),
-				transition,
-			}}
-		>
-			{row.getVisibleCells().map((cell) => (
-				<TableCell key={cell.id}>
-					<FlexRender cell={cell} />
-				</TableCell>
-			))}
-		</TableRow>
+		<RowHandleRefContext.Provider value={handleRef}>
+			<TableRow
+				data-state={row.getIsSelected() && "selected"}
+				data-dragging={isDragging}
+				ref={ref}
+				className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+			>
+				{row.getVisibleCells().map((cell) => (
+					<TableCell key={cell.id}>
+						<FlexRender cell={cell} />
+					</TableCell>
+				))}
+			</TableRow>
+		</RowHandleRefContext.Provider>
 	);
 }
 export function DataTable({
@@ -373,16 +396,6 @@ export function DataTable({
 		pageIndex: 0,
 		pageSize: 10,
 	});
-	const sortableId = React.useId();
-	const sensors = useSensors(
-		useSensor(MouseSensor, {}),
-		useSensor(TouchSensor, {}),
-		useSensor(KeyboardSensor, {})
-	);
-	const dataIds = React.useMemo<UniqueIdentifier[]>(
-		() => data?.map(({ id }) => id) || [],
-		[data]
-	);
 	const table = useTable({
 		features,
 		data,
@@ -403,14 +416,27 @@ export function DataTable({
 		onPaginationChange: setPagination,
 	});
 	function handleDragEnd(event: DragEndEvent) {
-		const { active, over } = event;
-		if (active && over && active.id !== over.id) {
-			setData((data) => {
-				const oldIndex = dataIds.indexOf(active.id);
-				const newIndex = dataIds.indexOf(over.id);
-				return arrayMove(data, oldIndex, newIndex);
-			});
+		if (event.canceled) {
+			return;
 		}
+
+		const { source } = event.operation;
+
+		if (!isSortable(source)) {
+			return;
+		}
+
+		const { initialIndex, index } = source;
+
+		if (initialIndex === index) {
+			return;
+		}
+
+		const visibleIds = table.getRowModel().rows.map((row) => row.original.id);
+
+		setData((data) =>
+			moveRowToIndex(data, visibleIds, source.id, initialIndex, index)
+		);
 	}
 	return (
 		<Tabs
@@ -497,12 +523,9 @@ export function DataTable({
 				className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
 			>
 				<div className="overflow-hidden rounded-lg border">
-					<DndContext
-						collisionDetection={closestCenter}
-						modifiers={[restrictToVerticalAxis]}
+					<DragDropProvider
 						onDragEnd={handleDragEnd}
-						sensors={sensors}
-						id={sortableId}
+						modifiers={(defaults) => [...defaults, RestrictToVerticalAxis]}
 					>
 						<Table>
 							<TableHeader className="bg-muted sticky top-0 z-10">
@@ -520,14 +543,11 @@ export function DataTable({
 							</TableHeader>
 							<TableBody className="**:data-[slot=table-cell]:first:w-8">
 								{table.getRowModel().rows?.length ? (
-									<SortableContext
-										items={dataIds}
-										strategy={verticalListSortingStrategy}
-									>
-										{table.getRowModel().rows.map((row) => (
-											<DraggableRow key={row.id} row={row} />
-										))}
-									</SortableContext>
+									table
+										.getRowModel()
+										.rows.map((row, index) => (
+											<DraggableRow key={row.id} row={row} index={index} />
+										))
 								) : (
 									<TableRow>
 										<TableCell
@@ -540,7 +560,7 @@ export function DataTable({
 								)}
 							</TableBody>
 						</Table>
-					</DndContext>
+					</DragDropProvider>
 				</div>
 				<div className="flex items-center justify-between px-4">
 					<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
