@@ -16,10 +16,10 @@ import {
 } from "#/components/ui/tabs.tsx";
 import { getCourse } from "#/features/courses/functions/index.ts";
 
-import { CourseStructure } from "./-components/course-structure";
+import { CourseStructure } from "../-components/course-structure";
 import { EditCourseForm } from "./-components/edit-course-form";
 
-export const Route = createFileRoute("/_app/admin/courses/$courseId/edit")({
+export const Route = createFileRoute("/_app/admin/courses/$courseId/edit/")({
 	component: EditCoursePage,
 	loader: ({ params }) => getCourse({ data: { id: params.courseId } }),
 });
