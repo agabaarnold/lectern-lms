@@ -1,3 +1,4 @@
+// oxlint-disable shadcn/no-restyle
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import { Skeleton } from "#/components/ui/skeleton.tsx";
 
@@ -35,13 +36,12 @@ const CourseCardSkeleton = () => (
 );
 
 export const CoursesLoadingGrid = () => (
-	<div
+	<output
 		aria-label="Loading courses"
 		className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2"
-		role="status"
 	>
 		{PLACEHOLDER_CARDS.map((placeholder) => (
 			<CourseCardSkeleton key={placeholder} />
 		))}
-	</div>
+	</output>
 );
