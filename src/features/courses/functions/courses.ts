@@ -197,6 +197,6 @@ export const getAllCourses = createServerFn({ method: "GET" }).handler(
 			orderBy: { createdAt: "desc" },
 		});
 
-		return { courses: data };
+		return data
 	}
 );
