@@ -1,20 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Await, createFileRoute, Link } from "@tanstack/react-router";
 
-// oxlint-disable func-style
-// oxlint-disable react/function-component-definition
+// oxlint-disable react/function-component-definition func-style
 import { buttonVariants } from "#/components/ui/button.tsx";
 import { getCourses } from "#/features/courses/functions/courses.ts";
 
 import { AdminCourseCard } from "./-components/admin-course-card";
+import { CoursesLoadingGrid } from "./-components/courses-loading-grid";
 import { EmptyCourses } from "./-components/empty-courses";
 
 export const Route = createFileRoute("/_app/admin/courses/")({
-	loader: () => getCourses(),
+	loader: () => ({ courses: getCourses() }),
 	component: CoursesPage,
 });
 
 function CoursesPage() {
-	const courses = Route.useLoaderData();
+	const { courses } = Route.useLoaderData();
 
 	return (
 		<>
@@ -26,15 +26,19 @@ function CoursesPage() {
 				</Link>
 			</div>
 
-			{courses.length === 0 ? (
-				<EmptyCourses />
-			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4">
-					{courses.map((course) => (
-						<AdminCourseCard course={course} key={course.id} />
-					))}
-				</div>
-			)}
+			<Await promise={courses} fallback={<CoursesLoadingGrid />}>
+				{(resolvedCourses) =>
+					resolvedCourses.length === 0 ? (
+						<EmptyCourses />
+					) : (
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+							{resolvedCourses.map((course) => (
+								<AdminCourseCard course={course} key={course.id} />
+							))}
+						</div>
+					)
+				}
+			</Await>
 		</>
 	);
 }
