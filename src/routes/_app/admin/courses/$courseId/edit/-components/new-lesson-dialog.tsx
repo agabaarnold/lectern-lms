@@ -55,6 +55,9 @@ export const NewLessonDialog = ({
 	});
 
 	const handleOpenChange = (open: boolean) => {
+		if (!open) {
+			form.reset();
+		}
 		setIsOpen(open);
 	};
 
