@@ -26,6 +26,7 @@ import {
 import type { getCourse } from "#/features/courses/functions/index.ts";
 
 import { NewChapterDialog } from "./new-chapter-dialog";
+import { NewLessonDialog } from "./new-lesson-dialog";
 import { SortableItem } from "./sortable-item";
 import type { CourseStructureItem } from "./use-course-reorder";
 import { useCourseReorder } from "./use-course-reorder";
@@ -207,9 +208,10 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 												))}
 
 												<div className="p-2">
-													<Button className="w-full" variant="outline">
-														Create New Lesson
-													</Button>
+													<NewLessonDialog
+														chapterId={item.id}
+														courseId={course.id}
+													/>
 												</div>
 											</div>
 										</CollapsibleContent>
