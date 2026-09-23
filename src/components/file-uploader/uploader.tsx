@@ -53,9 +53,15 @@ interface UploaderProps {
 	onValueChange: (key: string) => void;
 	onBlur?: () => void;
 	value?: string;
+	fileTypeAccepted: "image" | "video";
 }
 
-export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
+export const Uploader = ({
+	onValueChange,
+	onBlur,
+	value,
+	fileTypeAccepted,
+}: UploaderProps) => {
 	const fileUrl = urlConstruct(value || "");
 
 	const [fileState, setFileState] = useState<UploaderState>({
@@ -65,7 +71,7 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 		uploading: false,
 		progress: 0,
 		isDeleting: false,
-		fileType: "image",
+		fileType: fileTypeAccepted,
 		key: value,
 		objectUrl: value ? fileUrl : undefined,
 	});
@@ -83,7 +89,7 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 						fileName: file.name,
 						contentType: file.type,
 						size: file.size,
-						isImage: true,
+						isImage: fileTypeAccepted === "image",
 					}),
 				});
 
@@ -153,7 +159,7 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 				}));
 			}
 		},
-		[onBlur, onValueChange]
+		[onBlur, onValueChange, fileTypeAccepted]
 	);
 
 	const onDrop = useCallback(
@@ -174,14 +180,14 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 					error: false,
 					id: uuidv4(),
 					isDeleting: false,
-					fileType: "image",
+					fileType: fileTypeAccepted,
 				});
 
 				onValueChange("");
 				uploadFile(file);
 			}
 		},
-		[fileState.objectUrl, onValueChange, uploadFile]
+		[fileState.objectUrl, onValueChange, uploadFile, fileTypeAccepted]
 	);
 
 	useEffect(
@@ -195,7 +201,8 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 
 	const { getInputProps, getRootProps, isDragActive } = useDropzone({
 		onDrop,
-		accept: { "image/*": [] },
+		accept:
+			fileTypeAccepted === "video" ? { "video/*": [] } : { "image/*": [] },
 		maxFiles: 1,
 		multiple: false,
 		maxSize: 5 * 1024 * 1024,
@@ -241,7 +248,7 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 				// oxlint-disable-next-line sonarjs/no-undefined-assignment
 				objectUrl: undefined,
 				error: false,
-				fileType: "image",
+				fileType: fileTypeAccepted,
 				isDeleting: false,
 				id: null,
 			}));
