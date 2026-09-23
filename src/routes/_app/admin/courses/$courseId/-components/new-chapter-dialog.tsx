@@ -1,6 +1,8 @@
 import { IconPlus } from "@tabler/icons-react";
 import { revalidateLogic } from "@tanstack/react-form-start";
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -12,17 +14,33 @@ import {
 	DialogTrigger,
 } from "#/components/ui/dialog.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
+import { createChapter } from "#/features/courses/functions/index.ts";
 import { chapterSchema } from "#/features/courses/schema/index.ts";
 import type { ChapterInput } from "#/features/courses/schema/index.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
+import { tryCatch } from "#/lib/try-catch.ts";
 
 export const NewChapterDialog = ({ courseId }: { courseId: string }) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const router = useRouter();
 
 	const defaultValues: ChapterInput = { courseId, name: "" };
 
 	const form = useAppForm({
 		defaultValues,
+		onSubmit: async ({ value }) => {
+			const { error } = await tryCatch(createChapter({ data: value }));
+
+			if (error) {
+				toast.error(error.message ?? "Failed to create chapter");
+				return;
+			}
+
+			toast.success("Chapter created successfully");
+			form.reset();
+			setIsOpen(false);
+			await router.invalidate();
+		},
 		validationLogic: revalidateLogic({
 			mode: "submit",
 			modeAfterSubmission: "blur",
