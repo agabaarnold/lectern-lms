@@ -29,7 +29,7 @@ function CoursesPage() {
 			{courses.length === 0 ? (
 				<EmptyCourses />
 			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4">
 					{courses.map((course) => (
 						<AdminCourseCard course={course} key={course.id} />
 					))}
