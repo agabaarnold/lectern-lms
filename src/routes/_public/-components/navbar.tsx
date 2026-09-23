@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { LinkOptions } from "@tanstack/react-router";
 
-import { Image } from "#/components/shared/image.tsx";
+import { Logo } from "#/components/shared/logo.tsx";
 import { ThemeToggle } from "#/components/shared/theme-toggle.tsx";
 import { buttonVariants } from "#/components/ui/button.tsx";
 import { authClient } from "#/lib/auth-client.ts";
@@ -15,7 +15,7 @@ interface NavItems {
 
 const navItems: NavItems[] = [
 	{ name: "Home", href: "/" },
-	{ name: "Course", href: "/courses" },
+	{ name: "Courses", href: "/courses" },
 	{ name: "Dashboard", href: "/admin" },
 ];
 
@@ -26,11 +26,7 @@ export const Navbar = () => {
 		<header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 border-b backdrop-blur">
 			<div className="container mx-auto flex min-h-16 items-center px-4 md:px-6 lg:px-8">
 				<Link className="mr-4 flex items-center space-x-2" to="/">
-					<Image
-						src="./logo.png"
-						alt="Logo"
-						className="size-9 rounded-xs dark:bg-white"
-					/>
+					<Logo className="size-9" />
 					<span>Lectern</span>
 				</Link>
 
