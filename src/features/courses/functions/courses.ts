@@ -179,7 +179,7 @@ export const deleteCourse = createServerFn({ method: "POST" })
 		return course;
 	});
 
-export const getAllCoureses = createServerFn({ method: "GET" }).handler(
+export const getAllCourses = createServerFn({ method: "GET" }).handler(
 	async () => {
 		const data = await db.query.courses.findMany({
 			where: { status: "Published" },
