@@ -5,9 +5,10 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 
 interface FormFileUploaderProps {
 	label: string;
+	fileType: "image" | "video";
 }
 
-const FormFileUploader = ({ label }: FormFileUploaderProps) => {
+const FormFileUploader = ({ label, fileType }: FormFileUploaderProps) => {
 	const field = useFieldContext<string>();
 	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -19,6 +20,7 @@ const FormFileUploader = ({ label }: FormFileUploaderProps) => {
 				onBlur={() => field.handleBlur()}
 				onValueChange={(key) => field.handleChange(key)}
 				value={field.state.value}
+				fileTypeAccepted={fileType}
 			/>
 
 			{isInvalid && <FieldError errors={field.state.meta.errors} />}
