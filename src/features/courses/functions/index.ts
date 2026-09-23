@@ -22,6 +22,9 @@ import {
 } from "../schema";
 
 const SLUG_CONFLICT_MESSAGE = "A course with this slug already exists";
+const COURSE_NOT_FOUND_MESSAGE = "Course not found";
+const CHAPTER_NOT_FOUND_MESSAGE = "Chapter not found in this course";
+const LESSON_NOT_FOUND_MESSAGE = "Lesson not found in this chapter";
 
 const uniqueViolationSchema = z.object({ code: z.literal("23505") });
 
@@ -152,7 +155,8 @@ export const updateCourse = createServerFn({ method: "POST" })
 		const [course] = updated;
 
 		if (!course) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		return course;
@@ -176,7 +180,8 @@ export const deleteCourse = createServerFn({ method: "POST" })
 		const [course] = deleted;
 
 		if (!course) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		return course;
@@ -194,7 +199,8 @@ export const reorderLessons = createServerFn({ method: "POST" })
 		});
 
 		if (!chapter || chapter.courseId !== courseId) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(CHAPTER_NOT_FOUND_MESSAGE);
 		}
 
 		const existingLessons = await db.query.lessons.findMany({
@@ -242,7 +248,8 @@ export const reorderChapters = createServerFn({ method: "POST" })
 		});
 
 		if (!course) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		const existingChapters = await db.query.chapters.findMany({
@@ -286,7 +293,8 @@ export const createChapter = createServerFn({ method: "POST" })
 			where: { id: data.courseId },
 		});
 		if (!course) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		try {
@@ -325,14 +333,16 @@ export const createLesson = createServerFn({ method: "POST" })
 			where: { id: data.courseId },
 		});
 		if (!course) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		const chapter = await db.query.chapters.findFirst({
 			where: { id: data.chapterId },
 		});
 		if (!chapter || chapter.courseId !== data.courseId) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(CHAPTER_NOT_FOUND_MESSAGE);
 		}
 
 		try {
@@ -375,7 +385,8 @@ export const deleteLesson = createServerFn({ method: "POST" })
 			with: { lessons: { orderBy: { position: "desc" } } },
 		});
 		if (!chapterWithLessons || chapterWithLessons.courseId !== data.courseId) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(CHAPTER_NOT_FOUND_MESSAGE);
 		}
 
 		const { lessons: allLessons } = chapterWithLessons;
@@ -384,7 +395,8 @@ export const deleteLesson = createServerFn({ method: "POST" })
 			(lesson) => lesson.id === data.lessonId
 		);
 		if (!lessonToDelete) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(LESSON_NOT_FOUND_MESSAGE);
 		}
 
 		try {
@@ -431,7 +443,8 @@ export const deleteChapter = createServerFn({ method: "POST" })
 			with: { chapters: { orderBy: { position: "desc" } } },
 		});
 		if (!courseWithChapters) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
 		const { chapters: allChapters } = courseWithChapters;
@@ -440,7 +453,8 @@ export const deleteChapter = createServerFn({ method: "POST" })
 			(chapter) => chapter.id === data.chapterId
 		);
 		if (!chapterToDelete) {
-			throw notFound();
+			setResponseStatus(404);
+			throw new Error(CHAPTER_NOT_FOUND_MESSAGE);
 		}
 
 		try {
