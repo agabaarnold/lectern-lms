@@ -13,6 +13,7 @@ import {
 	courseIdSchema,
 	courseSchema,
 	getCoursesQuerySchema,
+	lessonSchema,
 	reorderChaptersSchema,
 	reorderLessonSchema,
 	updateCourseSchema,
@@ -311,5 +312,54 @@ export const createChapter = createServerFn({ method: "POST" })
 			return { chapter };
 		} catch (error) {
 			throw new Error("Failed to create chapter", { cause: error });
+		}
+	});
+
+export const createLesson = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(lessonSchema)
+	.handler(async ({ data }) => {
+		const course = await db.query.courses.findFirst({
+			where: { id: data.courseId },
+		});
+		if (!course) {
+			throw notFound();
+		}
+
+		const chapter = await db.query.chapters.findFirst({
+			where: { id: data.chapterId },
+		});
+		if (!chapter || chapter.courseId !== data.courseId) {
+			throw notFound();
+		}
+
+		try {
+			// neon-http has no interactive transactions, so run the
+			// max-position lookup and the insert as sequential queries.
+			const maxPos = await db.query.lessons.findFirst({
+				where: { chapterId: data.chapterId },
+				columns: { position: true },
+				orderBy: { position: "desc" },
+			});
+
+			const [lesson] = await db
+				.insert(lessons)
+				.values({
+					title: data.name,
+					chapterId: data.chapterId,
+					description: data.description,
+					thumbnailKey: data.thumbnailKey,
+					videoKey: data.videoKey,
+					position: (maxPos?.position ?? 0) + 1,
+				})
+				.returning();
+
+			if (!lesson) {
+				throw new Error("Failed to create lesson");
+			}
+
+			return { lesson };
+		} catch (error) {
+			throw new Error("Failed to create lesson", { cause: error });
 		}
 	});
