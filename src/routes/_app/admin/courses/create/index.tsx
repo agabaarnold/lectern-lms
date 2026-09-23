@@ -23,6 +23,7 @@ import {
 } from "#/features/courses/schema/courses.ts";
 import type { CourseInput } from "#/features/courses/schema/courses.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
+import { useConfetti } from "#/hooks/use-confetti.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
 export const Route = createFileRoute("/_app/admin/courses/create/")({
@@ -44,6 +45,7 @@ const defaultValues: CourseInput = {
 
 function CreateCoursePage() {
 	const navigate = useNavigate();
+	const { triggerConfetti } = useConfetti();
 
 	const form = useAppForm({
 		defaultValues,
@@ -57,6 +59,7 @@ function CreateCoursePage() {
 			}
 
 			toast.success("Course created successfully");
+			triggerConfetti();
 			navigate({ to: "/admin/courses" });
 		},
 		validationLogic: revalidateLogic({
