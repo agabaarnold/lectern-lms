@@ -12,6 +12,7 @@ import {
 	chapterSchema,
 	courseIdSchema,
 	courseSchema,
+	deleteLessonSchema,
 	getCoursesQuerySchema,
 	lessonSchema,
 	reorderChaptersSchema,
@@ -362,4 +363,60 @@ export const createLesson = createServerFn({ method: "POST" })
 		} catch (error) {
 			throw new Error("Failed to create lesson", { cause: error });
 		}
+	});
+
+export const deleteLesson = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(deleteLessonSchema)
+	.handler(async ({ data }) => {
+		const chapterWithLessons = await db.query.chapters.findFirst({
+			where: { id: data.chapterId },
+			with: { lessons: { orderBy: { position: "desc" } } },
+		});
+		if (!chapterWithLessons || chapterWithLessons.courseId !== data.courseId) {
+			throw notFound();
+		}
+
+		const { lessons: allLessons } = chapterWithLessons;
+
+		const lessonToDelete = allLessons.find(
+			(lesson) => lesson.id === data.lessonId
+		);
+		if (!lessonToDelete) {
+			throw notFound();
+		}
+
+		try {
+			const remainingLessons = allLessons.filter(
+				(lesson) => lesson.id !== data.lessonId
+			);
+
+			const renumber = remainingLessons.map((lesson, index) =>
+				db
+					.update(lessons)
+					.set({
+						position: index + 1,
+					})
+					.where(eq(lessons.id, lesson.id))
+			);
+
+			// neon-http has no interactive transactions, so issue the
+			// scoped delete and renumbering as a batch instead of
+			// db.transaction().
+			await Promise.all([
+				...renumber,
+				db
+					.delete(lessons)
+					.where(
+						and(
+							eq(lessons.id, data.lessonId),
+							eq(lessons.chapterId, data.chapterId)
+						)
+					),
+			]);
+		} catch (error) {
+			throw new Error("Failed to delete lesson", { cause: error });
+		}
+
+		return { deleted: data.lessonId };
 	});
