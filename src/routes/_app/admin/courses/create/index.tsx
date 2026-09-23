@@ -14,14 +14,14 @@ import {
 	CardTitle,
 } from "#/components/ui/card.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
-import { createCourse } from "#/features/courses/functions/index.ts";
+import { createCourse } from "#/features/courses/functions/courses.ts";
 import {
 	CourseCategories,
 	courseLevels,
 	courseSchema,
 	courseStatus,
-} from "#/features/courses/schema/index.ts";
-import type { CourseInput } from "#/features/courses/schema/index.ts";
+} from "#/features/courses/schema/courses.ts";
+import type { CourseInput } from "#/features/courses/schema/courses.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 

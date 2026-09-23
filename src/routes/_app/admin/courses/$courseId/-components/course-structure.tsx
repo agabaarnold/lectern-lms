@@ -6,7 +6,6 @@ import {
 	IconChevronRight,
 	IconFileText,
 	IconGripVertical,
-	IconTrash,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -23,15 +22,15 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "#/components/ui/collapsible.tsx";
-import type { getCourse } from "#/features/courses/functions/index.ts";
+import type { getCourse } from "#/features/courses/functions/courses.ts";
 
 import { NewChapterDialog } from "../edit/-components/new-chapter-dialog";
 import { NewLessonDialog } from "../edit/-components/new-lesson-dialog";
+import { DeleteChapter } from "./delete-chapter";
 import { DeleteLesson } from "./delete-lesson";
 import { SortableItem } from "./sortable-item";
 import type { CourseStructureItem } from "./use-course-reorder";
 import { useCourseReorder } from "./use-course-reorder";
-import { DeleteChapter } from "./delete-chapter";
 
 interface CourseStructureProps {
 	course: Awaited<ReturnType<typeof getCourse>>;
@@ -160,7 +159,10 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 											</div>
 
 											<Button size="icon" type="button" variant="outline">
-												<DeleteChapter chapterId={item.id} courseId={course.id}/>
+												<DeleteChapter
+													chapterId={item.id}
+													courseId={course.id}
+												/>
 											</Button>
 										</div>
 

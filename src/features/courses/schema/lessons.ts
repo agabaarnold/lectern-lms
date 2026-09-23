@@ -1,0 +1,38 @@
+import { z } from "zod";
+
+import { chapterIdError, courseIdError } from "./shared";
+
+export const lessonIdSchema = z.object({
+	id: z.uuid({ error: "Invalid lesson id" }),
+});
+export type LessonId = z.input<typeof lessonIdSchema>;
+
+export const lessonSchema = z.object({
+	name: z.string().min(3, "Name must be at least 3 characters long"),
+	courseId: z.uuid({ error: courseIdError }),
+	chapterId: z.uuid({ error: chapterIdError }),
+	description: z
+		.string()
+		.min(3, "Description must be at least 3 characters long")
+		.optional(),
+	thumbnailKey: z.string().optional(),
+	videoKey: z.string().optional(),
+});
+export type LessonInput = z.input<typeof lessonSchema>;
+
+export const reorderLessonSchema = z.object({
+	chapterId: z.uuid({ error: chapterIdError }),
+	courseId: z.uuid({ error: courseIdError }),
+	lessonArray: z
+		// Min can't be 0 since we reorder everything to begin indexing from 1
+		.array(z.object({ id: z.uuid(), position: z.number().int().min(1) }))
+		.min(1, { error: "Provide at least one lesson to reorder" }),
+});
+export type ReorderLessonInput = z.input<typeof reorderLessonSchema>;
+
+export const deleteLessonSchema = z.object({
+	courseId: z.uuid({ error: courseIdError }),
+	chapterId: z.uuid({ error: chapterIdError }),
+	lessonId: z.uuid({ error: "Invalid lesson id" }),
+});
+export type DeleteLessonInput = z.input<typeof deleteLessonSchema>;

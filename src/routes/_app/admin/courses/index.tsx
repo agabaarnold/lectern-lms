@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 // oxlint-disable func-style
 // oxlint-disable react/function-component-definition
 import { buttonVariants } from "#/components/ui/button.tsx";
-import { getCourses } from "#/features/courses/functions/index.ts";
+import { getCourses } from "#/features/courses/functions/courses.ts";
 
 import { AdminCourseCard } from "./-components/admin-course-card";
 

@@ -14,9 +14,9 @@ import {
 	DialogTrigger,
 } from "#/components/ui/dialog.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
-import { createLesson } from "#/features/courses/functions/index.ts";
-import { lessonSchema } from "#/features/courses/schema/index.ts";
-import type { LessonInput } from "#/features/courses/schema/index.ts";
+import { createLesson } from "#/features/courses/functions/lessons.ts";
+import { lessonSchema } from "#/features/courses/schema/lessons.ts";
+import type { LessonInput } from "#/features/courses/schema/lessons.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 

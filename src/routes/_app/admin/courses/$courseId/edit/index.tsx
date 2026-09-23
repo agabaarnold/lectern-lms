@@ -14,7 +14,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "#/components/ui/tabs.tsx";
-import { getCourse } from "#/features/courses/functions/index.ts";
+import { getCourse } from "#/features/courses/functions/courses.ts";
 
 import { CourseStructure } from "../-components/course-structure";
 import { EditCourseForm } from "./-components/edit-course-form";

@@ -20,7 +20,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
-import type { getCourses } from "#/features/courses/functions/index.ts";
+import type { getCourses } from "#/features/courses/functions/courses.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
 interface AdminCourseCardProps {

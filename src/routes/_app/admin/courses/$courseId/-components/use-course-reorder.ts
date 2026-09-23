@@ -5,10 +5,8 @@ import type { Dispatch, SetStateAction } from "react";
 import { useRef } from "react";
 import { toast } from "react-hot-toast";
 
-import {
-	reorderChapters,
-	reorderLessons,
-} from "#/features/courses/functions/index.ts";
+import { reorderChapters } from "#/features/courses/functions/chapters.ts";
+import { reorderLessons } from "#/features/courses/functions/lessons.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
 export interface CourseStructureLesson {

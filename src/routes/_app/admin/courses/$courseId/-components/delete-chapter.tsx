@@ -16,7 +16,7 @@ import {
 } from "#/components/ui/alert-dialog.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import { Spinner } from "#/components/ui/spinner.tsx";
-import { deleteChapter } from "#/features/courses/functions/index.ts";
+import { deleteChapter } from "#/features/courses/functions/chapters.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
 export const DeleteChapter = ({

@@ -7,15 +7,15 @@ import slugify from "slugify";
 
 import { Button } from "#/components/ui/button.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
-import type { getCourse } from "#/features/courses/functions/index.ts";
-import { updateCourse } from "#/features/courses/functions/index.ts";
+import type { getCourse } from "#/features/courses/functions/courses.ts";
+import { updateCourse } from "#/features/courses/functions/courses.ts";
 import {
 	CourseCategories,
 	courseLevels,
 	courseStatus,
 	updateCourseSchema,
-} from "#/features/courses/schema/index.ts";
-import type { UpdateCourseInput } from "#/features/courses/schema/index.ts";
+} from "#/features/courses/schema/courses.ts";
+import type { UpdateCourseInput } from "#/features/courses/schema/courses.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 

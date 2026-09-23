@@ -67,7 +67,7 @@ export const Uploader = ({ onValueChange, onBlur, value }: UploaderProps) => {
 		isDeleting: false,
 		fileType: "image",
 		key: value,
-		objectUrl: fileUrl,
+		objectUrl: value ? fileUrl : undefined,
 	});
 
 	const uploadFile = useCallback(

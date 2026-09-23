@@ -14,9 +14,9 @@ import {
 	DialogTrigger,
 } from "#/components/ui/dialog.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
-import { createChapter } from "#/features/courses/functions/index.ts";
-import { chapterSchema } from "#/features/courses/schema/index.ts";
-import type { ChapterInput } from "#/features/courses/schema/index.ts";
+import { createChapter } from "#/features/courses/functions/chapters.ts";
+import { chapterSchema } from "#/features/courses/schema/chapters.ts";
+import type { ChapterInput } from "#/features/courses/schema/chapters.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
