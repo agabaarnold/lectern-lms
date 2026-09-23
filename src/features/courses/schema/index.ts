@@ -91,7 +91,7 @@ export const reorderChaptersSchema = z.object({
 export type ReorderChaptersInput = z.input<typeof reorderChaptersSchema>;
 
 export const chapterSchema = z.object({
-	name: z.string().min(3, "Name must be at least 3 chapters long"),
+	name: z.string().min(3, "Name must be at least 3 characters long"),
 	courseId: z.uuid({ error: courseIdError }),
 });
 export type ChapterInput = z.input<typeof chapterSchema>;
