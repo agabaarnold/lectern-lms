@@ -212,6 +212,7 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 				title: true,
 				price: true,
 				smallDescription: true,
+				description: true,
 				slug: true,
 				fileKey: true,
 				id: true,
@@ -233,8 +234,8 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 			},
 		});
 
-		if(!course) {
-			throw notFound()
+		if (!course) {
+			throw notFound();
 		}
 
 		return course;
