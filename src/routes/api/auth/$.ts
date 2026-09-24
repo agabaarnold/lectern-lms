@@ -1,11 +1,14 @@
 // oxlint-disable sonarjs/function-name
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ajAuthed, toArcjetRequest } from "#/lib/arcjet";
+import { ajForAuthPath, toArcjetRequest } from "#/lib/arcjet";
 import { auth } from "#/lib/auth";
 
 const protectedAuthHandler = async (request: Request) => {
-	const decision = await ajAuthed.protect(toArcjetRequest(request));
+	const { pathname } = new URL(request.url);
+	const decision = await ajForAuthPath(pathname).protect(
+		toArcjetRequest(request)
+	);
 
 	if (decision.isErrored()) {
 		return auth.handler(request);
