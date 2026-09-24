@@ -1,7 +1,9 @@
 // oxlint-disable shadcn/no-restyle
 import {
+	IconBook,
 	IconCategory,
 	IconChartBar,
+	IconCheck,
 	IconChevronDown,
 	IconClock,
 	IconPlayerPlay,
@@ -12,6 +14,7 @@ import { RenderDescription } from "#/components/rich-text/render-description.tsx
 // oxlint-disable react/function-component-definition func-style
 import { Image } from "#/components/shared/image.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
+import { Button } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
 	Collapsible,
@@ -209,8 +212,86 @@ function SlugPage() {
 											</p>
 										</div>
 									</div>
+
+									<div className="flex items-center gap-3">
+										<div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+											<IconChartBar className="size-4" />
+										</div>
+
+										<div>
+											<p className="text-sm font-medium">Difficulty level</p>
+											<p className="text-muted-foreground">{course.level}</p>
+										</div>
+									</div>
+
+									<div className="flex items-center gap-3">
+										<div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+											<IconCategory className="size-4" />
+										</div>
+
+										<div>
+											<p className="text-sm font-medium">Category</p>
+											<p className="text-muted-foreground">{course.category}</p>
+										</div>
+									</div>
+
+									<div className="flex items-center gap-3">
+										<div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+											<IconBook className="size-4" />
+										</div>
+
+										<div>
+											<p className="text-sm font-medium">Total lessons</p>
+											<p className="text-muted-foreground">
+												{course.chapters.reduce(
+													(total, chapter) => total + chapter.lessons.length,
+													0
+												) || 0}{" "}
+												lessons
+											</p>
+										</div>
+									</div>
 								</div>
 							</div>
+
+							<div className="mb-6 space-y-3">
+								<h4>This course includes:</h4>
+
+								<ul className="space-y-2">
+									<li className="flex items-center gap-2 text-sm">
+										{/* oxlint-disable-next-line shadcn/no-raw-colors */}
+										<div className="rounded-full bg-green-500/10 p-1 text-green-500">
+											<IconCheck className="size-3" />
+										</div>
+
+										<span>Full lifetime access</span>
+									</li>
+
+									<li className="flex items-center gap-2 text-sm">
+										{/* oxlint-disable-next-line shadcn/no-raw-colors */}
+										<div className="rounded-full bg-green-500/10 p-1 text-green-500">
+											<IconCheck className="size-3" />
+										</div>
+
+										<span>Access on mobile and desktop</span>
+									</li>
+
+									<li className="flex items-center gap-2 text-sm">
+										{/* oxlint-disable-next-line shadcn/no-raw-colors */}
+										<div className="rounded-full bg-green-500/10 p-1 text-green-500">
+											<IconCheck className="size-3" />
+										</div>
+
+										<span>Certificate of completion</span>
+									</li>
+								</ul>
+							</div>
+
+							<Button className="w-full" type="button">Enroll now!</Button>
+
+							<p className="text-muted-foreground mt-3 text-center text-xs">
+								30-day money-back guarantee
+							</p>
 						</CardContent>
 					</Card>
 				</div>
