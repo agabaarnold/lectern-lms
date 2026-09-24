@@ -1,4 +1,5 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth/minimal";
 import {
 	admin,
@@ -15,6 +16,7 @@ import { schema } from "../db/schema";
 import { ResetPassword } from "../features/email/emails/reset-password.tsx";
 import { VerifyEmail } from "../features/email/emails/verify-email.tsx";
 import { sendEmail } from "../features/email/lib/send.ts";
+import { stripeClient } from "./stripe.ts";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", usePlural: true, schema }),
@@ -75,6 +77,7 @@ export const auth = betterAuth({
 		}),
 		haveIBeenPwned(),
 		lastLoginMethod({ storeInDatabase: true }),
+		stripe({ stripeClient }),
 		tanstackStartCookies(),
 	],
 	rateLimit: {
