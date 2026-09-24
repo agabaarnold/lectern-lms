@@ -20,6 +20,8 @@
 		"email:dev": "email dev --dir src/features/email/emails --port 3001"
 	},
 	"dependencies": {
+		"@arcjet/inspect": "^1.13.0",
+		"@arcjet/node": "^1.13.0",
 		"@aws-sdk/client-s3": "^3.1138.0",
 		"@aws-sdk/s3-request-presigner": "^3.1138.0",
 		"@base-ui/react": "^1.8.0",
