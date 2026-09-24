@@ -3,7 +3,6 @@ import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth/minimal";
 import {
 	admin,
-	captcha,
 	haveIBeenPwned,
 	lastLoginMethod,
 } from "better-auth/plugins";
@@ -70,11 +69,6 @@ export const auth = betterAuth({
 	},
 	plugins: [
 		admin(),
-		captcha({
-			provider: "hcaptcha",
-			secretKey: env.CAPTCHA_SECRET,
-			siteKey: env.CAPTCHA_SITE_KEY,
-		}),
 		haveIBeenPwned(),
 		lastLoginMethod({ storeInDatabase: true }),
 		stripe({ stripeClient }),
