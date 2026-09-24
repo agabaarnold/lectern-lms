@@ -1,10 +1,8 @@
 import {
 	pgTable,
 	text,
-	bigint,
 	timestamp,
 	boolean,
-	integer,
 	index,
 } from "drizzle-orm/pg-core";
 
@@ -86,10 +84,3 @@ export const verifications = pgTable(
 	},
 	(table) => [index("verifications_identifier_idx").on(table.identifier)]
 );
-
-export const rateLimits = pgTable("rate_limits", {
-	id: text("id").primaryKey(),
-	key: text("key").notNull().unique(),
-	count: integer("count").notNull(),
-	lastRequest: bigint("last_request", { mode: "number" }).notNull(),
-});

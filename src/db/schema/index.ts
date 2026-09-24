@@ -1,6 +1,5 @@
 import {
 	accounts,
-	rateLimits,
 	sessions,
 	users,
 	verifications,
@@ -12,7 +11,6 @@ export const schema = {
 	sessions,
 	accounts,
 	verifications,
-	rateLimits,
 	courses,
 	chapters,
 	lessons,
