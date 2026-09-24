@@ -1,4 +1,5 @@
-import { createServerFn } from "@tanstack/react-start";
+import { createMiddleware, createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { Stripe } from "stripe";
 
@@ -6,13 +7,28 @@ import { db } from "#/db/index.ts";
 import { users } from "#/db/schema/auth.schema.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
 import { env } from "#/env.server.ts";
+import { ajEnroll, throwIfDenied, toArcjetRequest } from "#/lib/arcjet";
 import { stripeClient } from "#/lib/stripe.ts";
 import { authMiddleware } from "#/middleware.ts";
 
 import { enrollInSchema } from "../schema/enrollments";
 
-export const enrollInCourse = createServerFn({ method: "POST" })
+// Per-user enrollment throttle in front of Stripe: denies bots and caps
+// checkout-session creation before any course lookup, DB write, or Stripe
+// call. Chains authMiddleware for the session (and its IP backstop).
+const enrollmentMiddleware = createMiddleware()
 	.middleware([authMiddleware])
+	.server(async ({ next, context }) => {
+		const decision = await ajEnroll.protect(toArcjetRequest(getRequest()), {
+			userId: context.user.id,
+		});
+		throwIfDenied(decision);
+
+		return next({ context: { user: context.user } });
+	});
+
+export const enrollInCourse = createServerFn({ method: "POST" })
+	.middleware([enrollmentMiddleware])
 	.validator(enrollInSchema)
 	.handler(async ({ context, data }) => {
 		const { user } = context;
