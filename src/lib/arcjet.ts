@@ -4,6 +4,7 @@ import arcjet, {
 	shield,
 	slidingWindow,
 	tokenBucket,
+	validateEmail,
 } from "@arcjet/node";
 import type { ArcjetDecision, ArcjetNodeRequest } from "@arcjet/node";
 import { setResponseStatus } from "@tanstack/react-start/server";
@@ -77,6 +78,58 @@ export const ajForAuthPath = (pathname: string) => {
 	return ajAuthDefault;
 };
 
+// Email-bearing auth endpoints: same budgets as above plus address
+// validation (disposable, invalid, and dead-domain addresses are denied).
+// Callers must pass the address from the request body as `{ email }`.
+const emailRule = validateEmail({
+	mode: "LIVE",
+	deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+});
+
+const ajAuthStrictEmail = ajAuthBase
+	.withRule(slidingWindow({ mode: "LIVE", interval: "60s", max: 3 }))
+	.withRule(emailRule);
+const ajAuthMediumEmail = ajAuthBase
+	.withRule(slidingWindow({ mode: "LIVE", interval: "60s", max: 5 }))
+	.withRule(emailRule);
+
+type AuthEmailClient = typeof ajAuthStrictEmail;
+
+const exactEmailClients = new Map<string, AuthEmailClient>([
+	["/request-password-reset", ajAuthStrictEmail],
+	["/send-verification-email", ajAuthStrictEmail],
+]);
+
+const prefixEmailClients: readonly (readonly [
+	prefix: string,
+	client: AuthEmailClient,
+])[] = [
+	["/sign-in/", ajAuthMediumEmail],
+	["/sign-up/", ajAuthStrictEmail],
+	["/forget-password/", ajAuthStrictEmail],
+];
+
+// Email-capable auth paths (credential endpoints whose JSON body carries an
+// `email` field). Returns undefined for paths without an address to check —
+// callers fall back to ajForAuthPath.
+export const ajForAuthEmail = (pathname: string) => {
+	const path = pathname.startsWith("/api/auth")
+		? pathname.slice("/api/auth".length)
+		: pathname;
+
+	const exact = exactEmailClients.get(path);
+
+	if (exact) {
+		return exact;
+	}
+
+	for (const [prefix, client] of prefixEmailClients) {
+		if (path.startsWith(prefix)) {
+			return client;
+		}
+	}
+};
+
 // Admin mutations: per-user token bucket. Separate client (not withRule) so
 // the IP bucket above is not double-spent when adminMiddleware chains
 // authMiddleware.
@@ -93,11 +146,11 @@ export const ajAdmin = arcjet({
 	],
 });
 
-// Public reads: Shield + generous IP limit. No bot rule here so search
-// engine crawlers keep working.
-export const ajPublic = aj.withRule(
-	slidingWindow({ mode: "LIVE", interval: "60s", max: 200 })
-);
+// Public reads: Shield + generous IP limit. Search engine crawlers stay
+// allowed so course pages keep getting indexed; every other bot is denied.
+export const ajPublic = aj
+	.withRule(detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }))
+	.withRule(slidingWindow({ mode: "LIVE", interval: "60s", max: 200 }));
 
 // @arcjet/node speaks IncomingMessage-shaped requests; TanStack Start exposes
 // a Fetch Request, so adapt it. No socket is available, therefore client IP
