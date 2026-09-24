@@ -36,6 +36,8 @@ export const env = createEnv({
 		AWS_REGION: z.string(),
 		// Stripe configuration
 		STRIPE_SECRET_KEY: z.string(),
+		// Arcjet configuration
+		ARCJET_KEY: z.string(),
 	},
 	runtimeEnv: { ...process.env, ...import.meta.env },
 	emptyStringAsUndefined: true,
