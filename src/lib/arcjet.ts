@@ -130,6 +130,20 @@ export const ajForAuthEmail = (pathname: string) => {
 	}
 };
 
+// Enrollment checkout: per-user sliding window in front of Stripe session
+// creation. Separate client (not withRule on ajAuthed) so the shared IP
+// bucket in authMiddleware is not double-spent.
+export const ajEnroll = aj
+	.withRule(detectBot({ mode: "LIVE", allow: [] }))
+	.withRule(
+		slidingWindow({
+			mode: "LIVE",
+			interval: "60s",
+			max: 10,
+			characteristics: ["userId"],
+		})
+	);
+
 // Admin mutations: per-user token bucket. Separate client (not withRule) so
 // the IP bucket above is not double-spent when adminMiddleware chains
 // authMiddleware.
