@@ -17,12 +17,62 @@ export const aj = arcjet({
 	rules: [shield({ mode: "LIVE" })],
 });
 
-// Authed server functions + auth API routes: deny automated clients and apply
-// an IP-keyed sliding window as an outer backstop (Better Auth enforces
-// stricter per-endpoint limits of its own).
-export const ajAuthed = aj
-	.withRule(detectBot({ mode: "LIVE", allow: [] }))
-	.withRule(slidingWindow({ mode: "LIVE", interval: "60s", max: 100 }));
+// Shared Shield + bot-deny base for auth surfaces.
+const ajAuthBase = aj.withRule(detectBot({ mode: "LIVE", allow: [] }));
+
+// Authed server functions: IP-keyed sliding window as an outer backstop.
+export const ajAuthed = ajAuthBase.withRule(
+	slidingWindow({ mode: "LIVE", interval: "60s", max: 100 })
+);
+
+// Auth API routes: per-path budgets mirroring the retired Better Auth
+// customRules 1:1 (requests per 60s, IP-keyed). `/*` entries match by prefix,
+// plain entries match exactly.
+const ajAuthStrict = ajAuthBase.withRule(
+	slidingWindow({ mode: "LIVE", interval: "60s", max: 3 })
+);
+const ajAuthMedium = ajAuthBase.withRule(
+	slidingWindow({ mode: "LIVE", interval: "60s", max: 5 })
+);
+const ajAuthDefault = ajAuthBase.withRule(
+	slidingWindow({ mode: "LIVE", interval: "60s", max: 60 })
+);
+
+type AuthRateClient = typeof ajAuthDefault;
+
+const exactClients = new Map<string, AuthRateClient>([
+	["/verify-email", ajAuthMedium],
+	["/request-password-reset", ajAuthStrict],
+	["/send-verification-email", ajAuthStrict],
+	["/change-password", ajAuthStrict],
+	["/change-email", ajAuthStrict],
+]);
+
+const prefixClients: readonly (readonly [prefix: string, client: AuthRateClient])[] = [
+	["/sign-in/", ajAuthMedium],
+	["/sign-up/", ajAuthStrict],
+	["/forget-password/", ajAuthStrict],
+];
+
+export const ajForAuthPath = (pathname: string) => {
+	const path = pathname.startsWith("/api/auth")
+		? pathname.slice("/api/auth".length)
+		: pathname;
+
+	const exact = exactClients.get(path);
+
+	if (exact) {
+		return exact;
+	}
+
+	for (const [prefix, client] of prefixClients) {
+		if (path.startsWith(prefix)) {
+			return client;
+		}
+	}
+
+	return ajAuthDefault;
+};
 
 // Admin mutations: per-user token bucket. Separate client (not withRule) so
 // the IP bucket above is not double-spent when adminMiddleware chains
