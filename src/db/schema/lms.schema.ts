@@ -4,6 +4,8 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	unique,
+	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 
@@ -86,21 +88,25 @@ export const lessons = pgTable("lessons", {
 		.notNull(),
 });
 
-export const enrollments = pgTable("enrollments", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	amount: integer("amount").notNull(),
-	status: enrollmentStatus().default("Pending"),
-	userId: text("user_id")
-		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
-	courseId: uuid("course_id")
-		.notNull()
-		.references(() => courses.id, { onDelete: "cascade" }),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.defaultNow()
-		.$onUpdate(() => /* @__PURE__ */ new Date())
-		.notNull(),
-});
+export const enrollments = pgTable(
+	"enrollments",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		amount: integer("amount").notNull(),
+		status: enrollmentStatus().default("Pending"),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		courseId: uuid("course_id")
+			.notNull()
+			.references(() => courses.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [unique("user_course_unique").on(table.userId, table.courseId)]
+);
