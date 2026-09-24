@@ -3,4 +3,4 @@ allowBuilds:
   lightningcss: true
   better-sqlite3: true
 minimumReleaseAgeExclude:
-  - '@tanstack/react-router@1.170.39'
+  - "@tanstack/react-router@1.170.39"
