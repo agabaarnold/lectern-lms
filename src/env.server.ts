@@ -25,9 +25,6 @@ export const env = createEnv({
 		GITHUB_CLIENT_SECRET: z.string(),
 		// Node environment
 		NODE_ENV: z.enum(["development", "production"]).default("production"),
-		// Captcha secret (never exposed to the client)
-		CAPTCHA_SECRET: z.string(),
-		CAPTCHA_SITE_KEY: z.string(),
 		// Tigris S3 config
 		AWS_ACCESS_KEY_ID: z.string(),
 		AWS_SECRET_ACCESS_KEY: z.string(),
