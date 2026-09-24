@@ -2,7 +2,6 @@ import { redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
 
-import { auth } from "./lib/auth";
 import {
 	ajAdmin,
 	ajAuthed,
@@ -10,6 +9,7 @@ import {
 	throwIfDenied,
 	toArcjetRequest,
 } from "./lib/arcjet";
+import { auth } from "./lib/auth";
 
 export const authMiddleware = createMiddleware().server(async ({ next }) => {
 	const decision = await ajAuthed.protect(toArcjetRequest(getRequest()));

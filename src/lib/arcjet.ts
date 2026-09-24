@@ -48,7 +48,10 @@ const exactClients = new Map<string, AuthRateClient>([
 	["/change-email", ajAuthStrict],
 ]);
 
-const prefixClients: readonly (readonly [prefix: string, client: AuthRateClient])[] = [
+const prefixClients: readonly (readonly [
+	prefix: string,
+	client: AuthRateClient,
+])[] = [
 	["/sign-in/", ajAuthMedium],
 	["/sign-up/", ajAuthStrict],
 	["/forget-password/", ajAuthStrict],
