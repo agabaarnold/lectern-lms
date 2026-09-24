@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
-import { adminMiddleware } from "#/middleware.ts";
+import { adminMiddleware, arcjetMiddleware } from "#/middleware.ts";
 
 import {
 	courseIdSchema,
@@ -181,8 +181,9 @@ export const deleteCourse = createServerFn({ method: "POST" })
 	});
 
 // Not protected for pulic course route
-export const getAllCourses = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getAllCourses = createServerFn({ method: "GET" })
+	.middleware([arcjetMiddleware])
+	.handler(async () => {
 		const data = await db.query.courses.findMany({
 			where: { status: "Published" },
 			columns: {
@@ -200,10 +201,10 @@ export const getAllCourses = createServerFn({ method: "GET" }).handler(
 		});
 
 		return data;
-	}
-);
+	});
 
 export const getIndividualCourse = createServerFn({ method: "GET" })
+	.middleware([arcjetMiddleware])
 	.validator(getIndividualCourseSchema)
 	.handler(async ({ data }) => {
 		const course = await db.query.courses.findFirst({
