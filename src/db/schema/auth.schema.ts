@@ -19,6 +19,7 @@ export const users = pgTable("users", {
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
+	stripeCustomerId: text("stripe_customer_id").unique(),
 	role: text("role"),
 	banned: boolean("banned").default(false),
 	banReason: text("ban_reason"),
