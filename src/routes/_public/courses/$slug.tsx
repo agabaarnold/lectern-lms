@@ -20,8 +20,10 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "#/components/ui/collapsible.tsx";
+import { FieldGroup } from "#/components/ui/field.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
+// import { enrollInCourse } from "#/features/courses/functions/enrollments.ts";
 import { currencyFormatter } from "#/lib/helpers.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
@@ -286,9 +288,11 @@ function SlugPage() {
 								</ul>
 							</div>
 
-							<Button className="w-full" type="button">
-								Enroll now!
-							</Button>
+							<form>
+								<FieldGroup>
+									<Button className="w-full">Enroll now!</Button>
+								</FieldGroup>
+							</form>
 
 							<p className="text-muted-foreground mt-3 text-center text-xs">
 								30-day money-back guarantee
