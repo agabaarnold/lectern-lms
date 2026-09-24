@@ -1,4 +1,4 @@
-// oxlint-disable shadcn/no-restyle
+// oxlint-disable react/function-component-definition func-style shadcn/no-restyle
 import {
 	IconBook,
 	IconCategory,
@@ -11,7 +11,6 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 
 import { RenderDescription } from "#/components/rich-text/render-description.tsx";
-// oxlint-disable react/function-component-definition func-style
 import { Image } from "#/components/shared/image.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
 import { Button } from "#/components/ui/button.tsx";
