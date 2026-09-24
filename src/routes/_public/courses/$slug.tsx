@@ -8,37 +8,41 @@ import {
 	IconClock,
 	IconPlayerPlay,
 } from "@tabler/icons-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { RenderDescription } from "#/components/rich-text/render-description.tsx";
 import { Image } from "#/components/shared/image.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
-import { Button } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "#/components/ui/collapsible.tsx";
-import { FieldGroup } from "#/components/ui/field.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
+import { checkIfCourseBought } from "#/features/courses/functions/enrollments.ts";
 // import { enrollInCourse } from "#/features/courses/functions/enrollments.ts";
 import { currencyFormatter } from "#/lib/helpers.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
+
+import { EnrollmentButton } from "./-components/enrollment-button";
 
 export const Route = createFileRoute("/_public/courses/$slug")({
 	loader: async ({ params }) => {
 		const { slug } = params;
 		const course = await getIndividualCourse({ data: { slug } });
+		const isCourseBought = await checkIfCourseBought({
+			data: { courseId: course.id },
+		});
 
-		return { course };
+		return { course, isCourseBought };
 	},
 	component: SlugPage,
 });
 
 function SlugPage() {
-	const { course } = Route.useLoaderData();
+	const { course, isCourseBought } = Route.useLoaderData();
 
 	const thumbnailUrl = urlConstruct(course.fileKey);
 
@@ -288,11 +292,11 @@ function SlugPage() {
 								</ul>
 							</div>
 
-							<form>
-								<FieldGroup>
-									<Button className="w-full">Enroll now!</Button>
-								</FieldGroup>
-							</form>
+							{isCourseBought ? (
+								<Link to="/dashboard">Watch Course</Link>
+							) : (
+								<EnrollmentButton courseId={course.id} />
+							)}
 
 							<p className="text-muted-foreground mt-3 text-center text-xs">
 								30-day money-back guarantee
