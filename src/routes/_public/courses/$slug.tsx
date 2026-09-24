@@ -6,6 +6,11 @@ import { RenderDescription } from "#/components/rich-text/render-description.tsx
 // oxlint-disable react/function-component-definition func-style
 import { Image } from "#/components/shared/image.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
+import { Card, CardContent } from "#/components/ui/card.tsx";
+import {
+	Collapsible,
+	CollapsibleTrigger,
+} from "#/components/ui/collapsible.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
@@ -81,9 +86,9 @@ function SlugPage() {
 
 					<div className="mt-12 space-y-6">
 						<div className="flex items-center justify-between">
-							<h3 className="text-3xl font-semibold tracking-tight">
+							<h2 className="text-3xl font-semibold tracking-tight">
 								Course Content
-							</h3>
+							</h2>
 
 							<div>
 								{course.chapters.length} chapters |{" "}
@@ -93,6 +98,40 @@ function SlugPage() {
 								) || 0}{" "}
 								lessons
 							</div>
+						</div>
+
+						<div className="space-y-4">
+							{course.chapters.map((chapter, index) => (
+								<Collapsible key={chapter.id} defaultOpen={index === 0}>
+									{/* oxlint-disable-next-line react-doctor/no-transition-all */}
+									<Card className="overflow-hidden border-2 p-0 transition-all duration-200 hover:shadow-md">
+										<CollapsibleTrigger>
+											<div>
+												<CardContent className="hover:bg-muted/50 p-6 transition-colors">
+													<div>
+														<div>
+															<p className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-full font-semibold">
+																{index + 1}
+															</p>
+
+															<div>
+																<h3 className="text-left text-xl font-semibold">
+																	{chapter.title}
+																</h3>
+
+																<p>
+																	{chapter.lessons.length} lesson
+																	{chapter.lessons.length === 1 ? "" : "s"}
+																</p>
+															</div>
+														</div>
+													</div>
+												</CardContent>
+											</div>
+										</CollapsibleTrigger>
+									</Card>
+								</Collapsible>
+							))}
 						</div>
 					</div>
 				</div>
