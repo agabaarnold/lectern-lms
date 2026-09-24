@@ -286,7 +286,9 @@ function SlugPage() {
 								</ul>
 							</div>
 
-							<Button className="w-full" type="button">Enroll now!</Button>
+							<Button className="w-full" type="button">
+								Enroll now!
+							</Button>
 
 							<p className="text-muted-foreground mt-3 text-center text-xs">
 								30-day money-back guarantee
