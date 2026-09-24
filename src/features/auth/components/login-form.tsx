@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 
 import { GithubIcon } from "#/components/icons/github-icon.tsx";
 import { GoogleIcon } from "#/components/icons/google-icon.tsx";
-import { Captcha } from "#/components/shared/captcha.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -21,7 +20,6 @@ import {
 	FieldSeparator,
 } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form/use-form.ts";
-import { useCaptcha } from "#/hooks/use-captcha.ts";
 import { authClient } from "#/lib/auth-client.ts";
 
 import { loginSchema } from "../schema";
@@ -58,28 +56,15 @@ const handleGithubLogin = async () => {
 const LoginForm = () => {
 	const navigate = useNavigate();
 	const search = useSearch({ from: "/_auth/login" });
-	const {
-		token: captchaToken,
-		onVerify,
-		onExpire,
-		reset: resetCaptcha,
-	} = useCaptcha();
 
 	const form = useAppForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
-			if (!captchaToken) {
-				toast.error("Please complete the captcha");
-				return;
-			}
-
 			await authClient.signIn.email({
 				...value,
 				fetchOptions: {
-					headers: { "x-captcha-response": captchaToken },
 					onError: ({ error }) => {
 						toast.error(error.message);
-						resetCaptcha();
 					},
 					onSuccess: () => {
 						toast.success("Welcome back!");
@@ -165,8 +150,6 @@ const LoginForm = () => {
 						<form.AppField name="rememberMe">
 							{(field) => <field.FormCheckbox label="Remember me" />}
 						</form.AppField>
-
-						<Captcha onVerify={onVerify} onExpire={onExpire} />
 
 						<form.AppForm>
 							<form.SubmitButton label="Login" submitLabel="Logging in" />

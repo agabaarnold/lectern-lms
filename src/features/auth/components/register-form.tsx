@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 
 import { GithubIcon } from "#/components/icons/github-icon.tsx";
 import { GoogleIcon } from "#/components/icons/google-icon.tsx";
-import { Captcha } from "#/components/shared/captcha.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
 	Card,
@@ -20,7 +19,6 @@ import {
 	FieldSeparator,
 } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form/use-form.ts";
-import { useCaptcha } from "#/hooks/use-captcha.ts";
 import { authClient } from "#/lib/auth-client.ts";
 
 import { registerSchema } from "../schema";
@@ -56,29 +54,16 @@ const handleGithubSignup = async () => {
 
 const RegisterForm = () => {
 	const navigate = useNavigate();
-	const {
-		token: captchaToken,
-		onVerify,
-		onExpire,
-		reset: resetCaptcha,
-	} = useCaptcha();
 
 	const form = useAppForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
-			if (!captchaToken) {
-				toast.error("Please complete the captcha");
-				return;
-			}
-
 			await authClient.signUp.email({
 				...value,
 				callbackURL: `${window.location.origin}/email-verified`,
 				fetchOptions: {
-					headers: { "x-captcha-response": captchaToken },
 					onError: ({ error }) => {
 						toast.error(error.message);
-						resetCaptcha();
 					},
 					onSuccess: () => {
 						toast.success(
@@ -141,8 +126,6 @@ const RegisterForm = () => {
 								/>
 							)}
 						</form.AppField>
-
-						<Captcha onVerify={onVerify} onExpire={onExpire} />
 
 						<form.AppForm>
 							<form.SubmitButton
