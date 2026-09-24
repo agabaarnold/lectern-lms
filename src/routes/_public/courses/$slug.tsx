@@ -78,7 +78,7 @@ function SlugPage() {
 
 						<Badge className="flex items-center px-3 py-1">
 							<IconClock className="size-4" />
-							<span>{course.duration}</span>
+							<span>{course.duration} hours</span>
 						</Badge>
 					</div>
 
