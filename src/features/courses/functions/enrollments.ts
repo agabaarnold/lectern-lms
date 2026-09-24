@@ -1,5 +1,5 @@
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { Stripe } from "stripe";
 
@@ -8,6 +8,7 @@ import { users } from "#/db/schema/auth.schema.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
 import { env } from "#/env.server.ts";
 import { ajEnroll, throwIfDenied, toArcjetRequest } from "#/lib/arcjet";
+import { auth } from "#/lib/auth.ts";
 import { stripeClient } from "#/lib/stripe.ts";
 import { authMiddleware } from "#/middleware.ts";
 
@@ -133,4 +134,26 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 			throw new Error("Failed to enroll in course", { cause: error });
 		}
+	});
+
+export const checkIfCourseBought = createServerFn({ method: "GET" })
+	.validator(enrollInSchema)
+	.handler(async ({ data }) => {
+		const headers = getRequestHeaders();
+
+		const session = await auth.api.getSession({ headers });
+		if (!session?.user) {
+			return false;
+		}
+
+		const enrollment = await db.query.enrollments.findFirst({
+			where: {
+				userId: session.user.id,
+				courseId: data.courseId,
+			},
+			columns: { status: true },
+		});
+
+		// oxlint-disable-next-line no-unneeded-ternary
+		return enrollment?.status === "Active" ? true : false;
 	});
