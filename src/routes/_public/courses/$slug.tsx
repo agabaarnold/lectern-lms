@@ -1,5 +1,11 @@
 // oxlint-disable shadcn/no-restyle
-import { IconCategory, IconChartBar, IconClock } from "@tabler/icons-react";
+import {
+	IconCategory,
+	IconChartBar,
+	IconChevronDown,
+	IconClock,
+	IconPlayerPlay,
+} from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { RenderDescription } from "#/components/rich-text/render-description.tsx";
@@ -9,6 +15,7 @@ import { Badge } from "#/components/ui/badge.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
 	Collapsible,
+	CollapsibleContent,
 	CollapsibleTrigger,
 } from "#/components/ui/collapsible.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
@@ -42,7 +49,7 @@ function SlugPage() {
 						priority
 					/>
 
-					<div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent" />
+					<div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent" />
 				</div>
 
 				<div className="mt-8 space-y-6">
@@ -104,12 +111,12 @@ function SlugPage() {
 							{course.chapters.map((chapter, index) => (
 								<Collapsible key={chapter.id} defaultOpen={index === 0}>
 									{/* oxlint-disable-next-line react-doctor/no-transition-all */}
-									<Card className="overflow-hidden border-2 p-0 transition-all duration-200 hover:shadow-md">
+									<Card className="gap-0 overflow-hidden border-2 p-0 transition-all duration-200 hover:shadow-md">
 										<CollapsibleTrigger>
 											<div>
 												<CardContent className="hover:bg-muted/50 p-6 transition-colors">
-													<div>
-														<div>
+													<div className="flex items-center justify-between">
+														<div className="flex items-center gap-4">
 															<p className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-full font-semibold">
 																{index + 1}
 															</p>
@@ -119,21 +126,71 @@ function SlugPage() {
 																	{chapter.title}
 																</h3>
 
-																<p>
+																<p className="text-muted-foreground mt-1 text-left text-sm">
 																	{chapter.lessons.length} lesson
 																	{chapter.lessons.length === 1 ? "" : "s"}
 																</p>
 															</div>
 														</div>
+
+														<div className="flex items-center gap-3">
+															<Badge className="text-xs" variant="outline">
+																{chapter.lessons.length} lesson
+																{chapter.lessons.length === 1 ? "" : "s"}
+															</Badge>
+
+															<IconChevronDown className="size-4" />
+														</div>
 													</div>
 												</CardContent>
 											</div>
 										</CollapsibleTrigger>
+
+										<CollapsibleContent>
+											<div className="bg-muted/20 border-t">
+												<div className="space-y-3 p-6 pt-4">
+													{chapter.lessons.map((lesson, lessonIndex) => (
+														<div
+															className="hover:bg-accent group flex items-center gap-4 rounded-lg p-3 transition-colors"
+															key={lesson.id}
+														>
+															<div className="bg-background border-primary/20 flex size-8 items-center justify-center rounded-full border-2">
+																<IconPlayerPlay className="text-muted-foreground group-hover:text-primary size-4 transition-colors" />
+															</div>
+
+															<div className="flex-1">
+																<p className="text-sm font-medium">
+																	{lesson.title}
+																</p>
+
+																<p className="text-muted-foreground mt-1 text-xs">
+																	Lesson {lessonIndex + 1}
+																</p>
+															</div>
+														</div>
+													))}
+												</div>
+											</div>
+										</CollapsibleContent>
 									</Card>
 								</Collapsible>
 							))}
 						</div>
 					</div>
+				</div>
+			</div>
+
+			{/* Enrollment Card */}
+			<div className="order-2 lg:col-span-1">
+				<div className="sticky top-20">
+					<Card className="py-0">
+						<CardContent className="p-6">
+							<div className="">
+								<span>Price</span>
+								<span>{course.price}</span>
+							</div>
+						</CardContent>
+					</Card>
 				</div>
 			</div>
 		</div>
