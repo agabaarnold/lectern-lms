@@ -20,8 +20,8 @@
 		"email:dev": "email dev --dir src/features/email/emails --port 3001"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.1137.0",
-		"@aws-sdk/s3-request-presigner": "^3.1137.0",
+		"@aws-sdk/client-s3": "^3.1138.0",
+		"@aws-sdk/s3-request-presigner": "^3.1138.0",
 		"@base-ui/react": "^1.8.0",
 		"@better-auth/drizzle-adapter": "^1.7.5",
 		"@dnd-kit/abstract": "0.5.0",
@@ -45,6 +45,7 @@
 		"@tanstack/react-start": "latest",
 		"@tanstack/react-table": "latest",
 		"@tiptap/extension-text-align": "^3.31.3",
+		"@tiptap/html": "^3.31.3",
 		"@tiptap/pm": "^3.31.3",
 		"@tiptap/react": "^3.31.3",
 		"@tiptap/starter-kit": "^3.31.3",
