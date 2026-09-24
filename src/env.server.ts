@@ -34,6 +34,8 @@ export const env = createEnv({
 		AWS_ENDPOINT_URL_S3: z.url(),
 		AWS_ENDPOINT_URL_IAM: z.url(),
 		AWS_REGION: z.string(),
+		// Stripe configuration
+		STRIPE_SECRET_KEY: z.string(),
 	},
 	runtimeEnv: { ...process.env, ...import.meta.env },
 	emptyStringAsUndefined: true,
