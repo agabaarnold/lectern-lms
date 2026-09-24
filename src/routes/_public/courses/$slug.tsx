@@ -186,9 +186,30 @@ function SlugPage() {
 				<div className="sticky top-20">
 					<Card className="py-0">
 						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-6">
+							<div className="mb-6 flex items-center justify-between">
 								<span className="text-lg font-medium">Price</span>
-								<span className="text-2xl font-bold text-primary">{currencyFormatter.format(course.price)}</span>
+								<span className="text-primary text-2xl font-bold">
+									{currencyFormatter.format(course.price)}
+								</span>
+							</div>
+
+							<div className="bg-muted mb-6 space-y-3 rounded-lg p-4">
+								<h4 className="font-medium">What you will get:</h4>
+
+								<div className="flex flex-col gap-3">
+									<div className="flex items-center gap-3">
+										<div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+											<IconClock className="size-4" />
+										</div>
+
+										<div>
+											<p className="text-sm font-medium">Course duration</p>
+											<p className="text-muted-foreground">
+												{course.duration} hours
+											</p>
+										</div>
+									</div>
+								</div>
 							</div>
 						</CardContent>
 					</Card>
