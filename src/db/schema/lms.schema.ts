@@ -21,6 +21,12 @@ export const courseStatusEnum = pgEnum("course_status", [
 	"Archived",
 ]);
 
+export const enrollmentStatus = pgEnum("enrollment_status", [
+	"Pending",
+	"Active",
+	"Cancelled",
+]);
+
 export const courses = pgTable("courses", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	title: text("title").notNull(),
@@ -71,6 +77,25 @@ export const lessons = pgTable("lessons", {
 	chapterId: uuid("chapter_id")
 		.notNull()
 		.references(() => chapters.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.notNull(),
+});
+
+export const enrollments = pgTable("enrollments", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	amount: integer("amount").notNull(),
+	status: enrollmentStatus().default("Pending"),
+	userId: text("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	courseId: uuid("course_id")
+		.notNull()
+		.references(() => courses.id, { onDelete: "cascade" }),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
