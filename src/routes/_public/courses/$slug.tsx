@@ -20,6 +20,7 @@ import {
 } from "#/components/ui/collapsible.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
+import { currencyFormatter } from "#/lib/helpers.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
 export const Route = createFileRoute("/_public/courses/$slug")({
@@ -185,9 +186,9 @@ function SlugPage() {
 				<div className="sticky top-20">
 					<Card className="py-0">
 						<CardContent className="p-6">
-							<div className="">
-								<span>Price</span>
-								<span>{course.price}</span>
+							<div className="flex items-center justify-between mb-6">
+								<span className="text-lg font-medium">Price</span>
+								<span className="text-2xl font-bold text-primary">{currencyFormatter.format(course.price)}</span>
 							</div>
 						</CardContent>
 					</Card>
