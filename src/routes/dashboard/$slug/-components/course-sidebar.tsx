@@ -10,6 +10,8 @@ import {
 import { Progress } from "#/components/ui/progress.tsx";
 import type { getCourseSiderbarData } from "#/features/courses/functions/courses.ts";
 
+import { LessonItem } from "./lesson-item";
+
 interface CourseSidebarProps {
 	course: Awaited<ReturnType<typeof getCourseSiderbarData>>["course"];
 }
@@ -72,7 +74,7 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => (
 
 					<CollapsibleContent className="mt-3 space-y-3 border-l-2 pl-6">
 						{chapter.lessons.map((lesson) => (
-							<p key={lesson.id}>{lesson.title}</p>
+							<LessonItem slug={course.slug} lesson={lesson} key={lesson.id} />
 						))}
 					</CollapsibleContent>
 				</Collapsible>
