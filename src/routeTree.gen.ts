@@ -23,6 +23,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardSlugRouteRouteImport } from './routes/dashboard/$slug/route'
 import { Route as PaymentCancelRouteImport } from './routes/payment/cancel'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
@@ -30,6 +31,7 @@ import { Route as PublicCoursesIndexRouteImport } from './routes/_public/courses
 import { Route as PublicCoursesSlugRouteImport } from './routes/_public/courses/$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiWebhookStripeRouteImport } from './routes/api/webhook/stripe'
+import { Route as DashboardSlugIndexRouteImport } from './routes/dashboard/$slug/index'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
 import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
@@ -105,6 +107,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardSlugRouteRoute = DashboardSlugRouteRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const PaymentCancelRoute = PaymentCancelRouteImport.update({
   id: '/payment/cancel',
   path: '/payment/cancel',
@@ -139,6 +146,11 @@ const ApiWebhookStripeRoute = ApiWebhookStripeRouteImport.update({
   id: '/api/webhook/stripe',
   path: '/api/webhook/stripe',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSlugIndexRoute = DashboardSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardSlugRouteRoute,
 } as any)
 const AppAdminCoursesIndexRoute = AppAdminCoursesIndexRouteImport.update({
   id: '/courses/',
@@ -187,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin': typeof AppAdminRouteRouteWithChildren
+  '/dashboard/$slug': typeof DashboardSlugRouteRouteWithChildren
   '/email-verified': typeof AppEmailVerifiedRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -200,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/admin/': typeof AppAdminIndexRoute
   '/courses/': typeof PublicCoursesIndexRoute
+  '/dashboard/$slug/': typeof DashboardSlugIndexRoute
   '/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -225,6 +239,7 @@ export interface FileRoutesByTo {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/admin': typeof AppAdminIndexRoute
   '/courses': typeof PublicCoursesIndexRoute
+  '/dashboard/$slug': typeof DashboardSlugIndexRoute
   '/admin/courses': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId': typeof AppAdminCoursesCourseIdIndexRoute
@@ -242,6 +257,7 @@ export interface FileRoutesById {
   '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/admin': typeof AppAdminRouteRouteWithChildren
+  '/dashboard/$slug': typeof DashboardSlugRouteRouteWithChildren
   '/_app/email-verified': typeof AppEmailVerifiedRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -256,6 +272,7 @@ export interface FileRoutesById {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_public/courses/': typeof PublicCoursesIndexRoute
+  '/dashboard/$slug/': typeof DashboardSlugIndexRoute
   '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/_app/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -272,6 +289,7 @@ export interface FileRouteTypes {
     | '/not-admin'
     | '/verify-email'
     | '/admin'
+    | '/dashboard/$slug'
     | '/email-verified'
     | '/forgot-password'
     | '/login'
@@ -285,6 +303,7 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/admin/'
     | '/courses/'
+    | '/dashboard/$slug/'
     | '/admin/courses/'
     | '/api/s3/upload/'
     | '/admin/courses/$courseId/'
@@ -310,6 +329,7 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/admin'
     | '/courses'
+    | '/dashboard/$slug'
     | '/admin/courses'
     | '/api/s3/upload'
     | '/admin/courses/$courseId'
@@ -326,6 +346,7 @@ export interface FileRouteTypes {
     | '/not-admin'
     | '/verify-email'
     | '/_app/admin'
+    | '/dashboard/$slug'
     | '/_app/email-verified'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -340,6 +361,7 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/_app/admin/'
     | '/_public/courses/'
+    | '/dashboard/$slug/'
     | '/_app/admin/courses/'
     | '/api/s3/upload/'
     | '/_app/admin/courses/$courseId/'
@@ -463,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/$slug': {
+      id: '/dashboard/$slug'
+      path: '/$slug'
+      fullPath: '/dashboard/$slug'
+      preLoaderRoute: typeof DashboardSlugRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/payment/cancel': {
       id: '/payment/cancel'
       path: '/payment/cancel'
@@ -511,6 +540,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/webhook/stripe'
       preLoaderRoute: typeof ApiWebhookStripeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/$slug/': {
+      id: '/dashboard/$slug/'
+      path: '/'
+      fullPath: '/dashboard/$slug/'
+      preLoaderRoute: typeof DashboardSlugIndexRouteImport
+      parentRoute: typeof DashboardSlugRouteRoute
     }
     '/_app/admin/courses/': {
       id: '/_app/admin/courses/'
@@ -638,11 +674,24 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface DashboardSlugRouteRouteChildren {
+  DashboardSlugIndexRoute: typeof DashboardSlugIndexRoute
+}
+
+const DashboardSlugRouteRouteChildren: DashboardSlugRouteRouteChildren = {
+  DashboardSlugIndexRoute: DashboardSlugIndexRoute,
+}
+
+const DashboardSlugRouteRouteWithChildren =
+  DashboardSlugRouteRoute._addFileChildren(DashboardSlugRouteRouteChildren)
+
 interface DashboardRouteRouteChildren {
+  DashboardSlugRouteRoute: typeof DashboardSlugRouteRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardSlugRouteRoute: DashboardSlugRouteRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
