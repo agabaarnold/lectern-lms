@@ -39,13 +39,21 @@ export const createCourse = createServerFn({ method: "POST" })
 				default_price_data: { currency: "ugx", unit_amount: data.price },
 			});
 
+			const stripePriceId = z
+				.string()
+				.safeParse(stripeData.default_price);
+
+			if (!stripePriceId.success) {
+				throw new TypeError("Failed to create course pricing");
+			}
+
 			inserted = await db
 				.insert(courses)
 				.values({
 					...data,
 					slug: normalizeSlug(data.slug),
 					userId: context.user.id,
-					stripePriceId: stripeData.default_price as string,
+					stripePriceId: stripePriceId.data,
 				})
 				.returning();
 		} catch (error) {
