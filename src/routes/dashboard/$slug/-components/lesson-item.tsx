@@ -28,7 +28,8 @@ export const LessonItem = ({ lesson, slug }: LessonItemProps) => {
 						"border-green-300 bg-green-100 text-green-800 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50"
 				),
 			})}
-			to="/"
+			to="/dashboard/$slug/$lessonId"
+			params={{ slug, lessonId: lesson.id }}
 		>
 			<div className="flex w-full min-w-0 items-center gap-2.5">
 				<div className="shrink-0">
