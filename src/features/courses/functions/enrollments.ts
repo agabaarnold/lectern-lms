@@ -154,9 +154,7 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 			const checkoutSession = await stripeClient.checkout.sessions.create({
 				customer: stripeCustomerId,
-				line_items: [
-					{ price: "price_1UJEKgHc4dWacTSigSd1qT6l", quantity: 1 },
-				],
+				line_items: [{ price: "price_1UJEKgHc4dWacTSigSd1qT6l", quantity: 1 }],
 				mode: "payment",
 				success_url: `${env.BETTER_AUTH_URL}/payment/success`,
 				cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
