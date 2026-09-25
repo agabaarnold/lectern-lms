@@ -3,19 +3,27 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ChartAreaInteractive } from "#/components/sidebar/chart-area-interactive.tsx";
 import { SectionCards } from "#/components/sidebar/section-cards.tsx";
+import { getDashboardStats } from "#/features/admin/functions/index.ts";
 
 export const Route = createFileRoute("/_app/admin/")({
+	loader: () => getDashboardStats(),
 	component: AdminDashboard,
 });
 
 function AdminDashboard() {
+	const { totalCourses, totalCustomers, totalLessons, totalSignups } =
+		Route.useLoaderData();
+
 	return (
 		<>
-			<SectionCards />
+			<SectionCards
+				totalCourses={totalCourses}
+				totalCustomers={totalCustomers}
+				totalLessons={totalLessons}
+				totalSignups={totalSignups}
+			/>
 
-			<div className="px-4 lg:px-6">
-				<ChartAreaInteractive />
-			</div>
+			<ChartAreaInteractive />
 		</>
 	);
 }
