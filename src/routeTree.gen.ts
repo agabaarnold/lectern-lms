@@ -27,6 +27,7 @@ import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as PublicCoursesIndexRouteImport } from './routes/_public/courses/index'
 import { Route as PublicCoursesSlugRouteImport } from './routes/_public/courses/$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiWebhookStripeRouteImport } from './routes/api/webhook/stripe'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
 import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
@@ -122,6 +123,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhookStripeRoute = ApiWebhookStripeRouteImport.update({
+  id: '/api/webhook/stripe',
+  path: '/api/webhook/stripe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAdminCoursesIndexRoute = AppAdminCoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/payment/success': typeof PaymentSuccessRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/admin/': typeof AppAdminIndexRoute
   '/courses/': typeof PublicCoursesIndexRoute
   '/admin/courses/': typeof AppAdminCoursesIndexRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/payment/success': typeof PaymentSuccessRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/admin': typeof AppAdminIndexRoute
   '/courses': typeof PublicCoursesIndexRoute
   '/admin/courses': typeof AppAdminCoursesIndexRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/_public/': typeof PublicIndexRoute
   '/_public/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_public/courses/': typeof PublicCoursesIndexRoute
   '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/courses/$slug'
     | '/api/auth/$'
+    | '/api/webhook/stripe'
     | '/admin/'
     | '/courses/'
     | '/admin/courses/'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/payment/success'
     | '/courses/$slug'
     | '/api/auth/$'
+    | '/api/webhook/stripe'
     | '/admin'
     | '/courses'
     | '/admin/courses'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/_public/'
     | '/_public/courses/$slug'
     | '/api/auth/$'
+    | '/api/webhook/stripe'
     | '/_app/admin/'
     | '/_public/courses/'
     | '/_app/admin/courses/'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   PaymentCancelRoute: typeof PaymentCancelRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiWebhookStripeRoute: typeof ApiWebhookStripeRoute
   ApiS3UploadIndexRoute: typeof ApiS3UploadIndexRoute
 }
 
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhook/stripe': {
+      id: '/api/webhook/stripe'
+      path: '/api/webhook/stripe'
+      fullPath: '/api/webhook/stripe'
+      preLoaderRoute: typeof ApiWebhookStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/admin/courses/': {
@@ -590,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentCancelRoute: PaymentCancelRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiWebhookStripeRoute: ApiWebhookStripeRoute,
   ApiS3UploadIndexRoute: ApiS3UploadIndexRoute,
 }
 export const routeTree = rootRouteImport
