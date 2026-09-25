@@ -24,6 +24,84 @@ const uniqueViolationSchema = z.object({ code: z.literal("23505") });
 
 const normalizeSlug = (slug: string) => slug.trim().toLowerCase();
 
+const createPricedProduct = async (
+	name: string,
+	description: string,
+	amount: number
+): Promise<string> => {
+	const product = await stripeClient.products.create({
+		name,
+		description,
+		default_price_data: { currency: "ugx", unit_amount: amount },
+	});
+
+	const parsedPriceId = z.string().safeParse(product.default_price);
+
+	if (!parsedPriceId.success) {
+		throw new TypeError("Failed to create course pricing");
+	}
+
+	return parsedPriceId.data;
+};
+
+const fetchStripePrice = async (priceId: string) => {
+	try {
+		return await stripeClient.prices.retrieve(priceId);
+	} catch {
+		return null;
+	}
+};
+
+// Stripe prices are immutable: a price change mints a new price on the same
+// product and points the course at it. Returns the new price id, or
+// undefined when Stripe already matches (this also heals pre-existing
+// mismatches, since the comparison is against Stripe, not the database).
+const resolveStripePriceId = async (
+	course: {
+		title: string;
+		smallDescription: string;
+		price: number;
+		stripePriceId: string | null;
+	},
+	newPrice: number
+): Promise<string | undefined> => {
+	const stripePrice = course.stripePriceId
+		? await fetchStripePrice(course.stripePriceId)
+		: null;
+
+	if (!stripePrice) {
+		return createPricedProduct(
+			course.title,
+			course.smallDescription,
+			newPrice
+		);
+	}
+
+	if (stripePrice.unit_amount === newPrice) {
+		return undefined;
+	}
+
+	const productId =
+		z.string().safeParse(stripePrice.product).data ??
+		z.object({ id: z.string() }).safeParse(stripePrice.product).data?.id;
+
+	if (!productId) {
+		return createPricedProduct(
+			course.title,
+			course.smallDescription,
+			newPrice
+		);
+	}
+
+	const price = await stripeClient.prices.create({
+		product: productId,
+		currency: "ugx",
+		unit_amount: newPrice,
+	});
+
+	return price.id;
+};
+
 type CourseRow = typeof courses.$inferSelect;
 
 export const createCourse = createServerFn({ method: "POST" })
@@ -139,12 +217,36 @@ export const updateCourse = createServerFn({ method: "POST" })
 			patch.slug = normalizeSlug(patch.slug);
 		}
 
+		let stripePriceId: string | undefined;
+
+		if (patch.price !== undefined) {
+			const current = await db.query.courses.findFirst({
+				where: { id },
+				columns: {
+					title: true,
+					smallDescription: true,
+					price: true,
+					stripePriceId: true,
+				},
+			});
+
+			if (!current) {
+				setResponseStatus(404);
+				throw new Error(COURSE_NOT_FOUND_MESSAGE);
+			}
+
+			stripePriceId = await resolveStripePriceId(current, patch.price);
+		}
+
+		const updateData =
+			stripePriceId === undefined ? patch : { ...patch, stripePriceId };
+
 		let updated: CourseRow[];
 
 		try {
 			updated = await db
 				.update(courses)
-				.set(patch)
+				.set(updateData)
 				.where(eq(courses.id, id))
 				.returning();
 		} catch (error) {
