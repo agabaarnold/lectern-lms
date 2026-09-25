@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { Stripe } from "stripe";
+import { z } from "zod";
 
 import { db } from "#/db/index.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
@@ -52,10 +53,7 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 						}
 
 						const enrollmentId = session.metadata?.enrollmentId;
-						const customerId =
-							typeof session.customer === "string"
-								? session.customer
-								: undefined;
+						const customerId = z.string().safeParse(session.customer).data;
 						const amount = session.amount_total;
 
 						if (!enrollmentId || !customerId || amount === null) {
