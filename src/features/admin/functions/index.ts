@@ -83,3 +83,13 @@ export const getEnrollmentStats = createServerFn()
 
 		return last30Days;
 	});
+
+export const getRecentCourses = createServerFn()
+	.middleware([adminMiddleware])
+	.handler(
+		async () =>
+			await db.query.courses.findMany({
+				orderBy: { createdAt: "desc" },
+				limit: 2,
+			})
+	);
