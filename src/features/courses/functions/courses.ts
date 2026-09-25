@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
+import { stripeClient } from "#/lib/stripe.ts";
 import { adminMiddleware, arcjetMiddleware } from "#/middleware.ts";
 
 import {
@@ -32,12 +33,19 @@ export const createCourse = createServerFn({ method: "POST" })
 		let inserted: CourseRow[];
 
 		try {
+			const stripeData = await stripeClient.products.create({
+				name: data.title,
+				description: data.smallDescription,
+				default_price_data: { currency: "ugx", unit_amount: data.price },
+			});
+
 			inserted = await db
 				.insert(courses)
 				.values({
 					...data,
 					slug: normalizeSlug(data.slug),
 					userId: context.user.id,
+					stripePriceId: stripeData.default_price as string,
 				})
 				.returning();
 		} catch (error) {
