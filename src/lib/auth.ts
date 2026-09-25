@@ -1,11 +1,7 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth/minimal";
-import {
-	admin,
-	haveIBeenPwned,
-	lastLoginMethod,
-} from "better-auth/plugins";
+import { admin, haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 
 import { env } from "#/env.server.ts";
@@ -71,7 +67,7 @@ export const auth = betterAuth({
 		admin(),
 		haveIBeenPwned(),
 		lastLoginMethod({ storeInDatabase: true }),
-		stripe({ stripeClient }),
+		stripe({ stripeClient, stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET }),
 		tanstackStartCookies(),
 	],
 	// Rate limiting is enforced by Arcjet in src/routes/api/auth/$.ts
