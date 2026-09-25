@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "#/db/index.ts";
 import { lessons } from "#/db/schema/lms.schema.ts";
-import { adminMiddleware } from "#/middleware.ts";
+import { adminMiddleware, authMiddleware } from "#/middleware.ts";
 
 import {
 	deleteLessonSchema,
@@ -259,4 +259,37 @@ export const updateLesson = createServerFn({ method: "POST" })
 		}
 
 		return updatedLesson;
+	});
+
+export const getLessonContent = createServerFn()
+	.middleware([authMiddleware])
+	.validator(lessonIdSchema)
+	.handler(async ({ context, data }) => {
+		const lesson = await db.query.lessons.findFirst({
+			where: { id: data.id },
+			columns: {
+				id: true,
+				title: true,
+				description: true,
+				position: true,
+				thumbnailKey: true,
+				videoKey: true,
+			},
+			with: { chapter: { columns: { courseId: true } } },
+		});
+
+		if (!lesson) {
+			throw notFound();
+		}
+
+		const enrollment = await db.query.enrollments.findFirst({
+			where: { userId: context.user.id, courseId: lesson.chapter.courseId },
+			columns: { status: true },
+		});
+
+		if (!enrollment || enrollment.status !== "Active") {
+			throw notFound();
+		}
+
+		return { lesson };
 	});
