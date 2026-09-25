@@ -39,3 +39,47 @@ export const getDashboardStats = createServerFn()
 
 		return { totalSignups, totalCustomers, totalCourses, totalLessons };
 	});
+
+export const getEnrollmentStats = createServerFn()
+	.middleware([adminMiddleware])
+	.handler(async () => {
+		const thirtyDaysAgo = new Date();
+
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+		const enrollmentsData = await db.query.enrollments.findMany({
+			where: {
+				createdAt: {
+					gte: thirtyDaysAgo,
+				},
+			},
+			columns: { createdAt: true },
+			orderBy: { createdAt: "desc" },
+		});
+
+		const last30Days: { date: string; enrollments: number }[] = [];
+
+		for (let i = 29; i >= 0; i -= 1) {
+			const date = new Date();
+
+			date.setDate(date.getDate() - i);
+
+			last30Days.push({
+				date: date.toISOString().split("T")[0],
+				enrollments: 0,
+			});
+		}
+
+		for (const { createdAt } of enrollmentsData) {
+			const enrollmentDate = createdAt.toISOString().split("T")[0];
+			const dayIndex = last30Days.findIndex(
+				(day) => day.date === enrollmentDate
+			);
+
+			if (dayIndex !== -1) {
+				last30Days[dayIndex].enrollments += 1;
+			}
+		}
+
+		return last30Days;
+	});
