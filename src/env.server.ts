@@ -33,6 +33,7 @@ export const env = createEnv({
 		AWS_REGION: z.string(),
 		// Stripe configuration
 		STRIPE_SECRET_KEY: z.string(),
+		STRIPE_WEBHOOK_SECRET: z.string(),
 		// Arcjet configuration
 		ARCJET_KEY: z.string(),
 	},
