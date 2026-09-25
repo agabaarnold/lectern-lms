@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "#/db/index.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
 import { env } from "#/env.server.ts";
+import { ajWebhook, toArcjetRequest } from "#/lib/arcjet";
 
 export const Route = createFileRoute("/api/webhook/stripe")({
 	server: {
@@ -14,6 +15,21 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 			createHandlers({
 				POST: {
 					handler: async ({ request }) => {
+						const decision = await ajWebhook.protect(
+							toArcjetRequest(request)
+						);
+
+						if (!decision.isErrored() && decision.isDenied()) {
+							if (decision.reason.isRateLimit()) {
+								return Response.json(
+									{ error: "Too many requests" },
+									{ status: 429 }
+								);
+							}
+
+							return Response.json({ error: "Forbidden" }, { status: 403 });
+						}
+
 						const body = await request.text();
 						const headersList = getRequestHeaders();
 
