@@ -27,7 +27,6 @@
 		"@aws-sdk/s3-request-presigner": "^3.1139.0",
 		"@base-ui/react": "^1.8.0",
 		"@better-auth/drizzle-adapter": "^1.7.5",
-		"@better-auth/stripe": "^1.7.5",
 		"@dnd-kit/abstract": "0.5.0",
 		"@dnd-kit/dom": "0.5.0",
 		"@dnd-kit/react": "0.5.0",

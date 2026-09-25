@@ -1,5 +1,4 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
-import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth/minimal";
 import { admin, haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
@@ -11,7 +10,6 @@ import { schema } from "../db/schema";
 import { ResetPassword } from "../features/email/emails/reset-password.tsx";
 import { VerifyEmail } from "../features/email/emails/verify-email.tsx";
 import { sendEmail } from "../features/email/lib/send.ts";
-import { stripeClient } from "./stripe.ts";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", usePlural: true, schema }),
@@ -67,7 +65,6 @@ export const auth = betterAuth({
 		admin(),
 		haveIBeenPwned(),
 		lastLoginMethod({ storeInDatabase: true }),
-		stripe({ stripeClient, stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET }),
 		tanstackStartCookies(),
 	],
 	// Rate limiting is enforced by Arcjet in src/routes/api/auth/$.ts

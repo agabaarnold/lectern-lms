@@ -1,4 +1,3 @@
-import { stripeClient } from "@better-auth/stripe/client";
 import {
 	adminClient,
 	inferAdditionalFields,
@@ -13,7 +12,6 @@ export const authClient = createAuthClient({
 	plugins: [
 		adminClient(),
 		lastLoginMethodClient(),
-		stripeClient(),
 		inferAdditionalFields<typeof auth>(),
 	],
 	fetchOptions: {
