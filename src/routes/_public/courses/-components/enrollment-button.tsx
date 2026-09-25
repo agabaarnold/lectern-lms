@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useTransition } from "react";
 import { toast } from "react-hot-toast";
 
@@ -7,6 +8,7 @@ import { enrollInCourse } from "#/features/courses/functions/enrollments.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
 export const EnrollmentButton = ({ courseId }: { courseId: string }) => {
+	const navigate = useNavigate();
 	const [isPending, startTransition] = useTransition();
 
 	const onSubmit = () => {
@@ -27,7 +29,7 @@ export const EnrollmentButton = ({ courseId }: { courseId: string }) => {
 				return;
 			}
 
-			window.location.href = data.data.checkoutUrl;
+			navigate({ href: data.data.checkoutUrl });
 		});
 	};
 
