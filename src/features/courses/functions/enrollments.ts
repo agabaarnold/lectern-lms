@@ -210,3 +210,33 @@ export const checkIfCourseBought = createServerFn({ method: "GET" })
 		// oxlint-disable-next-line no-unneeded-ternary
 		return enrollment?.status === "Active" ? true : false;
 	});
+
+export const getEnrolledCourses = createServerFn()
+	.middleware([authMiddleware])
+	.handler(async ({ context }) => {
+		const { user } = context;
+
+		const userEnrolledCourses = await db.query.enrollments.findMany({
+			where: { userId: user.id, status: "Active" },
+			with: {
+				course: {
+					columns: {
+						id: true,
+						smallDescription: true,
+						title: true,
+						fileKey: true,
+						slug: true,
+						duration: true,
+					},
+					with: {
+						chapters: {
+							columns: { id: true },
+							with: { lessons: { columns: { id: true } } },
+						},
+					},
+				},
+			},
+		});
+
+		return userEnrolledCourses;
+	});
