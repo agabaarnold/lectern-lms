@@ -15,9 +15,7 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 			createHandlers({
 				POST: {
 					handler: async ({ request }) => {
-						const decision = await ajWebhook.protect(
-							toArcjetRequest(request)
-						);
+						const decision = await ajWebhook.protect(toArcjetRequest(request));
 
 						if (!decision.isErrored() && decision.isDenied()) {
 							if (decision.reason.isRateLimit()) {
