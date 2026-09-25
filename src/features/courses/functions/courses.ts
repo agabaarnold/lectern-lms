@@ -7,11 +7,16 @@ import { z } from "zod";
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
 import { stripeClient } from "#/lib/stripe.ts";
-import { adminMiddleware, arcjetMiddleware } from "#/middleware.ts";
+import {
+	adminMiddleware,
+	arcjetMiddleware,
+	authMiddleware,
+} from "#/middleware.ts";
 
 import {
 	courseIdSchema,
 	courseSchema,
+	getCourseSidebarCourseData,
 	getCoursesQuerySchema,
 	getIndividualCourseSchema,
 	updateCourseSchema,
@@ -70,11 +75,7 @@ const resolveStripePriceId = async (
 		: null;
 
 	if (!stripePrice) {
-		return createPricedProduct(
-			course.title,
-			course.smallDescription,
-			newPrice
-		);
+		return createPricedProduct(course.title, course.smallDescription, newPrice);
 	}
 
 	if (stripePrice.unit_amount === newPrice) {
@@ -86,11 +87,7 @@ const resolveStripePriceId = async (
 		z.object({ id: z.string() }).safeParse(stripePrice.product).data?.id;
 
 	if (!productId) {
-		return createPricedProduct(
-			course.title,
-			course.smallDescription,
-			newPrice
-		);
+		return createPricedProduct(course.title, course.smallDescription, newPrice);
 	}
 
 	const price = await stripeClient.prices.create({
@@ -117,9 +114,7 @@ export const createCourse = createServerFn({ method: "POST" })
 				default_price_data: { currency: "ugx", unit_amount: data.price },
 			});
 
-			const stripePriceId = z
-				.string()
-				.safeParse(stripeData.default_price);
+			const stripePriceId = z.string().safeParse(stripeData.default_price);
 
 			if (!stripePriceId.success) {
 				throw new TypeError("Failed to create course pricing");
@@ -358,4 +353,55 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 		}
 
 		return course;
+	});
+
+export const getCourseSiderbarData = createServerFn()
+	.middleware([authMiddleware])
+	.validator(getCourseSidebarCourseData)
+	.handler(async ({ context, data }) => {
+		const { user } = context;
+		const { slug } = data;
+
+		const course = await db.query.courses.findFirst({
+			where: { slug },
+			columns: {
+				id: true,
+				title: true,
+				slug: true,
+				fileKey: true,
+				category: true,
+				duration: true,
+				level: true,
+			},
+			with: {
+				chapters: {
+					columns: { id: true, title: true, position: true },
+					orderBy: { position: "asc" },
+					with: {
+						lessons: {
+							columns: {
+								id: true,
+								title: true,
+								description: true,
+								position: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (!course) {
+			throw notFound();
+		}
+
+		const enrollment = await db.query.enrollments.findFirst({
+			where: { userId: user.id, courseId: course.id },
+		});
+
+		if (!enrollment || enrollment.status !== "Active") {
+			throw notFound();
+		}
+
+		return { course };
 	});
