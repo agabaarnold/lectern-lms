@@ -2,6 +2,7 @@
 import { IconCirclePlusFilled } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { LinkOptions } from "@tanstack/react-router";
+import { cn } from "cn";
 
 import {
 	SidebarGroup,
@@ -16,7 +17,7 @@ export const NavMain = ({
 }: {
 	items: {
 		title: string;
-		url: LinkOptions["to"];
+		url: LinkOptions["to"] | "#";
 		icon?: React.ReactNode;
 	}[];
 }) => {
@@ -45,25 +46,38 @@ export const NavMain = ({
 				)}
 
 				<SidebarMenu>
-					{items.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton
-								tooltip={item.title}
-								render={
-									<Link
-										activeProps={{
-											className: "bg-accent text-accent-foreground",
-										}}
-										activeOptions={{ exact: true }}
-										to={item.url}
-									>
+					{items.map((item) => {
+						if (item.url === "#") {
+							return (
+								<SidebarMenuItem key={item.title}>
+									<SidebarMenuButton tooltip={item.title}>
 										{item.icon}
 										<span>{item.title}</span>
-									</Link>
-								}
-							/>
-						</SidebarMenuItem>
-					))}
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							);
+						}
+
+						return (
+							<SidebarMenuItem key={item.title}>
+								<SidebarMenuButton
+									tooltip={item.title}
+									render={
+										<Link
+											className={cn(
+												item.url === pathname &&
+													"bg-accent text-accent-foreground"
+											)}
+											to={item.url}
+										>
+											{item.icon}
+											<span>{item.title}</span>
+										</Link>
+									}
+								/>
+							</SidebarMenuItem>
+						);
+					})}
 				</SidebarMenu>
 			</SidebarGroupContent>
 		</SidebarGroup>
