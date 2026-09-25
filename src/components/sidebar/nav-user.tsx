@@ -45,6 +45,7 @@ export const NavUser = () => {
 				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
+							// oxlint-disable-next-line shadcn/no-restyle
 							<SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
 						}
 					>
