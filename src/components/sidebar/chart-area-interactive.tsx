@@ -1,6 +1,4 @@
-"use client";
-
-import * as React from "react";
+import React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import {
@@ -137,7 +135,7 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-export function ChartAreaInteractive() {
+export const ChartAreaInteractive = () => {
 	const isMobile = useIsMobile();
 	const [timeRange, setTimeRange] = React.useState("90d");
 
@@ -294,4 +292,4 @@ export function ChartAreaInteractive() {
 			</CardContent>
 		</Card>
 	);
-}
+};
