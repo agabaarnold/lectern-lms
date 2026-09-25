@@ -7,7 +7,7 @@ import { buttonVariants } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import { useConfetti } from "#/hooks/use-confetti.ts";
 
-export const Route = createFileRoute("/_public/payment/success")({
+export const Route = createFileRoute("/payment/success")({
 	component: PaymentSuccess,
 });
 

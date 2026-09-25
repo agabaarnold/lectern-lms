@@ -5,7 +5,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { buttonVariants } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 
-export const Route = createFileRoute("/_public/payment/cancel")({
+export const Route = createFileRoute("/payment/cancel")({
 	component: PaymentCancelled,
 });
 
