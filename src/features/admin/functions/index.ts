@@ -6,82 +6,89 @@ import { users } from "#/db/schema/auth.schema.ts";
 import { courses, enrollments, lessons } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
-export const getDashboardStats = createServerFn()
-	.middleware([adminMiddleware])
-	.handler(async () => {
-		const [totalSignups, totalCustomers, totalCourses, totalLessons] =
-			await Promise.all([
-				// total signups
-				db.$count(users),
+const buildLast30Days = (now: Date) => {
+	const days: { date: string; enrollments: number }[] = [];
 
-				// total customers
-				db.$count(
-					users,
-					exists(
-						db
-							.select()
-							.from(enrollments)
-							.where(
-								and(
-									eq(enrollments.userId, users.id),
-									eq(enrollments.status, "Active")
-								)
-							)
-					)
-				),
+	for (let i = 29; i >= 0; i -= 1) {
+		const date = new Date(now);
 
-				// total courses
-				db.$count(courses),
+		date.setDate(now.getDate() - i);
 
-				//total lessons
-				db.$count(lessons),
-			]);
+		const [day] = date.toISOString().split("T");
 
-		return { totalSignups, totalCustomers, totalCourses, totalLessons };
-	});
+		days.push({ date: day ?? "", enrollments: 0 });
+	}
 
-export const getEnrollmentStats = createServerFn()
+	return days;
+};
+
+export const getDashboardOverview = createServerFn()
 	.middleware([adminMiddleware])
 	.handler(async () => {
 		const thirtyDaysAgo = new Date();
 
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-		const enrollmentsData = await db.query.enrollments.findMany({
-			where: {
-				createdAt: {
-					gte: thirtyDaysAgo,
+		const [
+			totalSignups,
+			totalCustomers,
+			totalCourses,
+			totalLessons,
+			enrollmentRows,
+		] = await Promise.all([
+			// total signups
+			db.$count(users),
+
+			// total customers
+			db.$count(
+				users,
+				exists(
+					db
+						.select()
+						.from(enrollments)
+						.where(
+							and(
+								eq(enrollments.userId, users.id),
+								eq(enrollments.status, "Active")
+							)
+						)
+				)
+			),
+
+			// total courses
+			db.$count(courses),
+
+			// total lessons
+			db.$count(lessons),
+
+			// enrollment rows for the 30-day chart
+			db.query.enrollments.findMany({
+				where: {
+					createdAt: {
+						gte: thirtyDaysAgo,
+					},
 				},
-			},
-			columns: { createdAt: true },
-			orderBy: { createdAt: "desc" },
-		});
+				columns: { createdAt: true },
+				orderBy: { createdAt: "desc" },
+			}),
+		]);
 
-		const last30Days: { date: string; enrollments: number }[] = [];
+		const enrollmentChart = buildLast30Days(new Date());
+		const byDate = new Map(enrollmentChart.map((day) => [day.date, day]));
 
-		for (let i = 29; i >= 0; i -= 1) {
-			const date = new Date();
+		for (const { createdAt } of enrollmentRows) {
+			const [day] = createdAt.toISOString().split("T");
+			const entry = day === undefined ? undefined : byDate.get(day);
 
-			date.setDate(date.getDate() - i);
-
-			last30Days.push({
-				date: date.toISOString().split("T")[0],
-				enrollments: 0,
-			});
-		}
-
-		for (const { createdAt } of enrollmentsData) {
-			const [enrollmentDate] = createdAt.toISOString().split("T");
-			const dayIndex = last30Days.findIndex(
-				(day) => day.date === enrollmentDate
-			);
-
-			if (dayIndex !== -1) {
-				last30Days[dayIndex].enrollments += 1;
+			if (entry) {
+				entry.enrollments += 1;
 			}
 		}
 
-		return last30Days;
+		return {
+			stats: { totalSignups, totalCustomers, totalCourses, totalLessons },
+			enrollmentChart,
+		};
 	});
 
 export const getRecentCourses = createServerFn()
@@ -91,5 +98,14 @@ export const getRecentCourses = createServerFn()
 			await db.query.courses.findMany({
 				orderBy: { createdAt: "desc" },
 				limit: 2,
+				columns: {
+					id: true,
+					title: true,
+					smallDescription: true,
+					duration: true,
+					level: true,
+					fileKey: true,
+					slug: true,
+				},
 			})
 	);
