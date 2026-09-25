@@ -2,6 +2,7 @@ import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { Stripe } from "stripe";
+import { z } from "zod";
 
 import { db } from "#/db/index.ts";
 import { users } from "#/db/schema/auth.schema.ts";
@@ -13,6 +14,83 @@ import { stripeClient } from "#/lib/stripe.ts";
 import { authMiddleware } from "#/middleware.ts";
 
 import { enrollInSchema } from "../schema/enrollments";
+
+const uniqueViolationSchema = z.object({ code: z.literal("23505") });
+
+// NOTE: no db.transaction here — the neon-http driver does not support
+// transactions, and the Stripe call below must not run inside one anyway.
+// The user_course_unique constraint turns a lost insert race into a
+// catchable conflict instead of a duplicate row.
+const resolvePendingEnrollment = async (
+	userId: string,
+	course: { id: string; price: number }
+) => {
+	const existingEnrollment = await db.query.enrollments.findFirst({
+		where: { userId, courseId: course.id },
+		columns: { status: true, id: true },
+	});
+
+	if (existingEnrollment?.status === "Active") {
+		throw new Error("You are already enrolled in this course");
+	}
+
+	if (existingEnrollment) {
+		const [updated] = await db
+			.update(enrollments)
+			.set({ amount: course.price, status: "Pending" })
+			.where(eq(enrollments.id, existingEnrollment.id))
+			.returning();
+
+		return updated;
+	}
+
+	try {
+		const [created] = await db
+			.insert(enrollments)
+			.values({
+				userId,
+				courseId: course.id,
+				amount: course.price,
+				status: "Pending",
+			})
+			.returning();
+
+		return created;
+	} catch (error) {
+		// A concurrent request won the race: reuse the winning row.
+		const cause = error instanceof Error ? error.cause : undefined;
+		const isConflict =
+			uniqueViolationSchema.safeParse(error).success ||
+			uniqueViolationSchema.safeParse(cause).success;
+
+		if (!isConflict) {
+			throw error;
+		}
+
+		const winner = await db.query.enrollments.findFirst({
+			where: { userId, courseId: course.id },
+			columns: { status: true, id: true },
+		});
+
+		if (!winner) {
+			throw error;
+		}
+
+		if (winner.status === "Active") {
+			throw new Error("You are already enrolled in this course", {
+				cause: error,
+			});
+		}
+
+		const [updated] = await db
+			.update(enrollments)
+			.set({ amount: course.price, status: "Pending" })
+			.where(eq(enrollments.id, winner.id))
+			.returning();
+
+		return updated;
+	}
+};
 
 // Per-user enrollment throttle in front of Stripe: denies bots and caps
 // checkout-session creation before any course lookup, DB write, or Stripe
@@ -72,57 +150,24 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 					.where(eq(users.id, user.id));
 			}
 
-			const result = await db.transaction(async (tx) => {
-				const existingEnrollment = await tx.query.enrollments.findFirst({
-					where: { userId: user.id, courseId },
-					columns: { status: true, id: true },
-				});
+			const enrollment = await resolvePendingEnrollment(user.id, course);
 
-				if (existingEnrollment?.status === "Active") {
-					throw new Error("You are already enrolled in this course");
-				}
-
-				let enrollment;
-
-				if (existingEnrollment) {
-					const [updated] = await tx
-						.update(enrollments)
-						.set({ amount: course.price, status: "Pending" })
-						.where(eq(enrollments.id, existingEnrollment.id))
-						.returning();
-
-					enrollment = updated;
-				} else {
-					const [created] = await tx
-						.insert(enrollments)
-						.values({
-							userId: user.id,
-							courseId: course.id,
-							amount: course.price,
-							status: "Pending",
-						})
-						.returning();
-
-					enrollment = created;
-				}
-
-				const checkoutSession = await stripeClient.checkout.sessions.create({
-					customer: stripeCustomerId,
-					line_items: [
-						{ price: "price_1UJEKgHc4dWacTSigSd1qT6l", quantity: 1 },
-					],
-					mode: "payment",
-					success_url: `${env.BETTER_AUTH_URL}/payment/success`,
-					cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
-					metadata: {
-						userId: user.id,
-						courseId,
-						enrollmentId: enrollment.id,
-					},
-				});
-
-				return { enrollment, checkoutUrl: checkoutSession.url };
+			const checkoutSession = await stripeClient.checkout.sessions.create({
+				customer: stripeCustomerId,
+				line_items: [
+					{ price: "price_1UJEKgHc4dWacTSigSd1qT6l", quantity: 1 },
+				],
+				mode: "payment",
+				success_url: `${env.BETTER_AUTH_URL}/payment/success`,
+				cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
+				metadata: {
+					userId: user.id,
+					courseId,
+					enrollmentId: enrollment.id,
+				},
 			});
+
+			const result = { enrollment, checkoutUrl: checkoutSession.url };
 
 			({ checkoutUrl } = result);
 
