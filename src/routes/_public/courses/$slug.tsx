@@ -13,6 +13,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { RenderDescription } from "#/components/rich-text/render-description.tsx";
 import { Image } from "#/components/shared/image.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
+import { buttonVariants } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
 	Collapsible,
@@ -292,7 +293,12 @@ function SlugPage() {
 							</div>
 
 							{isCourseBought ? (
-								<Link to="/dashboard">Watch Course</Link>
+								<Link
+									className={buttonVariants({ className: "w-full" })}
+									to="/dashboard"
+								>
+									Watch Course
+								</Link>
 							) : (
 								<EnrollmentButton courseId={course.id} />
 							)}
