@@ -46,7 +46,10 @@ export const AdminCourseCard = ({ course }: AdminCourseCardProps) => {
 					<DropdownMenuContent className="w-48" align="end">
 						<DropdownMenuItem
 							render={
-								<Link to="/courses/$slug" params={{ slug: course.slug }}>
+								<Link
+									to="/admin/courses/$courseId/edit"
+									params={{ courseId: course.id }}
+								>
 									<IconEdit className="mr-2 size-4" /> Edit Course
 								</Link>
 							}
@@ -54,10 +57,7 @@ export const AdminCourseCard = ({ course }: AdminCourseCardProps) => {
 
 						<DropdownMenuItem
 							render={
-								<Link
-									to="/admin/courses/$courseId/edit"
-									params={{ courseId: course.id }}
-								>
+								<Link to="/courses/$slug" params={{ slug: course.slug }}>
 									<IconEye className="mr-2 size-4" /> Preview
 								</Link>
 							}
