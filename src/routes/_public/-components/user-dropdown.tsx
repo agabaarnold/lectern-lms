@@ -80,7 +80,7 @@ export const UserDropdown = ({ user }: UserDropdownProps) => {
 							render={
 								<Link to="/admin">
 									<IconLayoutDashboard />
-									<span>Dashboard</span>
+									<span>Admin Dashboard</span>
 								</Link>
 							}
 						/>
