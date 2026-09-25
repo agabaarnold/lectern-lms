@@ -3,16 +3,28 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ChartAreaInteractive } from "#/components/sidebar/chart-area-interactive.tsx";
 import { SectionCards } from "#/components/sidebar/section-cards.tsx";
-import { getDashboardStats } from "#/features/admin/functions/index.ts";
+import {
+	getDashboardStats,
+	getEnrollmentStats,
+} from "#/features/admin/functions/index.ts";
 
 export const Route = createFileRoute("/_app/admin/")({
-	loader: () => getDashboardStats(),
+	loader: async () => {
+		const [dashboardData, enrollmentData] = await Promise.all([
+			getDashboardStats(),
+			getEnrollmentStats(),
+		]);
+
+		return { dashboardData, enrollmentData };
+	},
 	component: AdminDashboard,
 });
 
 function AdminDashboard() {
+	const { dashboardData, enrollmentData } = Route.useLoaderData();
+
 	const { totalCourses, totalCustomers, totalLessons, totalSignups } =
-		Route.useLoaderData();
+		dashboardData;
 
 	return (
 		<>
@@ -23,7 +35,7 @@ function AdminDashboard() {
 				totalSignups={totalSignups}
 			/>
 
-			<ChartAreaInteractive />
+			<ChartAreaInteractive data={enrollmentData} />
 		</>
 	);
 }
