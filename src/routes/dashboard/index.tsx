@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-
 // oxlint-disable react/function-component-definition func-style
+import { createFileRoute, Link } from "@tanstack/react-router";
+
 import { getAllCourses } from "#/features/courses/functions/courses.ts";
 import { getEnrolledCourses } from "#/features/courses/functions/enrollments.ts";
 
+import { PublicCourseCard } from "../_public/-components/public-course-card";
 import { CoursesEmptyState } from "./-components/courses-empty-state";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -39,11 +40,21 @@ function DashboardPage() {
 					title="No enrolled courses yet"
 				/>
 			) : (
-				<p>The courses you are enrolled in</p>
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+					{enrolledCourses.map((course) => (
+						<Link
+							key={course.course.id}
+							to="/dashboard/$slug"
+							params={{ slug: course.course.slug }}
+						>
+							{course.course.title}
+						</Link>
+					))}
+				</div>
 			)}
 
 			<section className="mt-10">
-				<div className="flex flex-col gap-2">
+				<div className="mb-5 flex flex-col gap-2">
 					<h1 className="text-3xl font-bold">Available Courses</h1>
 
 					<p className="text-muted-foreground">
@@ -62,7 +73,16 @@ function DashboardPage() {
 						title="You've purchased all courses"
 					/>
 				) : (
-					<p>More courses</p>
+					<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+						{allCourses
+							.filter(
+								(course) =>
+									!enrolledCourses.some((enrolled) => enrolled.id === course.id)
+							)
+							.map((course) => (
+								<PublicCourseCard key={course.id} course={course} />
+							))}
+					</div>
 				)}
 			</section>
 		</>
