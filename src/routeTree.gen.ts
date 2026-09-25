@@ -32,6 +32,7 @@ import { Route as PublicCoursesSlugRouteImport } from './routes/_public/courses/
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiWebhookStripeRouteImport } from './routes/api/webhook/stripe'
 import { Route as DashboardSlugIndexRouteImport } from './routes/dashboard/$slug/index'
+import { Route as DashboardSlugLessonIdRouteImport } from './routes/dashboard/$slug/$lessonId'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
 import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
@@ -152,6 +153,11 @@ const DashboardSlugIndexRoute = DashboardSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardSlugRouteRoute,
 } as any)
+const DashboardSlugLessonIdRoute = DashboardSlugLessonIdRouteImport.update({
+  id: '/$lessonId',
+  path: '/$lessonId',
+  getParentRoute: () => DashboardSlugRouteRoute,
+} as any)
 const AppAdminCoursesIndexRoute = AppAdminCoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
+  '/dashboard/$slug/$lessonId': typeof DashboardSlugLessonIdRoute
   '/admin/': typeof AppAdminIndexRoute
   '/courses/': typeof PublicCoursesIndexRoute
   '/dashboard/$slug/': typeof DashboardSlugIndexRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
+  '/dashboard/$slug/$lessonId': typeof DashboardSlugLessonIdRoute
   '/admin': typeof AppAdminIndexRoute
   '/courses': typeof PublicCoursesIndexRoute
   '/dashboard/$slug': typeof DashboardSlugIndexRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/_public/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
+  '/dashboard/$slug/$lessonId': typeof DashboardSlugLessonIdRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_public/courses/': typeof PublicCoursesIndexRoute
   '/dashboard/$slug/': typeof DashboardSlugIndexRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
+    | '/dashboard/$slug/$lessonId'
     | '/admin/'
     | '/courses/'
     | '/dashboard/$slug/'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
+    | '/dashboard/$slug/$lessonId'
     | '/admin'
     | '/courses'
     | '/dashboard/$slug'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/_public/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
+    | '/dashboard/$slug/$lessonId'
     | '/_app/admin/'
     | '/_public/courses/'
     | '/dashboard/$slug/'
@@ -548,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSlugIndexRouteImport
       parentRoute: typeof DashboardSlugRouteRoute
     }
+    '/dashboard/$slug/$lessonId': {
+      id: '/dashboard/$slug/$lessonId'
+      path: '/$lessonId'
+      fullPath: '/dashboard/$slug/$lessonId'
+      preLoaderRoute: typeof DashboardSlugLessonIdRouteImport
+      parentRoute: typeof DashboardSlugRouteRoute
+    }
     '/_app/admin/courses/': {
       id: '/_app/admin/courses/'
       path: '/courses'
@@ -675,10 +694,12 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 interface DashboardSlugRouteRouteChildren {
+  DashboardSlugLessonIdRoute: typeof DashboardSlugLessonIdRoute
   DashboardSlugIndexRoute: typeof DashboardSlugIndexRoute
 }
 
 const DashboardSlugRouteRouteChildren: DashboardSlugRouteRouteChildren = {
+  DashboardSlugLessonIdRoute: DashboardSlugLessonIdRoute,
   DashboardSlugIndexRoute: DashboardSlugIndexRoute,
 }
 
