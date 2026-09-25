@@ -71,7 +71,7 @@ export const getEnrollmentStats = createServerFn()
 		}
 
 		for (const { createdAt } of enrollmentsData) {
-			const enrollmentDate = createdAt.toISOString().split("T")[0];
+			const [enrollmentDate] = createdAt.toISOString().split("T");
 			const dayIndex = last30Days.findIndex(
 				(day) => day.date === enrollmentDate
 			);
