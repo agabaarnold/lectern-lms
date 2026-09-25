@@ -118,10 +118,20 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 		try {
 			const course = await db.query.courses.findFirst({
 				where: { id: courseId },
-				columns: { id: true, title: true, price: true, slug: true },
+				columns: {
+					id: true,
+					title: true,
+					price: true,
+					slug: true,
+					stripePriceId: true,
+				},
 			});
 			if (!course) {
 				throw new Error("Course not found");
+			}
+
+			if (!course.stripePriceId) {
+				throw new Error("Course pricing is not configured");
 			}
 
 			let stripeCustomerId: string;
@@ -154,7 +164,7 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 			const checkoutSession = await stripeClient.checkout.sessions.create({
 				customer: stripeCustomerId,
-				line_items: [{ price: "price_1UJEKgHc4dWacTSigSd1qT6l", quantity: 1 }],
+				line_items: [{ price: course.stripePriceId, quantity: 1 }],
 				mode: "payment",
 				success_url: `${env.BETTER_AUTH_URL}/payment/success`,
 				cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
