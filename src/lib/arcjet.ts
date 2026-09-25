@@ -19,14 +19,24 @@ export const aj = arcjet({
 });
 
 // Shared Shield + bot-deny base for auth surfaces.
-const ajAuthBase = aj.withRule(detectBot({ mode: "LIVE", allow: [] }));
+const ajAuthBase = aj.withRule(
+	detectBot({
+		mode: "LIVE",
+		allow: [
+			"CATEGORY:SEARCH_ENGINE",
+			"CATEGORY:MONITOR",
+			"CATEGORY:PREVIEW",
+			"STRIPE_WEBHOOK",
+		],
+	})
+);
 
 // Authed server functions: IP-keyed sliding window as an outer backstop.
 export const ajAuthed = ajAuthBase.withRule(
 	slidingWindow({ mode: "LIVE", interval: "60s", max: 100 })
 );
 
-// Auth API routes: per-path budgets mirroring the retired Better Auth
+// Auth API routes: per-path budgets mirroring the retired B""etter Auth
 // customRules 1:1 (requests per 60s, IP-keyed). `/*` entries match by prefix,
 // plain entries match exactly.
 const ajAuthStrict = ajAuthBase.withRule(
