@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as NotAdminRouteImport } from './routes/not-admin'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AppAdminRouteRouteImport } from './routes/_app/admin/route'
@@ -21,6 +22,7 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as PaymentCancelRouteImport } from './routes/payment/cancel'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
@@ -46,6 +48,11 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotAdminRoute = NotAdminRouteImport.update({
@@ -92,6 +99,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublicRouteRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const PaymentCancelRoute = PaymentCancelRouteImport.update({
   id: '/payment/cancel',
@@ -171,6 +183,7 @@ const AppAdminCoursesCourseIdChapterIdLessonIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/admin': typeof AppAdminRouteRouteWithChildren
@@ -181,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
@@ -205,6 +219,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
@@ -223,6 +238,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/not-admin': typeof NotAdminRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/admin': typeof AppAdminRouteRouteWithChildren
@@ -234,6 +250,7 @@ export interface FileRoutesById {
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/_public/': typeof PublicIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/_public/courses/$slug': typeof PublicCoursesSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
@@ -251,6 +268,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/not-admin'
     | '/verify-email'
     | '/admin'
@@ -261,6 +279,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/payment/cancel'
     | '/payment/success'
+    | '/dashboard/'
     | '/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
@@ -285,6 +304,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/payment/cancel'
     | '/payment/success'
+    | '/dashboard'
     | '/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
@@ -302,6 +322,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/_public'
+    | '/dashboard'
     | '/not-admin'
     | '/verify-email'
     | '/_app/admin'
@@ -313,6 +334,7 @@ export interface FileRouteTypes {
     | '/payment/cancel'
     | '/payment/success'
     | '/_public/'
+    | '/dashboard/'
     | '/_public/courses/$slug'
     | '/api/auth/$'
     | '/api/webhook/stripe'
@@ -331,6 +353,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   NotAdminRoute: typeof NotAdminRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   PaymentCancelRoute: typeof PaymentCancelRoute
@@ -361,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/not-admin': {
@@ -425,6 +455,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/payment/cancel': {
       id: '/payment/cancel'
@@ -601,10 +638,23 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface DashboardRouteRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   NotAdminRoute: NotAdminRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   PaymentCancelRoute: PaymentCancelRoute,
