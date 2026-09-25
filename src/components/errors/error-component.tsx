@@ -1,15 +1,16 @@
+// oxlint-disable shadcn/no-arbitrary-values
 import { IconAlertTriangle, IconChevronDown } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { Button } from "../../ui/button";
+import { Button } from "#/components/ui/button.tsx";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
-} from "../../ui/collapsible";
-import { Spinner } from "../../ui/spinner";
+} from "#/components/ui/collapsible.tsx";
+import { Spinner } from "#/components/ui/spinner.tsx";
 
 export const ErrorComponent = ({ error, reset, info }: ErrorComponentProps) => {
 	const router = useRouter();
@@ -17,7 +18,7 @@ export const ErrorComponent = ({ error, reset, info }: ErrorComponentProps) => {
 	const [detailsOpen, setDetailsOpen] = useState(false);
 	const [isRetrying, setIsRetrying] = useState(false);
 
-	const isDev = process.env.NODE_ENV === "development";
+	const isDev = import.meta.env.DEV;
 	const rawMessage = error instanceof Error ? error.message : String(error);
 	const message = isDev
 		? rawMessage
