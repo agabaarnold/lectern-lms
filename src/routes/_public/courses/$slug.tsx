@@ -22,7 +22,6 @@ import {
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
 import { checkIfCourseBought } from "#/features/courses/functions/enrollments.ts";
-// import { enrollInCourse } from "#/features/courses/functions/enrollments.ts";
 import { currencyFormatter } from "#/lib/helpers.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
