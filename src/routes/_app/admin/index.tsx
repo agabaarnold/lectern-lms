@@ -5,8 +5,7 @@ import { ChartAreaInteractive } from "#/components/sidebar/chart-area-interactiv
 import { SectionCards } from "#/components/sidebar/section-cards.tsx";
 import { buttonVariants } from "#/components/ui/button.tsx";
 import {
-	getDashboardStats,
-	getEnrollmentStats,
+	getDashboardOverview,
 	getRecentCourses,
 } from "#/features/admin/functions/index.ts";
 
@@ -16,23 +15,19 @@ import { EmptyCourses } from "./courses/-components/empty-courses";
 
 export const Route = createFileRoute("/_app/admin/")({
 	loader: async () => {
-		const [dashboardData, enrollmentData] = await Promise.all([
-			getDashboardStats(),
-			getEnrollmentStats(),
-		]);
+		const overview = await getDashboardOverview();
 		const recentCourses = getRecentCourses();
 
-		return { dashboardData, enrollmentData, recentCourses };
+		return { overview, recentCourses };
 	},
 	component: AdminDashboard,
 });
 
 function AdminDashboard() {
-	const { dashboardData, enrollmentData, recentCourses } =
-		Route.useLoaderData();
+	const { overview, recentCourses } = Route.useLoaderData();
 
 	const { totalCourses, totalCustomers, totalLessons, totalSignups } =
-		dashboardData;
+		overview.stats;
 
 	return (
 		<>
@@ -43,7 +38,7 @@ function AdminDashboard() {
 				totalSignups={totalSignups}
 			/>
 
-			<ChartAreaInteractive data={enrollmentData} />
+			<ChartAreaInteractive data={overview.enrollmentChart} />
 
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
