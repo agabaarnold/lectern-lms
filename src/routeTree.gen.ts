@@ -24,6 +24,8 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as PublicCoursesIndexRouteImport } from './routes/_public/courses/index'
 import { Route as PublicCoursesSlugRouteImport } from './routes/_public/courses/$slug'
+import { Route as PublicPaymentCancelRouteImport } from './routes/_public/payment/cancel'
+import { Route as PublicPaymentSuccessRouteImport } from './routes/_public/payment/success'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
@@ -105,6 +107,16 @@ const PublicCoursesSlugRoute = PublicCoursesSlugRouteImport.update({
   path: '/courses/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicPaymentCancelRoute = PublicPaymentCancelRouteImport.update({
+  id: '/payment/cancel',
+  path: '/payment/cancel',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPaymentSuccessRoute = PublicPaymentSuccessRouteImport.update({
+  id: '/payment/success',
+  path: '/payment/success',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -162,6 +174,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
+  '/payment/cancel': typeof PublicPaymentCancelRoute
+  '/payment/success': typeof PublicPaymentSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AppAdminIndexRoute
   '/courses/': typeof PublicCoursesIndexRoute
@@ -183,6 +197,8 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/courses/$slug': typeof PublicCoursesSlugRoute
+  '/payment/cancel': typeof PublicPaymentCancelRoute
+  '/payment/success': typeof PublicPaymentSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AppAdminIndexRoute
   '/courses': typeof PublicCoursesIndexRoute
@@ -209,6 +225,8 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_public/': typeof PublicIndexRoute
   '/_public/courses/$slug': typeof PublicCoursesSlugRoute
+  '/_public/payment/cancel': typeof PublicPaymentCancelRoute
+  '/_public/payment/success': typeof PublicPaymentSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_public/courses/': typeof PublicCoursesIndexRoute
@@ -233,6 +251,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/courses/$slug'
+    | '/payment/cancel'
+    | '/payment/success'
     | '/api/auth/$'
     | '/admin/'
     | '/courses/'
@@ -254,6 +274,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/courses/$slug'
+    | '/payment/cancel'
+    | '/payment/success'
     | '/api/auth/$'
     | '/admin'
     | '/courses'
@@ -279,6 +301,8 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_public/'
     | '/_public/courses/$slug'
+    | '/_public/payment/cancel'
+    | '/_public/payment/success'
     | '/api/auth/$'
     | '/_app/admin/'
     | '/_public/courses/'
@@ -408,6 +432,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicCoursesSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/payment/cancel': {
+      id: '/_public/payment/cancel'
+      path: '/payment/cancel'
+      fullPath: '/payment/cancel'
+      preLoaderRoute: typeof PublicPaymentCancelRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/payment/success': {
+      id: '/_public/payment/success'
+      path: '/payment/success'
+      fullPath: '/payment/success'
+      preLoaderRoute: typeof PublicPaymentSuccessRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -528,12 +566,16 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
   PublicCoursesSlugRoute: typeof PublicCoursesSlugRoute
+  PublicPaymentCancelRoute: typeof PublicPaymentCancelRoute
+  PublicPaymentSuccessRoute: typeof PublicPaymentSuccessRoute
   PublicCoursesIndexRoute: typeof PublicCoursesIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
   PublicCoursesSlugRoute: PublicCoursesSlugRoute,
+  PublicPaymentCancelRoute: PublicPaymentCancelRoute,
+  PublicPaymentSuccessRoute: PublicPaymentSuccessRoute,
   PublicCoursesIndexRoute: PublicCoursesIndexRoute,
 }
 
