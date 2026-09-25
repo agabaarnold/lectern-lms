@@ -36,7 +36,7 @@ export const courses = pgTable("courses", {
 	price: integer("price").notNull(),
 	duration: integer("duration").notNull(),
 	level: courseLevelEnum().default("Beginner"),
-	stripePriceId: text("stripe_price_id").unique().default("Asfbhgdgjgihik"),
+	stripePriceId: text("stripe_price_id").unique(),
 	category: text("category").notNull(),
 	smallDescription: text("small_description").notNull(),
 	slug: text("slug").notNull().unique(),
