@@ -170,6 +170,13 @@ export const ajAdmin = arcjet({
 	],
 });
 
+// Stripe webhooks: Shield + generous IP limit so bursts and retries never
+// trip it. Deliberately no bot rule — fulfillment must not depend on bot
+// classification.
+export const ajWebhook = aj.withRule(
+	slidingWindow({ mode: "LIVE", interval: "60s", max: 200 })
+);
+
 // Public reads: Shield + generous IP limit. Search engine crawlers stay
 // allowed so course pages keep getting indexed; every other bot is denied.
 export const ajPublic = aj
