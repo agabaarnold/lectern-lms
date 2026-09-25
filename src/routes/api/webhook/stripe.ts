@@ -16,7 +16,13 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 						const body = await request.text();
 						const headersList = getRequestHeaders();
 
-						const signature = headersList.get("Stripe-Signature") as string;
+						const signature = headersList.get("Stripe-Signature");
+
+						if (!signature) {
+							return new Response("Missing webhook signature", {
+								status: 400,
+							});
+						}
 
 						let event: Stripe.Event;
 
@@ -30,34 +36,48 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 							return new Response("Webhook error", { status: 400 });
 						}
 
-						const session = event.data.object as Stripe.Checkout.Session;
-
-						if (event.type === "checkout.session.completed") {
-							const courseId = session.metadata?.courseId;
-							const customerId = session.customer as string;
-
-							if (!courseId) {
-								throw new Error("Course id not found...");
-							}
-
-							const user = await db.query.users.findFirst({
-								where: { stripeCustomerId: customerId },
-							});
-
-							if (!user) {
-								throw new Error("User not found...");
-							}
-
-							await db
-								.update(enrollments)
-								.set({
-									userId: user.id,
-									courseId,
-									amount: session.amount_total as number,
-									status: "Active",
-								})
-								.where(eq(enrollments.id, session.metadata?.enrollmentId));
+						if (
+							event.type !== "checkout.session.completed" &&
+							event.type !== "checkout.session.async_payment_succeeded"
+						) {
+							return new Response(null, { status: 200 });
 						}
+
+						const session = event.data.object;
+
+						// Async payment methods settle after checkout completes;
+						// only fulfill once funds have arrived.
+						if (session.payment_status !== "paid") {
+							return new Response(null, { status: 200 });
+						}
+
+						const enrollmentId = session.metadata?.enrollmentId;
+						const customerId =
+							typeof session.customer === "string"
+								? session.customer
+								: undefined;
+						const amount = session.amount_total;
+
+						if (!enrollmentId || !customerId || amount === null) {
+							return new Response("Webhook error: missing payment data", {
+								status: 400,
+							});
+						}
+
+						const user = await db.query.users.findFirst({
+							where: { stripeCustomerId: customerId },
+						});
+
+						if (!user) {
+							return new Response("Webhook error: unknown customer", {
+								status: 400,
+							});
+						}
+
+						await db
+							.update(enrollments)
+							.set({ amount, status: "Active" })
+							.where(eq(enrollments.id, enrollmentId));
 
 						return new Response(null, { status: 200 });
 					},
