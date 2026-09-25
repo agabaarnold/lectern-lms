@@ -1,7 +1,8 @@
+// oxlint-disable shadcn/no-arbitrary-values
 import { IconArrowLeft, IconCompass, IconHome } from "@tabler/icons-react";
 import { Link, useRouter } from "@tanstack/react-router";
 
-import { Button, buttonVariants } from "../../ui/button";
+import { Button, buttonVariants } from "#/components/ui/button.tsx";
 
 export const NotFoundComponent = () => {
 	const router = useRouter();
