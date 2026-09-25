@@ -77,3 +77,8 @@ export const getIndividualCourseSchema = z.object({
 export type GetIndividualCourseInput = z.input<
 	typeof getIndividualCourseSchema
 >;
+
+export const getCourseSidebarCourseData = getIndividualCourseSchema;
+export type GetCourseSidebarDataInput = z.input<
+	typeof getCourseSidebarCourseData
+>;
