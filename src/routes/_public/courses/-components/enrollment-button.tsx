@@ -11,7 +11,9 @@ export const EnrollmentButton = ({ courseId }: { courseId: string }) => {
 
 	const onSubmit = () => {
 		startTransition(async () => {
-			const { error } = await tryCatch(enrollInCourse({ data: { courseId } }));
+			const { data, error } = await tryCatch(
+				enrollInCourse({ data: { courseId } })
+			);
 
 			if (error) {
 				toast.error(
@@ -20,7 +22,12 @@ export const EnrollmentButton = ({ courseId }: { courseId: string }) => {
 				return;
 			}
 
-			toast.success("Course created successfully");
+			if (!data.data.checkoutUrl) {
+				toast.error("Could not start checkout. Please try again.");
+				return;
+			}
+
+			window.location.href = data.data.checkoutUrl;
 		});
 	};
 
