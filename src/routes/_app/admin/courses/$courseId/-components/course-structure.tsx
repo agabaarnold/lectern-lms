@@ -192,10 +192,10 @@ export const CourseStructure = ({ course }: CourseStructureProps) => {
 																	<IconFileText className="size-4" />
 
 																	<Link
-																		to="/admin/courses/$courseId/$categoryId/$lessonId"
+																		to="/admin/courses/$courseId/$chapterId/$lessonId"
 																		params={{
 																			courseId: course.id,
-																			categoryId: item.id,
+																			chapterId: item.id,
 																			lessonId: lesson.id,
 																		}}
 																	>

@@ -12,15 +12,13 @@ import {
 	SidebarMenuItem,
 } from "#/components/ui/sidebar.tsx";
 
-export const NavMain = ({
-	items,
-}: {
-	items: {
-		title: string;
-		url: LinkOptions["to"] | "#";
-		icon?: React.ReactNode;
-	}[];
-}) => {
+export interface NavMainItem {
+	title: string;
+	url: LinkOptions["to"] | "#";
+	icon?: React.ReactNode;
+}
+
+export const NavMain = ({ items }: { items: NavMainItem[] }) => {
 	const pathname = useLocation({
 		select: (location) => location.pathname,
 	});

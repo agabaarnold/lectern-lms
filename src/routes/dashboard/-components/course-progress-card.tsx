@@ -48,7 +48,7 @@ export const CourseProgressCard = ({ courses }: CourseProgressCardProps) => {
 					{courses.course.smallDescription}
 				</p>
 
-				<div className="space-y-4 mt-5">
+				<div className="mt-5 space-y-4">
 					<div className="mb-1 flex justify-between text-sm">
 						<p>Progress:</p>
 						<p className="font-medium">{progressPercentage} %</p>
@@ -56,7 +56,7 @@ export const CourseProgressCard = ({ courses }: CourseProgressCardProps) => {
 
 					<Progress value={progressPercentage} className="h-1.5" />
 
-					<p className="text-xs text-muted-foreground mt-1">
+					<p className="text-muted-foreground mt-1 text-xs">
 						{completedLessons} of {totalLessons} lessons completed.
 					</p>
 				</div>

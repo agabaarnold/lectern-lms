@@ -9,6 +9,7 @@ import React from "react";
 
 import { Logo } from "#/components/shared/logo.tsx";
 import { NavMain } from "#/components/sidebar/nav-main.tsx";
+import type { NavMainItem } from "#/components/sidebar/nav-main.tsx";
 import { NavSecondary } from "#/components/sidebar/nav-secondary.tsx";
 import { NavUser } from "#/components/sidebar/nav-user.tsx";
 import {
@@ -21,14 +22,16 @@ import {
 	SidebarMenuItem,
 } from "#/components/ui/sidebar.tsx";
 
+const navMain: NavMainItem[] = [
+	{
+		title: "Dashboard",
+		url: "/dashboard",
+		icon: <IconLayoutDashboard />,
+	},
+];
+
 const data = {
-	navMain: [
-		{
-			title: "Dashboard",
-			url: "/dashboard",
-			icon: <IconLayoutDashboard />,
-		},
-	],
+	navMain,
 	navSecondary: [
 		{
 			title: "Settings",
