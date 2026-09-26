@@ -10,10 +10,14 @@ import { S3 } from "#/lib/s3-client.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
 export const fileUploadSchema = z.object({
-	fileName: z.string().min(1, { error: "File name is required" }),
+	fileName: z.string().trim().min(1, { error: "File name is required" }).max(255),
 	contentType: z.string().min(1, { error: "Content type is required" }),
 	size: z.number().min(1, { error: "Size is required" }),
 	isImage: z.boolean(),
+});
+
+export const fileDeleteSchema = z.object({
+	key: z.string().trim().min(1, { error: "Object key is required" }).max(1024),
 });
 
 export const Route = createFileRoute("/api/s3/upload/")({
@@ -39,9 +43,18 @@ export const Route = createFileRoute("/api/s3/upload/")({
 							}
 
 							// oxlint-disable-next-line no-unused-vars: Will be implemented later sonarjs/no-unused-vars sonarjs/no-dead-store
-							const { fileName, contentType, size, isImage } = valid.data;
+							const { fileName, contentType, size } = valid.data;
 
-							const uniqueKey = `${uuidV4()}-${fileName}`;
+							const safeFileName = fileName.replaceAll(/[/\\]/gu, "");
+
+							if (safeFileName === "") {
+								return Response.json(
+									{ error: "Invalid file name" },
+									{ status: 400 }
+								);
+							}
+
+							const uniqueKey = `${uuidV4()}-${safeFileName}`;
 
 							const command = new PutObjectCommand({
 								Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
@@ -71,13 +84,16 @@ export const Route = createFileRoute("/api/s3/upload/")({
 						try {
 							const body = await request.json();
 
-							const { key } = body;
-							if (!key) {
+							const valid = fileDeleteSchema.safeParse(body);
+
+							if (!valid.success) {
 								return Response.json(
 									{ error: "Missing or invalid object key" },
 									{ status: 400 }
 								);
 							}
+
+							const { key } = valid.data;
 
 							const command = new DeleteObjectCommand({
 								Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
@@ -92,8 +108,8 @@ export const Route = createFileRoute("/api/s3/upload/")({
 							);
 						} catch {
 							return Response.json(
-								{ error: "Missing or invalid object key" },
-								{ status: 50 }
+								{ error: "Failed to delete file" },
+								{ status: 500 }
 							);
 						}
 					},
