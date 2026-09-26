@@ -77,6 +77,7 @@ export type CourseSearch = z.input<typeof courseSearchSchema>;
 export const updateCourseSchema = courseSchema
 	.partial()
 	.extend({ id: z.uuid({ error: courseIdError }) })
+	.omit({ status: true })
 	.refine((value) => Object.keys(value).length > 1, {
 		error: "Provide at least one field to update",
 	});

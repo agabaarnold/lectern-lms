@@ -209,6 +209,9 @@ export const createCourse = createServerFn({ method: "POST" })
 					slug: normalizeSlug(data.slug),
 					userId: context.user.id,
 					stripePriceId: stripePriceId.data,
+					// New courses always start as Draft; publishing is a
+					// dedicated operation (publishCourse) with prerequisites.
+					status: "Draft",
 				})
 				.returning();
 		} catch (error) {
@@ -341,6 +344,90 @@ export const updateCourse = createServerFn({ method: "POST" })
 		}
 
 		const [course] = updated;
+
+		if (!course) {
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
+		}
+
+		return course;
+	});
+
+export const publishCourse = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(courseIdSchema)
+	.handler(async ({ data }) => {
+		const course = await db.query.courses.findFirst({
+			where: { id: data.id },
+			columns: { id: true, status: true, fileKey: true, stripePriceId: true },
+			with: {
+				chapters: {
+					columns: { id: true },
+					with: {
+						lessons: { columns: { id: true, videoKey: true } },
+					},
+				},
+			},
+		});
+
+		if (!course) {
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
+		}
+
+		if (course.status === "Published") {
+			return course;
+		}
+
+		const unmet: string[] = [];
+
+		if (!course.stripePriceId) {
+			unmet.push("pricing is not configured");
+		}
+
+		if (!course.fileKey) {
+			unmet.push("a thumbnail image is required");
+		}
+
+		const lessons = course.chapters.flatMap((chapter) => chapter.lessons);
+
+		if (lessons.length === 0) {
+			unmet.push("at least one lesson is required");
+		} else if (lessons.some((lesson) => !lesson.videoKey)) {
+			unmet.push("every lesson must have a video");
+		}
+
+		if (unmet.length > 0) {
+			setResponseStatus(422);
+			throw new Error(`Cannot publish course: ${unmet.join("; ")}`);
+		}
+
+		const [published] = await db
+			.update(courses)
+			.set({ status: "Published" })
+			.where(eq(courses.id, data.id))
+			.returning();
+
+		if (!published) {
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
+		}
+
+		return published;
+	});
+
+export const unpublishCourse = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(courseIdSchema)
+	.handler(async ({ data }) => {
+		// Unpublishing archives rather than drafts so enrolled learners
+		// keep access to what they paid for; Draft courses are never
+		// learnable.
+		const [course] = await db
+			.update(courses)
+			.set({ status: "Archived" })
+			.where(eq(courses.id, data.id))
+			.returning();
 
 		if (!course) {
 			setResponseStatus(404);

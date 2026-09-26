@@ -1,18 +1,23 @@
 // oxlint-disable anti-slop/require-safety-comment-for-type-assertion
 import { IconSparkle } from "@tabler/icons-react";
 import { revalidateLogic } from "@tanstack/react-form-start";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useTransition } from "react";
 import { toast } from "react-hot-toast";
 import slugify from "slugify";
 
+import { Badge } from "#/components/ui/badge.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import { FieldGroup } from "#/components/ui/field.tsx";
 import type { getCourse } from "#/features/courses/functions/courses.ts";
-import { updateCourse } from "#/features/courses/functions/courses.ts";
+import {
+	publishCourse,
+	unpublishCourse,
+	updateCourse,
+} from "#/features/courses/functions/courses.ts";
 import {
 	CourseCategories,
 	courseLevels,
-	courseStatus,
 	updateCourseSchema,
 } from "#/features/courses/schema/courses.ts";
 import type { UpdateCourseInput } from "#/features/courses/schema/courses.ts";
@@ -25,6 +30,8 @@ interface EditCourseFormProps {
 
 export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 	const navigate = useNavigate();
+	const router = useRouter();
+	const [isPending, startTransition] = useTransition();
 
 	const defaultValues: UpdateCourseInput = {
 		id: course.id,
@@ -35,7 +42,6 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 		duration: course.duration,
 		level: course.level as UpdateCourseInput["level"],
 		category: course.category as UpdateCourseInput["category"],
-		status: course.status as UpdateCourseInput["status"],
 		slug: course.slug,
 		smallDescription: course.smallDescription,
 	};
@@ -69,6 +75,61 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 			}}
 		>
 			<FieldGroup>
+				<div className="flex items-center justify-between">
+					<Badge
+						variant={course.status === "Published" ? "default" : "secondary"}
+					>
+						{course.status}
+					</Badge>
+
+					{course.status === "Published" ? (
+						<Button
+							disabled={isPending}
+							onClick={() => {
+								startTransition(async () => {
+									const { error } = await tryCatch(
+										unpublishCourse({ data: { id: course.id } })
+									);
+
+									if (error) {
+										toast.error(error.message ?? "Failed to unpublish course");
+										return;
+									}
+
+									toast.success("Course unpublished");
+									await router.invalidate();
+								});
+							}}
+							type="button"
+							variant="outline"
+						>
+							Unpublish
+						</Button>
+					) : (
+						<Button
+							disabled={isPending}
+							onClick={() => {
+								startTransition(async () => {
+									const { error } = await tryCatch(
+										publishCourse({ data: { id: course.id } })
+									);
+
+									if (error) {
+										toast.error(error.message ?? "Failed to publish course");
+										return;
+									}
+
+									toast.success("Course published");
+									await router.invalidate();
+								});
+							}}
+							type="button"
+						>
+							Publish
+						</Button>
+					)}
+				</div>
+
 				<form.AppField name="title">
 					{(field) => (
 						<field.FormInput
@@ -168,18 +229,6 @@ export const EditCourseForm = ({ course }: EditCourseFormProps) => {
 						)}
 					</form.AppField>
 				</div>
-
-				<form.AppField name="status">
-					{(field) => (
-						<field.FormSelect
-							label="Status"
-							placeholder="Select a status"
-							options={[...courseStatus]}
-							getOptionLabel={(option) => option}
-							getOptionValue={(option) => option}
-						/>
-					)}
-				</form.AppField>
 
 				<form.AppForm>
 					<form.SubmitButton label="Edit Course" submitLabel="Editing" />
