@@ -19,7 +19,6 @@ import {
 	CourseCategories,
 	courseLevels,
 	courseSchema,
-	courseStatus,
 } from "#/features/courses/schema/courses.ts";
 import type { CourseInput } from "#/features/courses/schema/courses.ts";
 import { useAppForm } from "#/hooks/form/use-form.ts";
@@ -200,18 +199,6 @@ function CreateCoursePage() {
 									)}
 								</form.AppField>
 							</div>
-
-							<form.AppField name="status">
-								{(field) => (
-									<field.FormSelect
-										label="Status"
-										placeholder="Select a status"
-										options={[...courseStatus]}
-										getOptionLabel={(option) => option}
-										getOptionValue={(option) => option}
-									/>
-								)}
-							</form.AppField>
 
 							<form.AppForm>
 								<form.SubmitButton
