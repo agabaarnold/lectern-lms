@@ -24,22 +24,22 @@ const features: Feature[] = [
 		icon: "📚",
 	},
 	{
-		title: "Interactive Learning",
+		title: "Structured Video Lessons",
 		description:
-			"Interact with content, quizzes and assignments to enhance your learning experience",
-		icon: "🎮",
+			"Follow chapter-by-chapter video lessons with thumbnails at your own pace.",
+		icon: "🎬",
 	},
 	{
 		title: "Progress Tracking",
 		description:
-			"Monitor your progress and achievements with detailed analytics and personalized dashboards.",
+			"Monitor your progress with per-lesson completion and course-level dashboards.",
 		icon: "📊",
 	},
 	{
-		title: "Community Support",
+		title: "Secure Enrollment",
 		description:
-			"Join a vibrant community of learners and instructors to collaborate and share knowledge",
-		icon: "🧑🏽‍🤝‍🧑🏾",
+			"Enroll in courses with secure Stripe checkout and instant access after payment.",
+		icon: "🔒",
 	},
 ];
 
