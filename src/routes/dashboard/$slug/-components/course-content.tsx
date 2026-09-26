@@ -8,6 +8,7 @@ import { RenderDescription } from "#/components/rich-text/render-description.tsx
 import { Button } from "#/components/ui/button.tsx";
 import { markLessonComplete } from "#/features/courses/functions/lessons.ts";
 import type { getLessonContent } from "#/features/courses/functions/lessons.ts";
+import { parseTiptapDocument } from "#/features/courses/schema/tiptap.ts";
 import { useConfetti } from "#/hooks/use-confetti.ts";
 import { tryCatch } from "#/lib/try-catch.ts";
 
@@ -69,7 +70,7 @@ export const CourseContent = ({ lesson }: CourseContentProps) => {
 				</h1>
 
 				{lesson.description && (
-					<RenderDescription json={JSON.parse(lesson.description)} />
+					<RenderDescription json={parseTiptapDocument(lesson.description)} />
 				)}
 			</div>
 		</div>

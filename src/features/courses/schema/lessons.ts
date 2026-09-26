@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { chapterIdError, courseIdError, lessonIdError } from "./shared";
+import { isTiptapJsonString } from "./tiptap";
 
 export const lessonIdSchema = z.object({
 	id: z.uuid({ error: lessonIdError }),
@@ -14,6 +15,9 @@ export const lessonSchema = z.object({
 	description: z
 		.string()
 		.min(3, "Description must be at least 3 characters long")
+		.refine(isTiptapJsonString, {
+			error: "Description must be valid rich text content",
+		})
 		.optional(),
 	thumbnailKey: z.string().optional(),
 	videoKey: z.string().optional(),

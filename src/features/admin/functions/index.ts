@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, exists } from "drizzle-orm";
+import { and, count, eq, exists, gte, sql } from "drizzle-orm";
 
 import { db } from "#/db/index.ts";
 import { users } from "#/db/schema/auth.schema.ts";
@@ -61,27 +61,28 @@ export const getDashboardOverview = createServerFn()
 			// total lessons
 			db.$count(lessons),
 
-			// enrollment rows for the 30-day chart
-			db.query.enrollments.findMany({
-				where: {
-					createdAt: {
-						gte: thirtyDaysAgo,
-					},
-				},
-				columns: { createdAt: true },
-				orderBy: { createdAt: "desc" },
-			}),
+			// Daily enrollment counts for the 30-day chart, aggregated
+			// in PostgreSQL so only one row per day crosses the wire.
+			db
+				.select({
+					day: sql<string>`(date_trunc('day', ${enrollments.createdAt} at time zone 'UTC'))::date::text`,
+					total: count(),
+				})
+				.from(enrollments)
+				.where(gte(enrollments.createdAt, thirtyDaysAgo))
+				.groupBy(
+					sql`(date_trunc('day', ${enrollments.createdAt} at time zone 'UTC'))::date`
+				),
 		]);
 
 		const enrollmentChart = buildLast30Days(new Date());
 		const byDate = new Map(enrollmentChart.map((day) => [day.date, day]));
 
-		for (const { createdAt } of enrollmentRows) {
-			const [day] = createdAt.toISOString().split("T");
-			const entry = day === undefined ? undefined : byDate.get(day);
+		for (const { day, total } of enrollmentRows) {
+			const entry = byDate.get(day);
 
 			if (entry) {
-				entry.enrollments += 1;
+				entry.enrollments += total;
 			}
 		}
 

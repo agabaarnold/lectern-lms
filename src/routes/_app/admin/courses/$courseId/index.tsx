@@ -1,10 +1,11 @@
 // oxlint-disable react/function-component-definition func-style
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/admin/courses/$courseId/")({
-	component: RouteComponent,
+	beforeLoad: ({ params }) => {
+		throw redirect({
+			to: "/admin/courses/$courseId/edit",
+			params: { courseId: params.courseId },
+		});
+	},
 });
-
-function RouteComponent() {
-	return <div>Hello "/_app/admin/courses/$courseId"!</div>;
-}

@@ -23,6 +23,7 @@ import {
 import { Separator } from "#/components/ui/separator.tsx";
 import { getIndividualCourse } from "#/features/courses/functions/courses.ts";
 import { checkIfCourseBought } from "#/features/courses/functions/enrollments.ts";
+import { parseTiptapDocument } from "#/features/courses/schema/tiptap.ts";
 import { currencyFormatter } from "#/lib/helpers.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
@@ -96,7 +97,9 @@ function SlugPage() {
 						</h2>
 
 						<div>
-							<RenderDescription json={JSON.parse(course.description)} />
+							<RenderDescription
+								json={parseTiptapDocument(course.description)}
+							/>
 						</div>
 					</div>
 

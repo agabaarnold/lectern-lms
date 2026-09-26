@@ -1,5 +1,6 @@
 import {
 	boolean,
+	index,
 	integer,
 	pgEnum,
 	pgTable,
@@ -109,7 +110,10 @@ export const enrollments = pgTable(
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
 	},
-	(table) => [unique("user_course_unique").on(table.userId, table.courseId)]
+	(table) => [
+		unique("user_course_unique").on(table.userId, table.courseId),
+		index("enrollments_created_at_idx").on(table.createdAt),
+	]
 );
 
 export const lessonProgress = pgTable(

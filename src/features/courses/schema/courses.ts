@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { courseIdError } from "./shared";
+import { isTiptapJsonString } from "./tiptap";
 
 export const courseLevels = ["Beginner", "Intermediate", "Advanced"] as const;
 export const courseStatus = ["Draft", "Published", "Archived"] as const;
@@ -26,7 +27,12 @@ export const courseSchema = z.object({
 		.string()
 		.min(3, { error: minLengthError("Title", 3) })
 		.max(100, { error: "Title must be at most 100 characters" }),
-	description: z.string().min(3, { error: minLengthError("Description", 3) }),
+	description: z
+		.string()
+		.min(3, { error: minLengthError("Description", 3) })
+		.refine(isTiptapJsonString, {
+			error: "Description must be valid rich text content",
+		}),
 	fileKey: z.string().min(1, { error: "File is required" }),
 	price: z.coerce.number().min(1, { error: "Price must be a positive number" }),
 	duration: z.coerce
