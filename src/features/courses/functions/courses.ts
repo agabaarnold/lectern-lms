@@ -154,6 +154,8 @@ interface CourseStorageObjects {
 	}[];
 }
 
+const MAX_DELETE_KEYS = 1000;
+
 const deleteCourseStorageObjects = async (
 	course: CourseStorageObjects
 ): Promise<void> => {
@@ -175,21 +177,40 @@ const deleteCourseStorageObjects = async (
 		return;
 	}
 
-	const result = await S3.send(
-		new DeleteObjectsCommand({
-			Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
-			Delete: { Objects: [...keys].map((Key) => ({ Key })) },
-		})
+	// DeleteObjects accepts at most 1,000 keys per request, so chunk
+	// large courses. Batches are disjoint, so they run in parallel.
+	// Per-key failures do not throw: collect them across all batches
+	// and fail closed so no course row is deleted while files remain.
+	const keyList = [...keys];
+	const batches: string[][] = [];
+
+	for (let index = 0; index < keyList.length; index += MAX_DELETE_KEYS) {
+		batches.push(keyList.slice(index, index + MAX_DELETE_KEYS));
+	}
+
+	const results = await Promise.all(
+		batches.map((batch) =>
+			S3.send(
+				new DeleteObjectsCommand({
+					Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
+					Delete: { Objects: batch.map((Key) => ({ Key })) },
+				})
+			)
+		)
 	);
 
-	// Multi-object delete reports per-key failures in the response
-	// without throwing, so inspect them: proceeding with failed keys
-	// would orphan course files.
-	const failures = result.Errors ?? [];
+	const failures: string[] = [];
+
+	for (const result of results) {
+		for (const failure of result.Errors ?? []) {
+			if (failure.Key) {
+				failures.push(failure.Key);
+			}
+		}
+	}
 
 	if (failures.length > 0) {
-		const failedKeys = failures.map((failure) => failure.Key).join(", ");
-		throw new Error(`Failed to delete course files: ${failedKeys}`);
+		throw new Error(`Failed to delete course files: ${failures.join(", ")}`);
 	}
 };
 
