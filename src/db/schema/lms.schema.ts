@@ -112,20 +112,26 @@ export const enrollments = pgTable(
 	(table) => [unique("user_course_unique").on(table.userId, table.courseId)]
 );
 
-export const lessonProgress = pgTable("lesson_progress", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	completed: boolean("completed").notNull().default(false),
-	userId: text("user_id")
-		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
-	lessonId: text("lesson_id")
-		.notNull()
-		.references(() => lessons.id, { onDelete: "cascade" }),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.defaultNow()
-		.$onUpdate(() => /* @__PURE__ */ new Date())
-		.notNull(),
-});
+export const lessonProgress = pgTable(
+	"lesson_progress",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		completed: boolean("completed").notNull().default(false),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		lessonId: uuid("lesson_id")
+			.notNull()
+			.references(() => lessons.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		unique("user_lesson_unique").on(table.userId, table.lessonId),
+	]
+);
