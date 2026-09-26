@@ -7,14 +7,43 @@ import { z } from "zod";
 // oxlint-disable sonarjs/function-name
 import { clientEnv } from "#/client-env.ts";
 import { S3 } from "#/lib/s3-client.ts";
+import {
+	IMAGE_CONTENT_TYPES,
+	MAX_IMAGE_BYTES,
+	MAX_VIDEO_BYTES,
+	PRESIGNED_URL_EXPIRES_IN_SECONDS,
+	VIDEO_CONTENT_TYPES,
+} from "#/lib/upload-policy.ts";
 import { adminMiddleware } from "#/middleware.ts";
 
-export const fileUploadSchema = z.object({
-	fileName: z.string().trim().min(1, { error: "File name is required" }).max(255),
-	contentType: z.string().min(1, { error: "Content type is required" }),
-	size: z.number().min(1, { error: "Size is required" }),
-	isImage: z.boolean(),
-});
+const allowedContentTypes = (isImage: boolean): readonly string[] =>
+	isImage ? IMAGE_CONTENT_TYPES : VIDEO_CONTENT_TYPES;
+
+const maxBytes = (isImage: boolean): number =>
+	isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+
+export const fileUploadSchema = z
+	.object({
+		fileName: z
+			.string()
+			.trim()
+			.min(1, { error: "File name is required" })
+			.max(255),
+		contentType: z.string().min(1, { error: "Content type is required" }),
+		size: z.number().int().min(1, { error: "Size is required" }),
+		isImage: z.boolean(),
+	})
+	.refine(
+		(data) => allowedContentTypes(data.isImage).includes(data.contentType),
+		{
+			message: "Unsupported content type for this upload",
+			path: ["contentType"],
+		}
+	)
+	.refine((data) => data.size <= maxBytes(data.isImage), {
+		message: "File size exceeds the limit for this upload",
+		path: ["size"],
+	});
 
 export const fileDeleteSchema = z.object({
 	key: z.string().trim().min(1, { error: "Object key is required" }).max(1024),
@@ -42,7 +71,6 @@ export const Route = createFileRoute("/api/s3/upload/")({
 								);
 							}
 
-							// oxlint-disable-next-line no-unused-vars: Will be implemented later sonarjs/no-unused-vars sonarjs/no-dead-store
 							const { fileName, contentType, size } = valid.data;
 
 							const safeFileName = fileName.replaceAll(/[/\\]/gu, "");
@@ -64,8 +92,7 @@ export const Route = createFileRoute("/api/s3/upload/")({
 							});
 
 							const presignedUrl = await getSignedUrl(S3, command, {
-								// Url expires in 6 minutes
-								expiresIn: 360,
+								expiresIn: PRESIGNED_URL_EXPIRES_IN_SECONDS,
 							});
 
 							const response = { presignedUrl, key: uniqueKey };

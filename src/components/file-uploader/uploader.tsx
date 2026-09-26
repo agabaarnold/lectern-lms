@@ -6,6 +6,12 @@ import type { FileRejection } from "react-dropzone";
 import { toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
+import {
+	IMAGE_CONTENT_TYPES,
+	MAX_IMAGE_BYTES,
+	MAX_VIDEO_BYTES,
+	VIDEO_CONTENT_TYPES,
+} from "#/lib/upload-policy.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
 import { Card, CardContent } from "../ui/card";
@@ -199,14 +205,17 @@ export const Uploader = ({
 		[fileState.objectUrl]
 	);
 
+	const acceptedContentTypes =
+		fileTypeAccepted === "video" ? VIDEO_CONTENT_TYPES : IMAGE_CONTENT_TYPES;
+
 	const { getInputProps, getRootProps, isDragActive } = useDropzone({
 		onDrop,
-		accept:
-			fileTypeAccepted === "video" ? { "video/*": [] } : { "image/*": [] },
+		accept: Object.fromEntries(
+			acceptedContentTypes.map((contentType) => [contentType, []])
+		),
 		maxFiles: 1,
 		multiple: false,
-		maxSize:
-			fileTypeAccepted === "image" ? 5 * 1024 * 1024 : 5000 * 1024 * 1024,
+		maxSize: fileTypeAccepted === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES,
 		onDropRejected: rejectedFiles,
 		disabled:
 			fileState.uploading || (!!fileState.objectUrl && !fileState.error),
