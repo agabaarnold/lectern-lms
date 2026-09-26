@@ -18,7 +18,10 @@ const badRequest = (reason: string): Response =>
 const verifyEnrollmentOwnership = async (
 	enrollmentId: string,
 	customerId: string
-): Promise<{ enrollmentId: string } | { error: string }> => {
+): Promise<
+	| { enrollmentAmount: number; courseStripePriceId: string | null }
+	| { error: string }
+> => {
 	const user = await db.query.users.findFirst({
 		where: { stripeCustomerId: customerId },
 	});
@@ -29,7 +32,7 @@ const verifyEnrollmentOwnership = async (
 
 	const enrollment = await db.query.enrollments.findFirst({
 		where: { id: enrollmentId },
-		columns: { userId: true, courseId: true },
+		columns: { userId: true, courseId: true, amount: true },
 	});
 
 	if (!enrollment) {
@@ -42,14 +45,17 @@ const verifyEnrollmentOwnership = async (
 
 	const course = await db.query.courses.findFirst({
 		where: { id: enrollment.courseId },
-		columns: { id: true },
+		columns: { id: true, stripePriceId: true },
 	});
 
 	if (!course) {
 		return { error: "unknown course" };
 	}
 
-	return { enrollmentId };
+	return {
+		enrollmentAmount: enrollment.amount,
+		courseStripePriceId: course.stripePriceId,
+	};
 };
 
 const handleChargeRefunded = async (
@@ -95,6 +101,79 @@ const handleChargeRefunded = async (
 		.where(
 			and(eq(enrollments.id, enrollmentId), eq(enrollments.status, "Active"))
 		);
+
+	return new Response(null, { status: 200 });
+};
+
+const handleCheckoutSession = async (
+	eventType: string,
+	session: Stripe.Checkout.Session
+): Promise<Response> => {
+	const isFulfillment =
+		eventType === "checkout.session.completed" ||
+		eventType === "checkout.session.async_payment_succeeded";
+
+	// Async payment methods settle after checkout completes;
+	// only fulfill once funds have arrived.
+	if (isFulfillment && session.payment_status !== "paid") {
+		return new Response(null, { status: 200 });
+	}
+
+	const enrollmentId = session.metadata?.enrollmentId;
+	const customerId = z.string().safeParse(session.customer).data;
+
+	if (!enrollmentId || !customerId) {
+		return badRequest("missing payment data");
+	}
+
+	const verified = await verifyEnrollmentOwnership(enrollmentId, customerId);
+
+	if ("error" in verified) {
+		return badRequest(verified.error);
+	}
+
+	if (isFulfillment) {
+		const amount = session.amount_total;
+
+		if (amount === null) {
+			return badRequest("missing payment data");
+		}
+
+		const lineItems = await stripeClient.checkout.sessions.listLineItems(
+			session.id,
+			{ limit: 1 }
+		);
+		const [lineItem] = lineItems.data;
+		const paidPriceId =
+			z.string().safeParse(lineItem?.price).data ??
+			z.object({ id: z.string() }).safeParse(lineItem?.price).data?.id;
+
+		// Accept when the paid price is the course's current price, or
+		// when the amount matches what was recorded at checkout: an admin
+		// price change in between must not void a valid payment.
+		const priceMatches =
+			paidPriceId !== undefined &&
+			paidPriceId === verified.courseStripePriceId;
+		const amountMatches = amount === verified.enrollmentAmount;
+
+		if (!priceMatches && !amountMatches) {
+			return badRequest("payment does not match expected purchase");
+		}
+
+		await db
+			.update(enrollments)
+			.set({ amount, status: "Active" })
+			.where(
+				and(eq(enrollments.id, enrollmentId), eq(enrollments.status, "Pending"))
+			);
+	} else {
+		await db
+			.update(enrollments)
+			.set({ status: "Cancelled" })
+			.where(
+				and(eq(enrollments.id, enrollmentId), eq(enrollments.status, "Pending"))
+			);
+	}
 
 	return new Response(null, { status: 200 });
 };
@@ -154,62 +233,7 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 							return new Response(null, { status: 200 });
 						}
 
-						const session = event.data.object;
-						const isFulfillment =
-							event.type === "checkout.session.completed" ||
-							event.type === "checkout.session.async_payment_succeeded";
-
-						// Async payment methods settle after checkout completes;
-						// only fulfill once funds have arrived.
-						if (isFulfillment && session.payment_status !== "paid") {
-							return new Response(null, { status: 200 });
-						}
-
-						const enrollmentId = session.metadata?.enrollmentId;
-						const customerId = z.string().safeParse(session.customer).data;
-
-						if (!enrollmentId || !customerId) {
-							return badRequest("missing payment data");
-						}
-
-						const verified = await verifyEnrollmentOwnership(
-							enrollmentId,
-							customerId
-						);
-
-						if ("error" in verified) {
-							return badRequest(verified.error);
-						}
-
-						if (isFulfillment) {
-							const amount = session.amount_total;
-
-							if (amount === null) {
-								return badRequest("missing payment data");
-							}
-
-							await db
-								.update(enrollments)
-								.set({ amount, status: "Active" })
-								.where(
-									and(
-										eq(enrollments.id, enrollmentId),
-										eq(enrollments.status, "Pending")
-									)
-								);
-						} else {
-							await db
-								.update(enrollments)
-								.set({ status: "Cancelled" })
-								.where(
-									and(
-										eq(enrollments.id, enrollmentId),
-										eq(enrollments.status, "Pending")
-									)
-								);
-						}
-
-						return new Response(null, { status: 200 });
+						return handleCheckoutSession(event.type, event.data.object);
 					},
 				},
 			}),
