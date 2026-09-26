@@ -1,239 +1,164 @@
-Welcome to your new TanStack Start app!
+<p align="center">
+  <img src="public/logo.svg" width="80" alt="Lectern logo" />
+</p>
 
-# Getting Started
+<h1 align="center">Lectern</h1>
 
-To run this application:
+<p align="center">
+  A modern, full-stack Learning Management System for building, selling, and taking online courses.
+</p>
+
+---
+
+## Overview
+
+Lectern is a course platform where **instructors/admins** create courses made up of chapters and lessons, and **students** browse a public catalog, pay for a course via Stripe, and work through the content from a personal dashboard with progress tracking.
+
+It's built on TanStack Start (React 19, SSR, file-based routing) with a Postgres/Drizzle data layer, Better Auth for authentication, Stripe for payments, and S3-compatible object storage for course media.
+
+## Features
+
+- **Authentication** — email/password with email verification, GitHub and Google OAuth (with account linking), breach-password checking (HaveIBeenPwned), and role-based access (`admin` vs. regular user)
+- **Course authoring** — create courses with title, description, category, level, price, and duration; organize content into drag-and-drop-reorderable chapters and lessons; rich text lesson content via a Tiptap editor
+- **Media uploads** — direct-to-S3 file uploads (course thumbnails, lesson videos) via presigned URLs
+- **Payments** — Stripe Checkout for course purchases, with a signature-verified webhook that activates enrollments once payment is confirmed (handles both instant and delayed/async payment methods)
+- **Student dashboard** — enrolled courses, per-course progress, and a lesson player
+- **Public catalog** — browsable, searchable course listing with category and level filters
+- **Admin analytics** — enrollment and revenue overview for admins
+- **Security & abuse prevention** — Arcjet-backed bot detection and tiered rate limiting (separate policies for public, authenticated, admin, and webhook routes)
+- **Transactional email** — verification, password reset, and other emails built with React Email and sent via Nodemailer/SMTP
+
+## Tech stack
+
+| Layer          | Choice |
+|----------------|--------|
+| Framework      | [TanStack Start](https://tanstack.com/start) (React 19, SSR, file-based routing via TanStack Router) |
+| Database       | PostgreSQL ([Neon](https://neon.tech)) via [Drizzle ORM](https://orm.drizzle.team) |
+| Auth           | [Better Auth](https://www.better-auth.com) |
+| Payments       | [Stripe](https://stripe.com) |
+| Storage        | S3-compatible object storage (e.g. [Tigris](https://www.tigrisdata.com)) via AWS SDK v3 |
+| Bot/abuse protection | [Arcjet](https://arcjet.com) |
+| Email          | [React Email](https://react.email) + Nodemailer |
+| Rich text      | [Tiptap](https://tiptap.dev) |
+| UI             | Tailwind CSS v4, shadcn/ui, Radix/Base UI, Tabler Icons |
+| Data fetching  | TanStack Query |
+| Forms          | TanStack Form |
+| Lint/format    | Ultracite (Oxlint + Oxfmt) |
+
+## Getting started
+
+### Prerequisites
+
+- Node.js and [pnpm](https://pnpm.io)
+- A PostgreSQL database (e.g. a free [Neon](https://neon.tech) project)
+- Accounts/API keys for the services you want enabled: Stripe, Arcjet, an S3-compatible bucket, an SMTP provider, and OAuth apps for GitHub/Google (all optional except the database and auth secret)
+
+### Installation
 
 ```bash
+git clone https://github.com/agabaarnold/lectern-lms.git
+cd lectern-lms
 pnpm install
+```
+
+### Environment variables
+
+Copy the example file and fill in your own values:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `BETTER_AUTH_URL` | Base URL of the app (e.g. `http://localhost:3000`) |
+| `BETTER_AUTH_SECRET` | Generate with `pnpm dlx @better-auth/cli secret` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Outgoing email (verification, password reset) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub OAuth |
+| `NODE_ENV` | `development` / `production` |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, `AWS_ENDPOINT_URL_IAM`, `AWS_REGION`, `VITE_S3_BUCKET_NAME_IMAGES` | S3-compatible storage for course media |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payments |
+| `ARCJET_KEY` | Bot detection and rate limiting |
+
+### Database setup
+
+```bash
+pnpm db:generate   # generate a migration from schema changes
+pnpm db:migrate    # apply migrations
+pnpm db:studio     # optional: browse the database with Drizzle Studio
+```
+
+### Run the app
+
+```bash
 pnpm dev
 ```
 
-# Building For Production
+The app runs at `http://localhost:3000` by default.
 
-To build this application for production:
+## Available scripts
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start the dev server |
+| `pnpm build` | Build for production |
+| `pnpm preview` | Preview the production build |
+| `pnpm db:generate` / `db:migrate` / `db:push` / `db:pull` / `db:studio` | Drizzle migration workflow |
+| `pnpm check` | Lint/format check with Ultracite |
+| `pnpm fix` | Auto-fix lint/format issues |
+| `pnpm email:dev` | Preview transactional email templates locally |
+
+## Project structure
+
+```
+src/
+├── components/       # Shared UI components (forms, sidebar, rich text editor, shadcn primitives)
+├── db/
+│   ├── schema/       # Drizzle schema (auth + LMS tables)
+│   └── relations.ts
+├── features/
+│   ├── auth/         # Login/register/reset forms + server functions
+│   ├── courses/      # Course/chapter/lesson/enrollment schemas & server functions
+│   ├── admin/        # Admin-only server functions
+│   └── email/        # Transactional email templates + sending
+├── hooks/            # Shared React hooks (progress, debounce, theme, confetti, etc.)
+├── lib/              # Auth, Stripe, S3, Arcjet clients and helpers
+├── routes/
+│   ├── _public/      # Public marketing/catalog pages
+│   ├── _auth/        # Login/register/password-reset pages
+│   ├── _app/admin/   # Admin course editor and analytics
+│   ├── dashboard/    # Student dashboard and lesson player
+│   ├── payment/      # Stripe success/cancel pages
+│   └── api/          # Auth, S3 upload, and Stripe webhook routes
+├── middleware.ts     # authMiddleware / adminMiddleware / arcjetMiddleware
+└── router.tsx
+```
+
+## Deployment
+
+The build output is a self-contained Node server (via [Nitro](https://nitro.build)):
 
 ```bash
 pnpm build
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Deploy with Nitro
-
-This project uses Nitro as a generic server adapter, so it can run on any Node-compatible host.
-
-```bash
-npm run build
 node dist/server/index.mjs
 ```
 
-The build output is a self-contained Node server. To deploy, push the `dist/` directory to your host (Render, Fly.io, your own VPS, etc.) and run the server command above.
+It can be deployed to any Node-compatible host (Render, Fly.io, a VPS, etc.). See the [Nitro deployment docs](https://v3.nitro.build/deploy) for host-specific presets (Vercel, Netlify, Cloudflare, AWS Lambda).
 
-For host-specific presets (Vercel, Netlify, Cloudflare, AWS Lambda, etc.) and tuning, see https://v3.nitro.build/deploy.
+Remember to point your Stripe webhook endpoint at `/api/webhook/stripe` in production and set `STRIPE_WEBHOOK_SECRET` accordingly.
 
-## T3Env
+## Contributing
 
-- You can use T3Env to add type safety to your environment variables.
-- Add Environment variables to the `src/env.mjs` file.
-- Use the environment variables in your code.
-
-### Usage
-
-```ts
-import { env } from "#/env";
-
-console.log(env.VITE_APP_TITLE);
-```
-
-## Setting up Better Auth
-
-1. Generate and set the `BETTER_AUTH_SECRET` environment variable in your `.env.local`:
-
-   ```bash
-   pnpm dlx @better-auth/cli secret
-   ```
-
-2. Visit the [Better Auth documentation](https://www.better-auth.com) to unlock the full potential of authentication in your app.
-
-### Adding a Database (Optional)
-
-Better Auth can work in stateless mode, but to persist user data, add a database:
-
-```typescript
-// src/lib/auth.ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
-
-export const auth = betterAuth({
-	database: new Pool({
-		connectionString: process.env.DATABASE_URL,
-	}),
-	// ... rest of config
-});
-```
-
-Then run migrations:
+Issues and pull requests are welcome. Before submitting a change, run:
 
 ```bash
-pnpm dlx @better-auth/cli migrate
+pnpm check
 ```
 
-## Routing
+to make sure the code passes lint and formatting checks.
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+## License
 
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-	head: () => ({
-		meta: [
-			{ charSet: "utf-8" },
-			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: "My App" },
-		],
-	}),
-	shellComponent: ({ children }) => (
-		<html lang="en">
-			<head>
-				<HeadContent />
-			</head>
-			<body>
-				<header>
-					<nav>
-						<Link to="/">Home</Link>
-						<Link to="/about">About</Link>
-					</nav>
-				</header>
-				{children}
-				<Scripts />
-			</body>
-		</html>
-	),
-});
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from "@tanstack/react-start";
-
-const getServerTime = createServerFn({
-	method: "GET",
-}).handler(async () => {
-	return new Date().toISOString();
-});
-
-// Use in a component
-function MyComponent() {
-	const [time, setTime] = useState("");
-
-	useEffect(() => {
-		getServerTime().then(setTime);
-	}, []);
-
-	return <div>Server time: {time}</div>;
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@tanstack/react-start";
-
-export const Route = createFileRoute("/api/hello")({
-	server: {
-		handlers: {
-			GET: () => json({ message: "Hello, World!" }),
-		},
-	},
-});
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/people")({
-	loader: async () => {
-		const response = await fetch("https://swapi.dev/api/people");
-		return response.json();
-	},
-	component: PeopleComponent,
-});
-
-function PeopleComponent() {
-	const data = Route.useLoaderData();
-	return (
-		<ul>
-			{data.results.map((person) => (
-				<li key={person.name}>{person.name}</li>
-			))}
-		</ul>
-	);
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+_Add a license for this project (e.g. MIT) so others know how they can use it._
