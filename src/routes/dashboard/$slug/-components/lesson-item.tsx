@@ -13,10 +13,11 @@ interface LessonItemProps {
 		description: string | null;
 	};
 	slug: string;
+	isActive: boolean;
 }
 
-export const LessonItem = ({ lesson, slug }: LessonItemProps) => {
-	const completed = true;
+export const LessonItem = ({ lesson, slug, isActive }: LessonItemProps) => {
+	const completed = false;
 
 	return (
 		<Link
@@ -25,7 +26,10 @@ export const LessonItem = ({ lesson, slug }: LessonItemProps) => {
 				className: cn(
 					"h-auto w-full justify-start p-2.5 transition-all",
 					completed &&
-						"border-green-300 bg-green-100 text-green-800 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50"
+						"border-green-300 bg-green-100 text-green-800 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200 dark:hover:bg-green-900/50",
+					isActive &&
+						!completed &&
+						"bg-primary10 dark:bg-primary/20 border-primary/50 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary"
 				),
 			})}
 			to="/dashboard/$slug/$lessonId"
