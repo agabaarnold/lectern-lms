@@ -231,7 +231,17 @@ export const getEnrolledCourses = createServerFn()
 					with: {
 						chapters: {
 							columns: { id: true },
-							with: { lessons: { columns: { id: true } } },
+							with: {
+								lessons: {
+									columns: { id: true },
+									with: {
+										lessonProgress: {
+											where: { userId: user.id },
+											columns: { id: true, completed: true, lessonId: true },
+										},
+									},
+								},
+							},
 						},
 					},
 				},
