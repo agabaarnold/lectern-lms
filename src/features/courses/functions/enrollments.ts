@@ -228,7 +228,6 @@ export const getEnrolledCourses = createServerFn()
 						slug: true,
 						duration: true,
 						level: true,
-						category: true,
 					},
 					with: {
 						chapters: {
