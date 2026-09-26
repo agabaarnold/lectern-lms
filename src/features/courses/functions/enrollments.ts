@@ -118,7 +118,7 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 		try {
 			const course = await db.query.courses.findFirst({
-				where: { id: courseId },
+				where: { id: courseId, status: "Published" },
 				columns: {
 					id: true,
 					title: true,
