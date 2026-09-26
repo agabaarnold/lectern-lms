@@ -275,7 +275,13 @@ export const getLessonContent = createServerFn()
 				thumbnailKey: true,
 				videoKey: true,
 			},
-			with: { chapter: { columns: { courseId: true } } },
+			with: {
+				chapter: { columns: { courseId: true } },
+				lessonProgress: {
+					where: { userId: context.user.id },
+					columns: { completed: true, lessonId: true },
+				},
+			},
 		});
 
 		if (!lesson) {
