@@ -1,8 +1,6 @@
 import {
 	IconListDetails,
 	IconChartBar,
-	IconFolder,
-	IconUsers,
 	IconCamera,
 	IconFileDescription,
 	IconFileAi,
@@ -43,18 +41,8 @@ const data = {
 		},
 		{
 			title: "Analytics",
-			url: "#",
+			url: "/admin/analytics",
 			icon: <IconChartBar />,
-		},
-		{
-			title: "Projects",
-			url: "#",
-			icon: <IconFolder />,
-		},
-		{
-			title: "Team",
-			url: "#",
-			icon: <IconUsers />,
 		},
 	],
 	navClouds: [
