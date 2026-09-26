@@ -1,10 +1,11 @@
 // oxlint-disable react/function-component-definition func-style
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { getAllCourses } from "#/features/courses/functions/courses.ts";
 import { getEnrolledCourses } from "#/features/courses/functions/enrollments.ts";
 
 import { PublicCourseCard } from "../_public/-components/public-course-card";
+import { CourseProgressCard } from "./-components/course-progress-card";
 import { CoursesEmptyState } from "./-components/courses-empty-state";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -42,13 +43,7 @@ function DashboardPage() {
 			) : (
 				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 					{enrolledCourses.map((course) => (
-						<Link
-							key={course.course.id}
-							to="/dashboard/$slug"
-							params={{ slug: course.course.slug }}
-						>
-							{course.course.title}
-						</Link>
+						<CourseProgressCard key={course.id} courses={course} />
 					))}
 				</div>
 			)}
@@ -74,14 +69,21 @@ function DashboardPage() {
 					/>
 				) : (
 					<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-						{allCourses
-							.filter(
-								(course) =>
+						{(() => {
+							const cards: React.ReactNode[] = [];
+
+							for (const course of allCourses) {
+								if (
 									!enrolledCourses.some((enrolled) => enrolled.id === course.id)
-							)
-							.map((course) => (
-								<PublicCourseCard key={course.id} course={course} />
-							))}
+								) {
+									cards.push(
+										<PublicCourseCard key={course.id} course={course} />
+									);
+								}
+							}
+
+							return cards;
+						})()}
 					</div>
 				)}
 			</section>
