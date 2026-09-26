@@ -385,6 +385,12 @@ export const getCourseSiderbarData = createServerFn()
 								description: true,
 								position: true,
 							},
+							with: {
+								lessonProgress: {
+									where: { userId: user.id },
+									columns: { completed: true, lessonId: true, id: true },
+								},
+							},
 						},
 					},
 				},
