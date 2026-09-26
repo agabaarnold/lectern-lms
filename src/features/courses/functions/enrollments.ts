@@ -145,13 +145,19 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 			if (userWithStripeCustomerId?.stripeCustomerId) {
 				({ stripeCustomerId } = userWithStripeCustomerId);
 			} else {
-				const customer = await stripeClient.customers.create({
-					email: user.email,
-					name: user.name,
-					metadata: {
-						userId: user.id,
+				// Idempotency key is scoped to the user so a retry (or a
+				// double submit) reuses the same customer instead of
+				// creating duplicates.
+				const customer = await stripeClient.customers.create(
+					{
+						email: user.email,
+						name: user.name,
+						metadata: {
+							userId: user.id,
+						},
 					},
-				});
+					{ idempotencyKey: `user-customer-${user.id}` }
+				);
 
 				stripeCustomerId = customer.id;
 
@@ -163,18 +169,24 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 			const enrollment = await resolvePendingEnrollment(user.id, course);
 
-			const checkoutSession = await stripeClient.checkout.sessions.create({
-				customer: stripeCustomerId,
-				line_items: [{ price: course.stripePriceId, quantity: 1 }],
-				mode: "payment",
-				success_url: `${env.BETTER_AUTH_URL}/payment/success`,
-				cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
-				metadata: {
-					userId: user.id,
-					courseId,
-					enrollmentId: enrollment.id,
+			// resolvePendingEnrollment reuses the existing pending enrollment
+			// for this user+course, so scoping the idempotency key to the
+			// enrollment makes retried checkouts return the same session.
+			const checkoutSession = await stripeClient.checkout.sessions.create(
+				{
+					customer: stripeCustomerId,
+					line_items: [{ price: course.stripePriceId, quantity: 1 }],
+					mode: "payment",
+					success_url: `${env.BETTER_AUTH_URL}/payment/success`,
+					cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
+					metadata: {
+						userId: user.id,
+						courseId,
+						enrollmentId: enrollment.id,
+					},
 				},
-			});
+				{ idempotencyKey: `checkout-${enrollment.id}` }
+			);
 
 			const result = { enrollment, checkoutUrl: checkoutSession.url };
 
