@@ -1,11 +1,14 @@
+import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { EmptyFilter, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { clientEnv } from "#/client-env.ts";
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
+import { S3 } from "#/lib/s3-client.ts";
 import { stripeClient } from "#/lib/stripe.ts";
 import {
 	adminMiddleware,
@@ -101,6 +104,84 @@ const resolveStripePriceId = async (
 };
 
 type CourseRow = typeof courses.$inferSelect;
+
+// Stripe prices are immutable, so a course can point at the latest of
+// several prices on one product. Deactivate every active price and
+// archive the product so a deleted course can never be purchased again.
+const archiveCourseStripeResources = async (
+	stripePriceId: string | null
+): Promise<void> => {
+	if (!stripePriceId) {
+		return;
+	}
+
+	const stripePrice = await fetchStripePrice(stripePriceId);
+
+	if (!stripePrice) {
+		return;
+	}
+
+	const productId =
+		z.string().safeParse(stripePrice.product).data ??
+		z.object({ id: z.string() }).safeParse(stripePrice.product).data?.id;
+
+	if (!productId) {
+		return;
+	}
+
+	const prices = await stripeClient.prices.list({
+		product: productId,
+		active: true,
+		limit: 100,
+	});
+
+	await Promise.all(
+		prices.data.map((price) =>
+			stripeClient.prices.update(price.id, { active: false })
+		)
+	);
+
+	await stripeClient.products.update(productId, { active: false });
+};
+
+interface CourseStorageObjects {
+	fileKey: string;
+	chapters: {
+		lessons: {
+			thumbnailKey: string | null;
+			videoKey: string | null;
+		}[];
+	}[];
+}
+
+const deleteCourseStorageObjects = async (
+	course: CourseStorageObjects
+): Promise<void> => {
+	const keys = new Set<string>([course.fileKey]);
+
+	for (const chapter of course.chapters) {
+		for (const lesson of chapter.lessons) {
+			if (lesson.thumbnailKey) {
+				keys.add(lesson.thumbnailKey);
+			}
+
+			if (lesson.videoKey) {
+				keys.add(lesson.videoKey);
+			}
+		}
+	}
+
+	if (keys.size === 0) {
+		return;
+	}
+
+	await S3.send(
+		new DeleteObjectsCommand({
+			Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
+			Delete: { Objects: [...keys].map((Key) => ({ Key })) },
+		})
+	);
+};
 
 export const createCourse = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
@@ -273,6 +354,38 @@ export const deleteCourse = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(courseIdSchema)
 	.handler(async ({ data }) => {
+		const course = await db.query.courses.findFirst({
+			where: { id: data.id },
+			columns: { id: true, fileKey: true, stripePriceId: true },
+			with: {
+				chapters: {
+					columns: { id: true },
+					with: {
+						lessons: {
+							columns: { thumbnailKey: true, videoKey: true },
+						},
+					},
+				},
+			},
+		});
+
+		if (!course) {
+			setResponseStatus(404);
+			throw new Error(COURSE_NOT_FOUND_MESSAGE);
+		}
+
+		// Clean up external resources before the database row: if Stripe
+		// or S3 fails, the course still exists and the delete can be
+		// retried instead of leaving orphaned resources behind.
+		try {
+			await archiveCourseStripeResources(course.stripePriceId);
+			await deleteCourseStorageObjects(course);
+		} catch (error) {
+			throw new Error("Failed to clean up course resources", {
+				cause: error,
+			});
+		}
+
 		let deleted: CourseRow[];
 
 		try {
@@ -284,14 +397,14 @@ export const deleteCourse = createServerFn({ method: "POST" })
 			throw new Error("Failed to delete course", { cause: error });
 		}
 
-		const [course] = deleted;
+		const [deletedCourse] = deleted;
 
-		if (!course) {
+		if (!deletedCourse) {
 			setResponseStatus(404);
 			throw new Error(COURSE_NOT_FOUND_MESSAGE);
 		}
 
-		return course;
+		return deletedCourse;
 	});
 
 // Not protected for pulic course route
