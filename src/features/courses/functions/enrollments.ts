@@ -227,6 +227,8 @@ export const getEnrolledCourses = createServerFn()
 						fileKey: true,
 						slug: true,
 						duration: true,
+						level: true,
+						category: true,
 					},
 					with: {
 						chapters: {
