@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { getLessonContent } from "#/features/courses/functions/lessons.ts";
 
+import { CourseContent } from "./-components/course-content";
+
 export const Route = createFileRoute("/dashboard/$slug/$lessonId")({
 	loader: async ({ params }) => {
 		const { lesson } = await getLessonContent({
@@ -17,5 +19,5 @@ export const Route = createFileRoute("/dashboard/$slug/$lessonId")({
 function LessonPage() {
 	const { lesson } = Route.useLoaderData();
 
-	return <div>Hello "/dashboard/$slug/$lessonId"!</div>;
+	return <CourseContent lesson={lesson} />;
 }
