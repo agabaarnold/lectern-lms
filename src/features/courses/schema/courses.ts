@@ -63,6 +63,11 @@ export const getCoursesQuerySchema = z.object({
 });
 export type GetCoursesQuery = z.input<typeof getCoursesQuerySchema>;
 
+export const courseSearchSchema = z.object({
+	q: z.string().trim().max(100).optional(),
+});
+export type CourseSearch = z.input<typeof courseSearchSchema>;
+
 export const updateCourseSchema = courseSchema
 	.partial()
 	.extend({ id: z.uuid({ error: courseIdError }) })
