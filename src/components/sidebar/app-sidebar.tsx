@@ -13,6 +13,7 @@ import { Link } from "@tanstack/react-router";
 import React from "react";
 
 import { NavMain } from "#/components/sidebar/nav-main.tsx";
+import type { NavMainItem } from "#/components/sidebar/nav-main.tsx";
 import { NavSecondary } from "#/components/sidebar/nav-secondary.tsx";
 import { NavUser } from "#/components/sidebar/nav-user.tsx";
 import {
@@ -27,24 +28,29 @@ import {
 
 import { Logo } from "../shared/logo";
 
+const navMain: NavMainItem[] = [
+	{
+		title: "Dashboard",
+		url: "/admin",
+		icon: <IconLayoutDashboard />,
+	},
+	{
+		title: "Courses",
+		url: "/admin/courses",
+		icon: <IconListDetails />,
+	},
+	{
+		title: "Analytics",
+		url: "/admin/analytics",
+		icon: <IconChartBar />,
+	},
+];
+
+const ACTIVE_PROPOSALS_TITLE = "Active Proposals";
+const ARCHIVED_TITLE = "Archived";
+
 const data = {
-	navMain: [
-		{
-			title: "Dashboard",
-			url: "/admin",
-			icon: <IconLayoutDashboard />,
-		},
-		{
-			title: "Courses",
-			url: "/admin/courses",
-			icon: <IconListDetails />,
-		},
-		{
-			title: "Analytics",
-			url: "/admin/analytics",
-			icon: <IconChartBar />,
-		},
-	],
+	navMain,
 	navClouds: [
 		{
 			title: "Capture",
@@ -53,11 +59,11 @@ const data = {
 			url: "#",
 			items: [
 				{
-					title: "Active Proposals",
+					title: ACTIVE_PROPOSALS_TITLE,
 					url: "#",
 				},
 				{
-					title: "Archived",
+					title: ARCHIVED_TITLE,
 					url: "#",
 				},
 			],
@@ -68,11 +74,11 @@ const data = {
 			url: "#",
 			items: [
 				{
-					title: "Active Proposals",
+					title: ACTIVE_PROPOSALS_TITLE,
 					url: "#",
 				},
 				{
-					title: "Archived",
+					title: ARCHIVED_TITLE,
 					url: "#",
 				},
 			],
@@ -83,11 +89,11 @@ const data = {
 			url: "#",
 			items: [
 				{
-					title: "Active Proposals",
+					title: ACTIVE_PROPOSALS_TITLE,
 					url: "#",
 				},
 				{
-					title: "Archived",
+					title: ARCHIVED_TITLE,
 					url: "#",
 				},
 			],

@@ -20,6 +20,6 @@ export default defineConfig({
 		jsPlugins,
 	],
 	ignorePatterns: core.ignorePatterns,
-	jsPlugins: [...jsPlugins.jsPlugins, ...shadcn.jsPlugins],
+	jsPlugins: [...(jsPlugins.jsPlugins ?? []), ...(shadcn.jsPlugins ?? [])],
 	settings: jsPluginSettings,
 });

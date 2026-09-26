@@ -76,7 +76,7 @@ export const ChartAreaInteractive = ({ data }: ChartAreaInteractiveProps) => {
 								<ChartTooltipContent
 									className="w-37.5"
 									labelFormatter={(value) => {
-										const date = new Date(value);
+										const date = new Date(String(value));
 
 										return date.toLocaleDateString("en-UG", {
 											month: "short",
