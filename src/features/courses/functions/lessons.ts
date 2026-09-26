@@ -303,9 +303,9 @@ export const markLessonComplete = createServerFn({ method: "POST" })
 		try {
 			await db
 				.insert(lessonProgress)
-				.values({ userId: user.id, lessonId: data.id })
+				.values({ userId: user.id, lessonId: data.id, completed: true })
 				.onConflictDoUpdate({
-					target: lessonProgress.completed,
+					target: [lessonProgress.userId, lessonProgress.lessonId],
 					set: { completed: true },
 				});
 		} catch (error) {
