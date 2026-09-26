@@ -1,4 +1,4 @@
-// oxlint-disable shadcn/no-raw-colors
+// oxlint-disable shadcn/no-raw-colors shadcn/no-restyle
 import { IconCircleCheck } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useTransition } from "react";
@@ -6,7 +6,6 @@ import { toast } from "react-hot-toast";
 
 import { RenderDescription } from "#/components/rich-text/render-description.tsx";
 import { Button } from "#/components/ui/button.tsx";
-import { Spinner } from "#/components/ui/spinner.tsx";
 import { markLessonComplete } from "#/features/courses/functions/lessons.ts";
 import type { getLessonContent } from "#/features/courses/functions/lessons.ts";
 import { useConfetti } from "#/hooks/use-confetti.ts";
@@ -52,18 +51,16 @@ export const CourseContent = ({ lesson }: CourseContentProps) => {
 			/>
 
 			<div className="border-b py-4">
-				<Button disabled={isPending} onClick={onSubmit} variant="outline">
-					{isPending ? (
-						<>
-							<Spinner /> Updating...
-						</>
-					) : (
-						<>
-							<IconCircleCheck className="mr-2 size-4 text-green-500" /> Mark as
-							complete
-						</>
-					)}
-				</Button>
+				{lesson.lessonProgress.length === 0 ? (
+					<Button className="bg-green-500/10 text-green-500" variant="outline">
+						<IconCircleCheck className="mr-2 size-4 text-green-500" /> Completed
+					</Button>
+				) : (
+					<Button disabled={isPending} onClick={onSubmit} variant="outline">
+						<IconCircleCheck className="mr-2 size-4 text-green-500" /> Mark as
+						complete
+					</Button>
+				)}
 			</div>
 
 			<div className="space-y-3 pt-3">
