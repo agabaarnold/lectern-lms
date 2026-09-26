@@ -31,8 +31,7 @@ export const VideoPlayer = ({
 				<source src={videoUrl} type="video/mp4" />
 				<source src={videoUrl} type="video/webm" />
 				<source src={videoUrl} type="video/ogg" />
-
-                Your browser does not support the video tag.
+				Your browser does not support the video tag.
 			</video>
 		</div>
 	);
