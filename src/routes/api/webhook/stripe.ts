@@ -86,6 +86,41 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 							});
 						}
 
+						// The event is signature-verified, but fulfillment still
+						// binds it to our own records: the enrollment must exist,
+						// belong to this customer, and reference a real course.
+						// Amount is recorded, not gated: an admin price change
+						// between checkout and settlement would make an exact
+						// match reject a valid payment.
+						const enrollment = await db.query.enrollments.findFirst({
+							where: { id: enrollmentId },
+							columns: { userId: true, courseId: true },
+						});
+
+						if (!enrollment) {
+							return new Response("Webhook error: unknown enrollment", {
+								status: 400,
+							});
+						}
+
+						if (enrollment.userId !== user.id) {
+							return new Response(
+								"Webhook error: enrollment does not belong to customer",
+								{ status: 400 }
+							);
+						}
+
+						const course = await db.query.courses.findFirst({
+							where: { id: enrollment.courseId },
+							columns: { id: true },
+						});
+
+						if (!course) {
+							return new Response("Webhook error: unknown course", {
+								status: 400,
+							});
+						}
+
 						await db
 							.update(enrollments)
 							.set({ amount, status: "Active" })
