@@ -39,6 +39,8 @@ export const NavUser = () => {
 		return null;
 	}
 
+	const isAdmin = session?.user.role === "admin";
+
 	return (
 		<SidebarMenu>
 			<SidebarMenuItem>
@@ -113,23 +115,27 @@ export const NavUser = () => {
 								}
 							/>
 
-							<DropdownMenuItem
-								render={
-									<Link to="/admin">
-										<IconLayoutDashboard />
-										Dashboard
-									</Link>
-								}
-							/>
+							{isAdmin && (
+								<DropdownMenuItem
+									render={
+										<Link to="/admin">
+											<IconLayoutDashboard />
+											Dashboard
+										</Link>
+									}
+								/>
+							)}
 
-							<DropdownMenuItem
-								render={
-									<Link to="/admin/courses">
-										<IconDeviceTv />
-										Courses
-									</Link>
-								}
-							/>
+							{isAdmin && (
+								<DropdownMenuItem
+									render={
+										<Link to="/admin/courses">
+											<IconDeviceTv />
+											Courses
+										</Link>
+									}
+								/>
+							)}
 						</DropdownMenuGroup>
 
 						<DropdownMenuSeparator />

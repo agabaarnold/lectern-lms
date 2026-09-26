@@ -76,14 +76,16 @@ export const UserDropdown = ({ user }: UserDropdownProps) => {
 							}
 						/>
 
-						<DropdownMenuItem
-							render={
-								<Link to="/admin">
-									<IconLayoutDashboard />
-									<span>Admin Dashboard</span>
-								</Link>
-							}
-						/>
+						{user.role === "admin" && (
+							<DropdownMenuItem
+								render={
+									<Link to="/admin">
+										<IconLayoutDashboard />
+										<span>Admin Dashboard</span>
+									</Link>
+								}
+							/>
+						)}
 					</DropdownMenuGroup>
 
 					<DropdownMenuSeparator />
