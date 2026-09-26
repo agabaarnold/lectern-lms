@@ -16,6 +16,7 @@ import {
 import {
 	courseIdSchema,
 	courseSchema,
+	courseSearchSchema,
 	getCourseSidebarCourseData,
 	getCoursesQuerySchema,
 	getIndividualCourseSchema,
@@ -296,9 +297,26 @@ export const deleteCourse = createServerFn({ method: "POST" })
 // Not protected for pulic course route
 export const getAllCourses = createServerFn({ method: "GET" })
 	.middleware([arcjetMiddleware])
-	.handler(async () => {
-		const data = await db.query.courses.findMany({
-			where: { status: "Published" },
+	.validator(courseSearchSchema)
+	.handler(async ({ data }) => {
+		const sanitizedQuery = data.q?.replaceAll(/[\\%_]/gu, "");
+		const pattern =
+			sanitizedQuery === undefined || sanitizedQuery === ""
+				? undefined
+				: `%${sanitizedQuery}%`;
+
+		const courseList = await db.query.courses.findMany({
+			where:
+				pattern === undefined
+					? { status: "Published" }
+					: {
+							status: "Published",
+							OR: [
+								{ title: { ilike: pattern } },
+								{ smallDescription: { ilike: pattern } },
+								{ category: { ilike: pattern } },
+							],
+						},
 			columns: {
 				title: true,
 				price: true,
@@ -313,7 +331,7 @@ export const getAllCourses = createServerFn({ method: "GET" })
 			orderBy: { createdAt: "desc" },
 		});
 
-		return data;
+		return courseList;
 	});
 
 export const getIndividualCourse = createServerFn({ method: "GET" })
