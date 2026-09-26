@@ -44,10 +44,18 @@ export const LessonItem = ({ lesson, slug, isActive }: LessonItemProps) => {
 					) : (
 						<div
 							className={cn(
-								"bg-background flex size-5 items-center justify-center rounded-full"
+								"bg-background flex size-5 items-center justify-center rounded-full",
+								isActive
+									? "border-primary bg-primary/10 dark:bg-primary/20"
+									: "border-muted-foreground/60"
 							)}
 						>
-							<IconPlayerPlay className={cn("size-2.5 fill-current")} />
+							<IconPlayerPlay
+								className={cn(
+									"size-2.5 fill-current",
+									isActive ? "text-primary" : "text-muted-foreground"
+								)}
+							/>
 						</div>
 					)}
 				</div>
