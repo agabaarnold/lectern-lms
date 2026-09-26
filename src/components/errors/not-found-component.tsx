@@ -32,7 +32,7 @@ export const NotFoundComponent = () => {
 					</h1>
 
 					<p className="text-muted-foreground text-base leading-relaxed">
-						The page you&copy;re looking for doesn&copy;t exist or may have been
+						The page you&apos;re looking for doesn&apos;t exist or may have been
 						moved. Double-check the URL, or head back somewhere familiar.
 					</p>
 				</div>
