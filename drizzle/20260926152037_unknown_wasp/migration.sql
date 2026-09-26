@@ -1,0 +1,1 @@
+CREATE INDEX "enrollments_created_at_idx" ON "enrollments" ("created_at");
