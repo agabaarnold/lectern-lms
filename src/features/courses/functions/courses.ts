@@ -175,12 +175,22 @@ const deleteCourseStorageObjects = async (
 		return;
 	}
 
-	await S3.send(
+	const result = await S3.send(
 		new DeleteObjectsCommand({
 			Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
 			Delete: { Objects: [...keys].map((Key) => ({ Key })) },
 		})
 	);
+
+	// Multi-object delete reports per-key failures in the response
+	// without throwing, so inspect them: proceeding with failed keys
+	// would orphan course files.
+	const failures = result.Errors ?? [];
+
+	if (failures.length > 0) {
+		const failedKeys = failures.map((failure) => failure.Key).join(", ");
+		throw new Error(`Failed to delete course files: ${failedKeys}`);
+	}
 };
 
 export const createCourse = createServerFn({ method: "POST" })
@@ -188,6 +198,7 @@ export const createCourse = createServerFn({ method: "POST" })
 	.validator(courseSchema)
 	.handler(async ({ context, data }) => {
 		let inserted: CourseRow[];
+		let createdPriceId: string | null = null;
 
 		try {
 			const stripeData = await stripeClient.products.create({
@@ -202,16 +213,32 @@ export const createCourse = createServerFn({ method: "POST" })
 				throw new TypeError("Failed to create course pricing");
 			}
 
+			createdPriceId = stripePriceId.data;
+
 			inserted = await db
 				.insert(courses)
 				.values({
 					...data,
 					slug: normalizeSlug(data.slug),
 					userId: context.user.id,
-					stripePriceId: stripePriceId.data,
+					stripePriceId: createdPriceId,
 				})
 				.returning();
 		} catch (error) {
+			// The Stripe product/price already exists at this point, so a
+			// database failure would orphan it. Clean up best-effort: the
+			// original error below is what the caller sees.
+			if (createdPriceId) {
+				try {
+					await archiveCourseStripeResources(createdPriceId);
+				} catch (cleanupError) {
+					console.error(
+						"Failed to clean up Stripe resources after course creation failure",
+						cleanupError
+					);
+				}
+			}
+
 			const cause = error instanceof Error ? error.cause : undefined;
 			const isConflict =
 				uniqueViolationSchema.safeParse(error).success ||
@@ -327,6 +354,21 @@ export const updateCourse = createServerFn({ method: "POST" })
 				.where(eq(courses.id, id))
 				.returning();
 		} catch (error) {
+			// stripePriceId is only set when a new price was minted above,
+			// so a failed update would orphan it. Deactivate best-effort.
+			if (stripePriceId) {
+				try {
+					await stripeClient.prices.update(stripePriceId, {
+						active: false,
+					});
+				} catch (cleanupError) {
+					console.error(
+						"Failed to deactivate Stripe price after course update failure",
+						cleanupError
+					);
+				}
+			}
+
 			const cause = error instanceof Error ? error.cause : undefined;
 			const isConflict =
 				uniqueViolationSchema.safeParse(error).success ||
@@ -493,6 +535,12 @@ export const getCourseSiderbarData = createServerFn()
 		const { user } = context;
 		const { slug } = data;
 
+		// Deliberately no `status: "Published"` filter here: enrollments
+		// can only be created for published courses, and learners keep
+		// access to what they paid for even if the course is later
+		// archived. `Published` gates discovery and purchase
+		// (getAllCourses, getIndividualCourse, enrollInCourse); the
+		// Active enrollment below gates access.
 		const course = await db.query.courses.findFirst({
 			where: { slug },
 			columns: {
