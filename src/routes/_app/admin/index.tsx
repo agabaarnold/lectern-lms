@@ -48,7 +48,7 @@ function AdminDashboard() {
 						to="/admin/courses"
 						className={buttonVariants({ variant: "outline" })}
 					>
-						View All Course
+						View All Courses
 					</Link>
 				</div>
 
