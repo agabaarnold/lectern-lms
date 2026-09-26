@@ -10,6 +10,7 @@ import {
 } from "#/components/ui/collapsible.tsx";
 import { Progress } from "#/components/ui/progress.tsx";
 import type { getCourseSiderbarData } from "#/features/courses/functions/courses.ts";
+import { useCourseProgress } from "#/hooks/use-course-progress.ts";
 
 import { LessonItem } from "./lesson-item";
 
@@ -21,6 +22,9 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
 	const pathname = useLocation({ select: (location) => location.pathname });
 
 	const currentLessonId = pathname.split("/").pop();
+
+	const { completedLessons, progressPercentage, totalLessons } =
+		useCourseProgress({ course });
 
 	return (
 		<div className="flex h-full flex-col">
@@ -44,11 +48,15 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
 				<div className="space-y-2">
 					<div className="flex justify-between text-xs">
 						<span className="text-muted-foreground">Progress</span>
-						<span className="font-medium">4/10 lessons</span>
+						<span className="font-medium">
+							{completedLessons}/{totalLessons} lessons
+						</span>
 					</div>
 
-					<Progress value={55} className="h-1.5" />
-					<p className="text-muted-foreground text-xs">55% complete</p>
+					<Progress value={progressPercentage} className="h-1.5" />
+					<p className="text-muted-foreground text-xs">
+						{progressPercentage}% complete
+					</p>
 				</div>
 			</div>
 
