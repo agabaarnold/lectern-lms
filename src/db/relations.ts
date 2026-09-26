@@ -20,6 +20,10 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.users.id,
 			to: r.enrollments.userId,
 		}),
+		lessonProgress: r.many.lessonProgress({
+			from: r.users.id,
+			to: r.lessonProgress.userId,
+		}),
 	},
 
 	courses: {
@@ -67,6 +71,23 @@ export const relations = defineRelations(schema, (r) => ({
 		chapter: r.one.chapters({
 			from: r.lessons.chapterId,
 			to: r.chapters.id,
+			optional: false,
+		}),
+		lessonProgress: r.many.lessonProgress({
+			from: r.lessons.id,
+			to: r.lessonProgress.lessonId,
+		}),
+	},
+
+	lessonProgress: {
+		lesson: r.one.lessonProgress({
+			from: r.lessonProgress.lessonId,
+			to: r.lessons.id,
+			optional: false,
+		}),
+		user: r.one.users({
+			from: r.lessonProgress.lessonId,
+			to: r.users.id,
 			optional: false,
 		}),
 	},
