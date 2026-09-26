@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getRequestHeaders } from "@tanstack/react-start/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Stripe } from "stripe";
 import { z } from "zod";
 
@@ -8,6 +8,96 @@ import { db } from "#/db/index.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
 import { env } from "#/env.server.ts";
 import { ajWebhook, toArcjetRequest } from "#/lib/arcjet";
+import { stripeClient } from "#/lib/stripe.ts";
+
+const badRequest = (reason: string): Response =>
+	new Response(`Webhook error: ${reason}`, { status: 400 });
+
+// Binds a Stripe event to our own records: the enrollment must exist,
+// belong to the Stripe-matched customer, and reference a real course.
+const verifyEnrollmentOwnership = async (
+	enrollmentId: string,
+	customerId: string
+): Promise<{ enrollmentId: string } | { error: string }> => {
+	const user = await db.query.users.findFirst({
+		where: { stripeCustomerId: customerId },
+	});
+
+	if (!user) {
+		return { error: "unknown customer" };
+	}
+
+	const enrollment = await db.query.enrollments.findFirst({
+		where: { id: enrollmentId },
+		columns: { userId: true, courseId: true },
+	});
+
+	if (!enrollment) {
+		return { error: "unknown enrollment" };
+	}
+
+	if (enrollment.userId !== user.id) {
+		return { error: "enrollment does not belong to customer" };
+	}
+
+	const course = await db.query.courses.findFirst({
+		where: { id: enrollment.courseId },
+		columns: { id: true },
+	});
+
+	if (!course) {
+		return { error: "unknown course" };
+	}
+
+	return { enrollmentId };
+};
+
+const handleChargeRefunded = async (
+	charge: Stripe.Charge
+): Promise<Response> => {
+	// Partial refunds keep access; only a full refund revokes it.
+	if (charge.amount_refunded < charge.amount) {
+		return new Response(null, { status: 200 });
+	}
+
+	const paymentIntentId =
+		z.string().safeParse(charge.payment_intent).data ??
+		z.object({ id: z.string() }).safeParse(charge.payment_intent).data?.id;
+
+	if (!paymentIntentId) {
+		return badRequest("missing payment intent");
+	}
+
+	const sessions = await stripeClient.checkout.sessions.list({
+		payment_intent: paymentIntentId,
+		limit: 1,
+	});
+
+	const [session] = sessions.data;
+	const enrollmentId = session?.metadata?.enrollmentId;
+	const customerId = session
+		? z.string().safeParse(session.customer).data
+		: undefined;
+
+	if (!enrollmentId || !customerId) {
+		return badRequest("missing enrollment reference");
+	}
+
+	const verified = await verifyEnrollmentOwnership(enrollmentId, customerId);
+
+	if ("error" in verified) {
+		return badRequest(verified.error);
+	}
+
+	await db
+		.update(enrollments)
+		.set({ status: "Cancelled" })
+		.where(
+			and(eq(enrollments.id, enrollmentId), eq(enrollments.status, "Active"))
+		);
+
+	return new Response(null, { status: 200 });
+};
 
 export const Route = createFileRoute("/api/webhook/stripe")({
 	server: {
@@ -51,45 +141,73 @@ export const Route = createFileRoute("/api/webhook/stripe")({
 							return new Response("Webhook error", { status: 400 });
 						}
 
+						if (event.type === "charge.refunded") {
+							return handleChargeRefunded(event.data.object);
+						}
+
 						if (
 							event.type !== "checkout.session.completed" &&
-							event.type !== "checkout.session.async_payment_succeeded"
+							event.type !== "checkout.session.async_payment_succeeded" &&
+							event.type !== "checkout.session.expired" &&
+							event.type !== "checkout.session.async_payment_failed"
 						) {
 							return new Response(null, { status: 200 });
 						}
 
 						const session = event.data.object;
+						const isFulfillment =
+							event.type === "checkout.session.completed" ||
+							event.type === "checkout.session.async_payment_succeeded";
 
 						// Async payment methods settle after checkout completes;
 						// only fulfill once funds have arrived.
-						if (session.payment_status !== "paid") {
+						if (isFulfillment && session.payment_status !== "paid") {
 							return new Response(null, { status: 200 });
 						}
 
 						const enrollmentId = session.metadata?.enrollmentId;
 						const customerId = z.string().safeParse(session.customer).data;
-						const amount = session.amount_total;
 
-						if (!enrollmentId || !customerId || amount === null) {
-							return new Response("Webhook error: missing payment data", {
-								status: 400,
-							});
+						if (!enrollmentId || !customerId) {
+							return badRequest("missing payment data");
 						}
 
-						const user = await db.query.users.findFirst({
-							where: { stripeCustomerId: customerId },
-						});
+						const verified = await verifyEnrollmentOwnership(
+							enrollmentId,
+							customerId
+						);
 
-						if (!user) {
-							return new Response("Webhook error: unknown customer", {
-								status: 400,
-							});
+						if ("error" in verified) {
+							return badRequest(verified.error);
 						}
 
-						await db
-							.update(enrollments)
-							.set({ amount, status: "Active" })
-							.where(eq(enrollments.id, enrollmentId));
+						if (isFulfillment) {
+							const amount = session.amount_total;
+
+							if (amount === null) {
+								return badRequest("missing payment data");
+							}
+
+							await db
+								.update(enrollments)
+								.set({ amount, status: "Active" })
+								.where(
+									and(
+										eq(enrollments.id, enrollmentId),
+										eq(enrollments.status, "Pending")
+									)
+								);
+						} else {
+							await db
+								.update(enrollments)
+								.set({ status: "Cancelled" })
+								.where(
+									and(
+										eq(enrollments.id, enrollmentId),
+										eq(enrollments.status, "Pending")
+									)
+								);
+						}
 
 						return new Response(null, { status: 200 });
 					},
