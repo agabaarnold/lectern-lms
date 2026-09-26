@@ -339,7 +339,7 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 	.validator(getIndividualCourseSchema)
 	.handler(async ({ data }) => {
 		const course = await db.query.courses.findFirst({
-			where: { slug: data.slug },
+			where: { slug: data.slug, status: "Published" },
 			columns: {
 				title: true,
 				price: true,
