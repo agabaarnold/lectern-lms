@@ -13,6 +13,7 @@ import { auth } from "#/lib/auth.ts";
 import { stripeClient } from "#/lib/stripe.ts";
 import { authMiddleware } from "#/middleware.ts";
 
+import { courseSearchSchema } from "../schema/courses";
 import { enrollInSchema } from "../schema/enrollments";
 
 const uniqueViolationSchema = z.object({ code: z.literal("23505") });
@@ -213,11 +214,30 @@ export const checkIfCourseBought = createServerFn({ method: "GET" })
 
 export const getEnrolledCourses = createServerFn()
 	.middleware([authMiddleware])
-	.handler(async ({ context }) => {
+	.validator(courseSearchSchema)
+	.handler(async ({ context, data }) => {
 		const { user } = context;
+		const sanitizedQuery = data.q?.replaceAll(/[\\%_]/gu, "");
+		const pattern =
+			sanitizedQuery === undefined || sanitizedQuery === ""
+				? undefined
+				: `%${sanitizedQuery}%`;
 
 		const userEnrolledCourses = await db.query.enrollments.findMany({
-			where: { userId: user.id, status: "Active" },
+			where:
+				pattern === undefined
+					? { userId: user.id, status: "Active" }
+					: {
+							userId: user.id,
+							status: "Active",
+							course: {
+								OR: [
+									{ title: { ilike: pattern } },
+									{ smallDescription: { ilike: pattern } },
+									{ category: { ilike: pattern } },
+								],
+							},
+						},
 			with: {
 				course: {
 					columns: {
