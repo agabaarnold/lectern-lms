@@ -52,13 +52,13 @@ export const CourseContent = ({ lesson }: CourseContentProps) => {
 
 			<div className="border-b py-4">
 				{lesson.lessonProgress.length === 0 ? (
-					<Button className="bg-green-500/10 text-green-500" variant="outline">
-						<IconCircleCheck className="mr-2 size-4 text-green-500" /> Completed
-					</Button>
-				) : (
 					<Button disabled={isPending} onClick={onSubmit} variant="outline">
 						<IconCircleCheck className="mr-2 size-4 text-green-500" /> Mark as
 						complete
+					</Button>
+				) : (
+					<Button className="bg-green-500/10 text-green-500" variant="outline">
+						<IconCircleCheck className="mr-2 size-4 text-green-500" /> Completed
 					</Button>
 				)}
 			</div>
