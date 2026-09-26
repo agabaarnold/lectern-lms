@@ -493,8 +493,11 @@ export const getCourseSiderbarData = createServerFn()
 		const { user } = context;
 		const { slug } = data;
 
+		// Lifecycle: Published courses are learnable and purchasable;
+		// Archived courses stay learnable for enrolled learners but are
+		// hidden from purchase; Draft courses are never learnable.
 		const course = await db.query.courses.findFirst({
-			where: { slug },
+			where: { slug, status: { in: ["Published", "Archived"] } },
 			columns: {
 				id: true,
 				title: true,
