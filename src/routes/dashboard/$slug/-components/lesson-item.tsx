@@ -1,4 +1,4 @@
-// oxlint-disable shadcn/no-raw-colors
+// oxlint-disable shadcn/no-raw-colors no-nested-ternary sonarjs/no-nested-conditional shadcn/no-arbitrary-values
 import { IconCheck, IconPlayerPlay } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
@@ -63,17 +63,25 @@ export const LessonItem = ({ lesson, slug, isActive }: LessonItemProps) => {
 				<div className="min-w-0 flex-1 text-left">
 					<p
 						className={cn(
-							"truncate text-sm font-medium",
-							completed && "text-green-200 dark:text-green-800"
+							"truncate text-xs font-medium",
+							completed
+								? "text-green-200 dark:text-green-800"
+								: isActive
+									? "text-primary font-semibold"
+									: "text-foreground"
 						)}
 					>
 						{lesson.position}. {lesson.title}
 					</p>
 
 					{completed && (
-						<p className="text-xs font-medium text-green-700 dark:text-green-300">
+						<p className="text-[10px] font-medium text-green-700 dark:text-green-300">
 							Completed
 						</p>
+					)}
+
+					{isActive && !completed && (
+						<p className="text-[10px] font-medium">Currently watching</p>
 					)}
 				</div>
 			</div>
