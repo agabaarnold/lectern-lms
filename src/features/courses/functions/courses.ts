@@ -175,12 +175,22 @@ const deleteCourseStorageObjects = async (
 		return;
 	}
 
-	await S3.send(
+	const result = await S3.send(
 		new DeleteObjectsCommand({
 			Bucket: clientEnv.VITE_S3_BUCKET_NAME_IMAGES,
 			Delete: { Objects: [...keys].map((Key) => ({ Key })) },
 		})
 	);
+
+	// Multi-object delete reports per-key failures in the response
+	// without throwing, so inspect them: proceeding with failed keys
+	// would orphan course files.
+	const failures = result.Errors ?? [];
+
+	if (failures.length > 0) {
+		const failedKeys = failures.map((failure) => failure.Key).join(", ");
+		throw new Error(`Failed to delete course files: ${failedKeys}`);
+	}
 };
 
 export const createCourse = createServerFn({ method: "POST" })
