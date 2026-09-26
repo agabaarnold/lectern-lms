@@ -33,6 +33,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiWebhookStripeRouteImport } from './routes/api/webhook/stripe'
 import { Route as DashboardSlugIndexRouteImport } from './routes/dashboard/$slug/index'
 import { Route as DashboardSlugLessonIdRouteImport } from './routes/dashboard/$slug/$lessonId'
+import { Route as AppAdminAnalyticsIndexRouteImport } from './routes/_app/admin/analytics/index'
 import { Route as AppAdminCoursesIndexRouteImport } from './routes/_app/admin/courses/index'
 import { Route as ApiS3UploadIndexRouteImport } from './routes/api/s3/upload/index'
 import { Route as AppAdminCoursesCourseIdIndexRouteImport } from './routes/_app/admin/courses/$courseId/index'
@@ -158,6 +159,11 @@ const DashboardSlugLessonIdRoute = DashboardSlugLessonIdRouteImport.update({
   path: '/$lessonId',
   getParentRoute: () => DashboardSlugRouteRoute,
 } as any)
+const AppAdminAnalyticsIndexRoute = AppAdminAnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
 const AppAdminCoursesIndexRoute = AppAdminCoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AppAdminIndexRoute
   '/courses/': typeof PublicCoursesIndexRoute
   '/dashboard/$slug/': typeof DashboardSlugIndexRoute
+  '/admin/analytics/': typeof AppAdminAnalyticsIndexRoute
   '/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminIndexRoute
   '/courses': typeof PublicCoursesIndexRoute
   '/dashboard/$slug': typeof DashboardSlugIndexRoute
+  '/admin/analytics': typeof AppAdminAnalyticsIndexRoute
   '/admin/courses': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload': typeof ApiS3UploadIndexRoute
   '/admin/courses/$courseId': typeof AppAdminCoursesCourseIdIndexRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_public/courses/': typeof PublicCoursesIndexRoute
   '/dashboard/$slug/': typeof DashboardSlugIndexRoute
+  '/_app/admin/analytics/': typeof AppAdminAnalyticsIndexRoute
   '/_app/admin/courses/': typeof AppAdminCoursesIndexRoute
   '/api/s3/upload/': typeof ApiS3UploadIndexRoute
   '/_app/admin/courses/$courseId/': typeof AppAdminCoursesCourseIdIndexRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/courses/'
     | '/dashboard/$slug/'
+    | '/admin/analytics/'
     | '/admin/courses/'
     | '/api/s3/upload/'
     | '/admin/courses/$courseId/'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/courses'
     | '/dashboard/$slug'
+    | '/admin/analytics'
     | '/admin/courses'
     | '/api/s3/upload'
     | '/admin/courses/$courseId'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/_app/admin/'
     | '/_public/courses/'
     | '/dashboard/$slug/'
+    | '/_app/admin/analytics/'
     | '/_app/admin/courses/'
     | '/api/s3/upload/'
     | '/_app/admin/courses/$courseId/'
@@ -567,6 +579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSlugLessonIdRouteImport
       parentRoute: typeof DashboardSlugRouteRoute
     }
+    '/_app/admin/analytics/': {
+      id: '/_app/admin/analytics/'
+      path: '/analytics'
+      fullPath: '/admin/analytics/'
+      preLoaderRoute: typeof AppAdminAnalyticsIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
     '/_app/admin/courses/': {
       id: '/_app/admin/courses/'
       path: '/courses'
@@ -621,6 +640,7 @@ declare module '@tanstack/react-router' {
 
 interface AppAdminRouteRouteChildren {
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminAnalyticsIndexRoute: typeof AppAdminAnalyticsIndexRoute
   AppAdminCoursesIndexRoute: typeof AppAdminCoursesIndexRoute
   AppAdminCoursesCourseIdIndexRoute: typeof AppAdminCoursesCourseIdIndexRoute
   AppAdminCoursesCreateIndexRoute: typeof AppAdminCoursesCreateIndexRoute
@@ -631,6 +651,7 @@ interface AppAdminRouteRouteChildren {
 
 const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
   AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminAnalyticsIndexRoute: AppAdminAnalyticsIndexRoute,
   AppAdminCoursesIndexRoute: AppAdminCoursesIndexRoute,
   AppAdminCoursesCourseIdIndexRoute: AppAdminCoursesCourseIdIndexRoute,
   AppAdminCoursesCreateIndexRoute: AppAdminCoursesCreateIndexRoute,
