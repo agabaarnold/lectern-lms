@@ -294,6 +294,9 @@ export const getLessonContent = createServerFn()
 			columns: { status: true },
 		});
 
+		// No Published check by design: the Active enrollment below gates
+		// access, so learners keep what they paid for if a course is
+		// later archived. See getCourseSiderbarData for the full invariant.
 		if (!enrollment || enrollment.status !== "Active") {
 			throw notFound();
 		}

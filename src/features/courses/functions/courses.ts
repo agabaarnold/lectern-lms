@@ -535,6 +535,12 @@ export const getCourseSiderbarData = createServerFn()
 		const { user } = context;
 		const { slug } = data;
 
+		// Deliberately no `status: "Published"` filter here: enrollments
+		// can only be created for published courses, and learners keep
+		// access to what they paid for even if the course is later
+		// archived. `Published` gates discovery and purchase
+		// (getAllCourses, getIndividualCourse, enrollInCourse); the
+		// Active enrollment below gates access.
 		const course = await db.query.courses.findFirst({
 			where: { slug },
 			columns: {
