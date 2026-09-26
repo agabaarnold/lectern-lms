@@ -80,13 +80,13 @@ export const relations = defineRelations(schema, (r) => ({
 	},
 
 	lessonProgress: {
-		lesson: r.one.lessonProgress({
+		lesson: r.one.lessons({
 			from: r.lessonProgress.lessonId,
 			to: r.lessons.id,
 			optional: false,
 		}),
 		user: r.one.users({
-			from: r.lessonProgress.lessonId,
+			from: r.lessonProgress.userId,
 			to: r.users.id,
 			optional: false,
 		}),
