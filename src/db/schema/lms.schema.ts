@@ -131,7 +131,5 @@ export const lessonProgress = pgTable(
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
 	},
-	(table) => [
-		unique("user_lesson_unique").on(table.userId, table.lessonId),
-	]
+	(table) => [unique("user_lesson_unique").on(table.userId, table.lessonId)]
 );
