@@ -188,6 +188,7 @@ export const createCourse = createServerFn({ method: "POST" })
 	.validator(courseSchema)
 	.handler(async ({ context, data }) => {
 		let inserted: CourseRow[];
+		let createdPriceId: string | null = null;
 
 		try {
 			const stripeData = await stripeClient.products.create({
@@ -202,16 +203,32 @@ export const createCourse = createServerFn({ method: "POST" })
 				throw new TypeError("Failed to create course pricing");
 			}
 
+			createdPriceId = stripePriceId.data;
+
 			inserted = await db
 				.insert(courses)
 				.values({
 					...data,
 					slug: normalizeSlug(data.slug),
 					userId: context.user.id,
-					stripePriceId: stripePriceId.data,
+					stripePriceId: createdPriceId,
 				})
 				.returning();
 		} catch (error) {
+			// The Stripe product/price already exists at this point, so a
+			// database failure would orphan it. Clean up best-effort: the
+			// original error below is what the caller sees.
+			if (createdPriceId) {
+				try {
+					await archiveCourseStripeResources(createdPriceId);
+				} catch (cleanupError) {
+					console.error(
+						"Failed to clean up Stripe resources after course creation failure",
+						cleanupError
+					);
+				}
+			}
+
 			const cause = error instanceof Error ? error.cause : undefined;
 			const isConflict =
 				uniqueViolationSchema.safeParse(error).success ||
@@ -327,6 +344,21 @@ export const updateCourse = createServerFn({ method: "POST" })
 				.where(eq(courses.id, id))
 				.returning();
 		} catch (error) {
+			// stripePriceId is only set when a new price was minted above,
+			// so a failed update would orphan it. Deactivate best-effort.
+			if (stripePriceId) {
+				try {
+					await stripeClient.prices.update(stripePriceId, {
+						active: false,
+					});
+				} catch (cleanupError) {
+					console.error(
+						"Failed to deactivate Stripe price after course update failure",
+						cleanupError
+					);
+				}
+			}
+
 			const cause = error instanceof Error ? error.cause : undefined;
 			const isConflict =
 				uniqueViolationSchema.safeParse(error).success ||
