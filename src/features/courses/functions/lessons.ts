@@ -4,7 +4,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "#/db/index.ts";
-import { lessons } from "#/db/schema/lms.schema.ts";
+import { lessonProgress, lessons } from "#/db/schema/lms.schema.ts";
 import { adminMiddleware, authMiddleware } from "#/middleware.ts";
 
 import {
@@ -292,4 +292,23 @@ export const getLessonContent = createServerFn()
 		}
 
 		return { lesson };
+	});
+
+export const markLessonComplete = createServerFn({ method: "POST" })
+	.middleware([authMiddleware])
+	.validator(lessonIdSchema)
+	.handler(async ({ context, data }) => {
+		const { user } = context;
+
+		try {
+			await db
+				.insert(lessonProgress)
+				.values({ userId: user.id, lessonId: data.id })
+				.onConflictDoUpdate({
+					target: lessonProgress.completed,
+					set: { completed: true },
+				});
+		} catch (error) {
+			throw new Error("Failed to mark lesson as complete", { cause: error });
+		}
 	});
