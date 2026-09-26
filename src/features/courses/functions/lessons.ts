@@ -267,7 +267,10 @@ export const getLessonContent = createServerFn()
 	.validator(lessonIdSchema)
 	.handler(async ({ context, data }) => {
 		const lesson = await db.query.lessons.findFirst({
-			where: { id: data.id },
+			where: {
+				id: data.id,
+				chapter: { course: { status: { in: ["Published", "Archived"] } } },
+			},
 			columns: {
 				id: true,
 				title: true,
@@ -311,7 +314,10 @@ export const markLessonComplete = createServerFn({ method: "POST" })
 		const { user } = context;
 
 		const lesson = await db.query.lessons.findFirst({
-			where: { id: data.id },
+			where: {
+				id: data.id,
+				chapter: { course: { status: { in: ["Published", "Archived"] } } },
+			},
 			columns: { id: true },
 			with: { chapter: { columns: { courseId: true } } },
 		});

@@ -556,14 +556,11 @@ export const getCourseSiderbarData = createServerFn()
 		const { user } = context;
 		const { slug } = data;
 
-		// Deliberately no `status: "Published"` filter here: enrollments
-		// can only be created for published courses, and learners keep
-		// access to what they paid for even if the course is later
-		// archived. `Published` gates discovery and purchase
-		// (getAllCourses, getIndividualCourse, enrollInCourse); the
-		// Active enrollment below gates access.
+		// Lifecycle: Published courses are learnable and purchasable;
+		// Archived courses stay learnable for enrolled learners but are
+		// hidden from purchase; Draft courses are never learnable.
 		const course = await db.query.courses.findFirst({
-			where: { slug },
+			where: { slug, status: { in: ["Published", "Archived"] } },
 			columns: {
 				id: true,
 				title: true,
