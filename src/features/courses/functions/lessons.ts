@@ -18,6 +18,7 @@ import {
 	CHAPTER_NOT_FOUND_MESSAGE,
 	COURSE_NOT_FOUND_MESSAGE,
 	LESSON_NOT_FOUND_MESSAGE,
+	requireActiveEnrollment,
 } from "./shared";
 
 export const getLesson = createServerFn({ method: "GET" })
@@ -305,6 +306,19 @@ export const markLessonComplete = createServerFn({ method: "POST" })
 	.validator(lessonIdSchema)
 	.handler(async ({ context, data }) => {
 		const { user } = context;
+
+		const lesson = await db.query.lessons.findFirst({
+			where: { id: data.id },
+			columns: { id: true },
+			with: { chapter: { columns: { courseId: true } } },
+		});
+
+		if (!lesson) {
+			setResponseStatus(404);
+			throw new Error(LESSON_NOT_FOUND_MESSAGE);
+		}
+
+		await requireActiveEnrollment(user.id, lesson.chapter.courseId);
 
 		try {
 			await db
