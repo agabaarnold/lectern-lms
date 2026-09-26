@@ -34,9 +34,13 @@ export const courseSchema = z.object({
 			error: "Description must be valid rich text content",
 		}),
 	fileKey: z.string().min(1, { error: "File is required" }),
-	price: z.coerce.number().min(1, { error: "Price must be a positive number" }),
+	price: z.coerce
+		.number()
+		.int({ error: "Price must be a whole number" })
+		.min(1, { error: "Price must be a positive number" }),
 	duration: z.coerce
 		.number()
+		.int({ error: "Duration must be a whole number of hours" })
 		.min(1, { error: "Duration must be at least 1 hour" })
 		.max(500, { error: "Duration must be at most 500 hours" }),
 	level: z.enum(courseLevels),
