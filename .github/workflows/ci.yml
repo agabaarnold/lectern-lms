@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    # Dummy values satisfy env validation at build time; nothing here
+    # touches a real database or external service.
+    env:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://user:password@localhost:5432/db
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: ci-dummy-secret-at-least-32-chars-long
+      GOOGLE_CLIENT_ID: ci-dummy
+      GOOGLE_CLIENT_SECRET: ci-dummy
+      GITHUB_CLIENT_ID: ci-dummy
+      GITHUB_CLIENT_SECRET: ci-dummy
+      AWS_ACCESS_KEY_ID: ci-dummy
+      AWS_SECRET_ACCESS_KEY: ci-dummy
+      AWS_ENDPOINT_URL_S3: http://localhost:9000
+      AWS_ENDPOINT_URL_IAM: http://localhost:9000
+      AWS_REGION: us-east-1
+      VITE_S3_BUCKET_NAME_IMAGES: ci-dummy-bucket
+      STRIPE_SECRET_KEY: sk_test_ci-dummy
+      STRIPE_WEBHOOK_SECRET: whsec_ci-dummy
+      ARCJET_KEY: ajkey_ci-dummy
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm build
