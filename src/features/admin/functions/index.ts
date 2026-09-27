@@ -107,6 +107,7 @@ export const getRecentCourses = createServerFn()
 					level: true,
 					fileKey: true,
 					slug: true,
+					status: true,
 				},
 			})
 	);
