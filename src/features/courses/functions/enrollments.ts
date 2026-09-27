@@ -1,5 +1,11 @@
+import { createHash } from "node:crypto";
+
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
-import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
+import {
+	getRequest,
+	getRequestHeaders,
+	setResponseStatus,
+} from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { Stripe } from "stripe";
 import { z } from "zod";
@@ -17,6 +23,34 @@ import { courseSearchSchema } from "../schema/courses";
 import { enrollInSchema } from "../schema/enrollments";
 
 const uniqueViolationSchema = z.object({ code: z.literal("23505") });
+
+// Stripe idempotency keys can only be reused with byte-identical params.
+// A bare `checkout-${enrollmentId}` poisons retries for 24h as soon as any
+// param drifts (price change, new customer, changed success/cancel URL).
+// Hashing the request params into the key keeps dedup for identical
+// retries while letting changed checkouts create a fresh session.
+const hashParams = (value: string): string =>
+	createHash("sha256").update(value).digest("hex").slice(0, 32);
+
+const isIdempotencyError = (error: Stripe.errors.StripeError): boolean =>
+	error instanceof Stripe.errors.StripeIdempotencyError ||
+	error.type === "idempotency_error";
+
+const logStripeError = (
+	operation: string,
+	error: Stripe.errors.StripeError,
+	extra: Record<string, string>
+): void => {
+	console.error(operation, {
+		...extra,
+		type: error.type,
+		code: error.code,
+		param: error.param,
+		message: error.message,
+		requestId: error.requestId,
+		statusCode: error.statusCode,
+	});
+};
 
 // NOTE: no db.transaction here — the neon-http driver does not support
 // transactions, and the Stripe call below must not run inside one anyway.
@@ -145,9 +179,11 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 			if (userWithStripeCustomerId?.stripeCustomerId) {
 				({ stripeCustomerId } = userWithStripeCustomerId);
 			} else {
-				// Idempotency key is scoped to the user so a retry (or a
-				// double submit) reuses the same customer instead of
-				// creating duplicates.
+				// Key binds the user to the exact customer params: identical
+				// retries reuse the customer, a changed email/name mints a
+				// new key instead of hitting an idempotency_error.
+				const customerParams = `${user.email}|${user.name}`;
+				const customerKey = `user-customer-${user.id}-${hashParams(customerParams)}`;
 				const customer = await stripeClient.customers.create(
 					{
 						email: user.email,
@@ -156,7 +192,7 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 							userId: user.id,
 						},
 					},
-					{ idempotencyKey: `user-customer-${user.id}` }
+					{ idempotencyKey: customerKey }
 				);
 
 				stripeCustomerId = customer.id;
@@ -169,23 +205,40 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 
 			const enrollment = await resolvePendingEnrollment(user.id, course);
 
+			const successUrl = `${env.BETTER_AUTH_URL}/payment/success`;
+			const cancelUrl = `${env.BETTER_AUTH_URL}/payment/cancel`;
+
 			// resolvePendingEnrollment reuses the existing pending enrollment
-			// for this user+course, so scoping the idempotency key to the
-			// enrollment makes retried checkouts return the same session.
+			// for this user+course, so the key binds the enrollment to the
+			// exact checkout params. Identical retries return the same
+			// session; changed params (new price, customer, URLs) mint a
+			// fresh key instead of a 400 idempotency_error.
+			const checkoutKeyMaterial = [
+				enrollment.id,
+				course.stripePriceId,
+				stripeCustomerId,
+				String(course.price),
+				successUrl,
+				cancelUrl,
+				user.id,
+				courseId,
+			].join("|");
 			const checkoutSession = await stripeClient.checkout.sessions.create(
 				{
 					customer: stripeCustomerId,
 					line_items: [{ price: course.stripePriceId, quantity: 1 }],
 					mode: "payment",
-					success_url: `${env.BETTER_AUTH_URL}/payment/success`,
-					cancel_url: `${env.BETTER_AUTH_URL}/payment/cancel`,
+					success_url: successUrl,
+					cancel_url: cancelUrl,
 					metadata: {
 						userId: user.id,
 						courseId,
 						enrollmentId: enrollment.id,
 					},
 				},
-				{ idempotencyKey: `checkout-${enrollment.id}` }
+				{
+					idempotencyKey: `checkout-${enrollment.id}-${hashParams(checkoutKeyMaterial)}`,
+				}
 			);
 
 			const result = { enrollment, checkoutUrl: checkoutSession.url };
@@ -195,7 +248,37 @@ export const enrollInCourse = createServerFn({ method: "POST" })
 			return { data: { checkoutUrl } };
 		} catch (error) {
 			if (error instanceof Stripe.errors.StripeError) {
+				logStripeError("enrollInCourse Stripe error", error, {
+					userId: user.id,
+					courseId,
+				});
+
+				if (isIdempotencyError(error)) {
+					setResponseStatus(409);
+					throw new Error(
+						"Checkout conflicted with a previous attempt. Please try again.",
+						{ cause: error }
+					);
+				}
+
+				if (
+					error.param === "line_items[0][price]" ||
+					error.code === "resource_missing"
+				) {
+					setResponseStatus(422);
+					throw new Error(
+						"Course pricing is not configured correctly. Please contact support.",
+						{ cause: error }
+					);
+				}
+
 				throw new TypeError("Payment error", { cause: error });
+			}
+
+			// Domain errors thrown above carry their own user-facing message;
+			// preserve them instead of wrapping into a generic failure.
+			if (error instanceof Error) {
+				throw error;
 			}
 
 			throw new Error("Failed to enroll in course", { cause: error });
