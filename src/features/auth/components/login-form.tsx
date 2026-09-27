@@ -31,31 +31,34 @@ const defaultValues: LoginInput = {
 	rememberMe: false,
 };
 
-const handleGoogleLogin = async () => {
-	await authClient.signIn.social({
-		provider: "google",
-		fetchOptions: {
-			onError: ({ error }) => {
-				toast.error(error.message);
-			},
-		},
-	});
-};
-
-const handleGithubLogin = async () => {
-	await authClient.signIn.social({
-		provider: "github",
-		fetchOptions: {
-			onError: ({ error }) => {
-				toast.error(error.message);
-			},
-		},
-	});
-};
-
 const LoginForm = () => {
 	const navigate = useNavigate();
 	const search = useSearch({ from: "/_auth/login" });
+	const callbackURL = search.redirect ?? "/";
+
+	const handleGoogleLogin = async () => {
+		await authClient.signIn.social({
+			provider: "google",
+			callbackURL,
+			fetchOptions: {
+				onError: ({ error }) => {
+					toast.error(error.message);
+				},
+			},
+		});
+	};
+
+	const handleGithubLogin = async () => {
+		await authClient.signIn.social({
+			provider: "github",
+			callbackURL,
+			fetchOptions: {
+				onError: ({ error }) => {
+					toast.error(error.message);
+				},
+			},
+		});
+	};
 
 	const form = useAppForm({
 		defaultValues,

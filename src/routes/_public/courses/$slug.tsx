@@ -64,10 +64,12 @@ function CourseEnrollmentAction({
 	courseId,
 	isCourseBought,
 	isPublished,
+	slug,
 }: {
 	courseId: string;
 	isCourseBought: boolean;
 	isPublished: boolean;
+	slug: string;
 }) {
 	if (isCourseBought) {
 		return (
@@ -78,7 +80,7 @@ function CourseEnrollmentAction({
 	}
 
 	if (isPublished) {
-		return <EnrollmentButton courseId={courseId} />;
+		return <EnrollmentButton courseId={courseId} slug={slug} />;
 	}
 
 	// Enrollment requires a Published course, so an unpublished admin
@@ -371,6 +373,7 @@ function SlugPage() {
 									courseId={course.id}
 									isCourseBought={isCourseBought}
 									isPublished={isPublished}
+									slug={course.slug}
 								/>
 
 								<p className="text-muted-foreground mt-3 text-center text-xs">
