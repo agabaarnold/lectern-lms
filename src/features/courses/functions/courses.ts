@@ -1,13 +1,17 @@
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseStatus } from "@tanstack/react-start/server";
+import {
+	getRequestHeaders,
+	setResponseStatus,
+} from "@tanstack/react-start/server";
 import { EmptyFilter, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { clientEnv } from "#/client-env.ts";
 import { db } from "#/db/index.ts";
 import { courses } from "#/db/schema/lms.schema.ts";
+import { auth } from "#/lib/auth.ts";
 import { S3 } from "#/lib/s3-client.ts";
 import { stripeClient } from "#/lib/stripe.ts";
 import {
@@ -601,8 +605,18 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 	.middleware([arcjetMiddleware])
 	.validator(getIndividualCourseSchema)
 	.handler(async ({ data }) => {
+		// Admins reach this page via Preview on the admin course list,
+		// so Draft and Archived courses must render for them. Public
+		// visitors only ever see Published courses.
+		const session = await auth.api.getSession({
+			headers: getRequestHeaders(),
+		});
+		const isAdmin = session?.user.role === "admin";
+
 		const course = await db.query.courses.findFirst({
-			where: { slug: data.slug, status: "Published" },
+			where: isAdmin
+				? { slug: data.slug }
+				: { slug: data.slug, status: "Published" },
 			columns: {
 				title: true,
 				price: true,
@@ -614,6 +628,7 @@ export const getIndividualCourse = createServerFn({ method: "GET" })
 				level: true,
 				duration: true,
 				category: true,
+				status: true,
 			},
 			with: {
 				chapters: {

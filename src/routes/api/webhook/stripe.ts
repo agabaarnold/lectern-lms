@@ -152,8 +152,7 @@ const handleCheckoutSession = async (
 		// when the amount matches what was recorded at checkout: an admin
 		// price change in between must not void a valid payment.
 		const priceMatches =
-			paidPriceId !== undefined &&
-			paidPriceId === verified.courseStripePriceId;
+			paidPriceId !== undefined && paidPriceId === verified.courseStripePriceId;
 		const amountMatches = amount === verified.enrollmentAmount;
 
 		if (!priceMatches && !amountMatches) {

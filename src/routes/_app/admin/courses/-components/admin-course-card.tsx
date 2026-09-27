@@ -8,9 +8,12 @@ import {
 	IconStopwatch,
 	IconTrash,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useTransition } from "react";
+import { toast } from "react-hot-toast";
 
 import { Image } from "#/components/shared/image.tsx";
+import { Badge } from "#/components/ui/badge.tsx";
 import { Button, buttonVariants } from "#/components/ui/button.tsx";
 import { Card, CardContent } from "#/components/ui/card.tsx";
 import {
@@ -21,6 +24,11 @@ import {
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
 import type { getRecentCourses } from "#/features/admin/functions/index.ts";
+import {
+	publishCourse,
+	unpublishCourse,
+} from "#/features/courses/functions/courses.ts";
+import { tryCatch } from "#/lib/try-catch.ts";
 import { urlConstruct } from "#/lib/url-construct.ts";
 
 interface AdminCourseCardProps {
@@ -29,6 +37,40 @@ interface AdminCourseCardProps {
 
 export const AdminCourseCard = ({ course }: AdminCourseCardProps) => {
 	const thumbnailUrl = urlConstruct(course.fileKey);
+	const router = useRouter();
+	const [isPending, startTransition] = useTransition();
+	const isPublished = course.status === "Published";
+	const isArchived = course.status === "Archived";
+	let statusVariant: "default" | "outline" | "secondary" = "secondary";
+
+	if (isPublished) {
+		statusVariant = "default";
+	} else if (isArchived) {
+		statusVariant = "outline";
+	}
+
+	const togglePublish = () => {
+		startTransition(async () => {
+			const { error } = isPublished
+				? await tryCatch(unpublishCourse({ data: { id: course.id } }))
+				: await tryCatch(publishCourse({ data: { id: course.id } }));
+
+			if (error) {
+				toast.error(
+					error.message ??
+						(isPublished
+							? "Failed to unpublish course"
+							: "Failed to publish course")
+				);
+				return;
+			}
+
+			toast.success(
+				isPublished ? "Course unpublished (archived)" : "Course published"
+			);
+			await router.invalidate();
+		});
+	};
 
 	return (
 		<Card className="group relative gap-0 py-0">
@@ -90,6 +132,20 @@ export const AdminCourseCard = ({ course }: AdminCourseCardProps) => {
 			/>
 
 			<CardContent className="p-4">
+				<div className="mb-3 flex items-center justify-between gap-2">
+					<Badge variant={statusVariant}>{course.status}</Badge>
+
+					<Button
+						disabled={isPending}
+						onClick={togglePublish}
+						size="sm"
+						type="button"
+						variant={isPublished ? "outline" : "default"}
+					>
+						{isPublished ? "Unpublish" : "Publish"}
+					</Button>
+				</div>
+
 				<Link
 					className="group-hover:text-primary line-clamp-2 text-lg font-medium transition-colors hover:underline"
 					to="/admin/courses/$courseId"
