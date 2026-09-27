@@ -29,7 +29,7 @@ import {
 	getIndividualCourseSchema,
 	updateCourseSchema,
 } from "../schema/courses";
-import { COURSE_NOT_FOUND_MESSAGE } from "./shared";
+import { COURSE_NOT_FOUND_MESSAGE, toStripeUgx } from "./shared";
 
 const SLUG_CONFLICT_MESSAGE = "A course with this slug already exists";
 
@@ -45,7 +45,7 @@ const createPricedProduct = async (
 	const product = await stripeClient.products.create({
 		name,
 		description,
-		default_price_data: { currency: "ugx", unit_amount: amount },
+		default_price_data: { currency: "ugx", unit_amount: toStripeUgx(amount) },
 	});
 
 	const parsedPriceId = z.string().safeParse(product.default_price);
@@ -86,7 +86,7 @@ const resolveStripePriceId = async (
 		return createPricedProduct(course.title, course.smallDescription, newPrice);
 	}
 
-	if (stripePrice.unit_amount === newPrice) {
+	if (stripePrice.unit_amount === toStripeUgx(newPrice)) {
 		return undefined;
 	}
 
@@ -101,7 +101,7 @@ const resolveStripePriceId = async (
 	const price = await stripeClient.prices.create({
 		product: productId,
 		currency: "ugx",
-		unit_amount: newPrice,
+		unit_amount: toStripeUgx(newPrice),
 	});
 
 	return price.id;
@@ -229,7 +229,10 @@ export const createCourse = createServerFn({ method: "POST" })
 			const stripeData = await stripeClient.products.create({
 				name: data.title,
 				description: data.smallDescription,
-				default_price_data: { currency: "ugx", unit_amount: data.price },
+				default_price_data: {
+					currency: "ugx",
+					unit_amount: toStripeUgx(data.price),
+				},
 			});
 
 			const stripePriceId = z.string().safeParse(stripeData.default_price);
