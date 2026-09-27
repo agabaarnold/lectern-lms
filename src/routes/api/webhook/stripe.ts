@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "#/db/index.ts";
 import { enrollments } from "#/db/schema/lms.schema.ts";
 import { env } from "#/env.server.ts";
+import { fromStripeUgx } from "#/features/courses/functions/shared.ts";
 import { ajWebhook, toArcjetRequest } from "#/lib/arcjet";
 import { stripeClient } from "#/lib/stripe.ts";
 
@@ -133,10 +134,20 @@ const handleCheckoutSession = async (
 	}
 
 	if (isFulfillment) {
-		const amount = session.amount_total;
+		const total = session.amount_total;
 
-		if (amount === null) {
+		if (total === null) {
 			return badRequest("missing payment data");
+		}
+
+		// Stripe reports UGX in two-decimal API units; enrollments are
+		// recorded in whole shillings.
+		let amount: number;
+
+		try {
+			amount = fromStripeUgx(total);
+		} catch {
+			return badRequest("payment amount mismatch");
 		}
 
 		const lineItems = await stripeClient.checkout.sessions.listLineItems(
